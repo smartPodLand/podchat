@@ -5,11 +5,10 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
-  // token: "afa51d8291dc4072a0831d3a18cb5030",  {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",   // {**REQUIRED**} SSO Token Abedi
-  // token: "a11768091eac48f2a7b84ed6a241f9c3",  // {**REQUIRED**} SSO Token FelFeli
-  // token: "da23e13fced4425f9c2b468965901707",  // {**REQUIRED**} SSO Token GhelGheli
+  // token: "c0866c4cc5274ea7ada6b01575b19d24",  {**REQUIRED**} SSO Token Zamani
+  token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
+  // token: "ed4be26a60c24ed594e266a2181424c5",   {**REQUIRED**} SSO Token Abedi
+  // token: "a11768091eac48f2a7b84ed6a241f9c3",   {**REQUIRED**} SSO Token FelFeli
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
@@ -41,34 +40,37 @@ chatAgent.on("chatReady", function() {
   // getThreads(getThreadsParams);
 
   /**
-   * GET THREAD HISTORY
-   */
-  // getThreadHistory(83);
-
-  /**
    * GET CONTACTS
    */
   // getContacts(getThreadsParams);
 
   /**
-   * CREATE THREAD (Creates Group With All Friends)
+   * CREATE THREAD
    */
   // createThread(getThreadsParams);
 
   /**
-   * CREATE THREAD (Creates P2P Chat with a specific user)
-   */
-  // createThread(getThreadsParams, 441);
-
-  /**
    * SEND MESSAGE IN THREAD
    */
-   // sendMessage(getThreadsParams, 83, "This is a Sample Message at " + new Date());
+  // sendMessage(getThreadsParams, 78, "This is a Sample Message at " + new Date());
+});
+
+chatAgent.on("message", function(msg) {
+  var params = {
+    messageId: msg.messageId
+  };
 
   /**
-   * SEND MESSAGE IN THREAD
+   * Sending Message Delivery to Sender
    */
-  editMessage(308, "This message has been edited at \t" + new Date() + "\t :D");
+  chatAgent.deliver(params);
+
+  /**
+   * Sending Message Seen to Sender after 5sec
+   */
+  setTimeout(function() {
+    chatAgent.seen(params);
+  }, 5000);
 });
 
 function getThreads(getThreadsParams) {
@@ -82,18 +84,6 @@ function getContacts(getThreadsParams) {
   chatAgent.getContacts(getThreadsParams, function(contactsResult) {
     var contacts = contactsResult.result.contacts;
     console.log(contacts);
-  });
-}
-
-function getThreadHistory(threadId) {
-  var getThreadHistoryParams = {
-    count: 50,
-    offset: 0,
-    threadId: threadId
-  };
-  chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
-    var history = historyResult.result.history;
-    console.log(history);
   });
 }
 
@@ -116,76 +106,46 @@ function sendMessage(getThreadsParams, threadId, message) {
 
     chatAgent.send(sendChatParams, {
       onSent: function(result) {
-        console.log("\nYour message has been Sent!\n");
+        console.log("Your message has been Sent!");
         console.log(result);
       },
       onDeliver: function(result) {
-        console.log("\nYour message has been Delivered!\n");
+        console.log("Your message has been Delivered!");
         console.log(result);
       },
       onSeen: function(result) {
-        console.log("\nYour message has been Seen!\n");
+        console.log("Your message has been Seen!");
         console.log(result);
       }
     });
   }, 5000);
 }
 
-function editMessage(messageId, newMessage) {
-  editChatParams = {
-    messageId: messageId,
-    content: newMessage
-  };
+function createThread(getThreadsParams) {
+  chatAgent.getContacts(getThreadsParams, function(contactsResult) {
+    var contacts = contactsResult.result.contacts;
 
-  chatAgent.editMessage(editChatParams, {
-    onSent: function(result) {
-      console.log("Edited Message has been Sent!");
-      console.log(result);
-    },
-    onDeliver: function(result) {
-      console.log("Edited Message has been Delivered!");
-      console.log(result);
-    },
-    onSeen: function(result) {
-      console.log("Edited Message has been Seen!");
-      console.log(result);
-    }
-  });
-}
+    createThreadParams = {
+      title: "Thread Title Sample",
+      type: "NORMAL",
+      invitees: []
+    };
 
-function createThread(getThreadsParams, userId) {
-
-  createThreadParams = {
-    title: "Thread Title Sample",
-    type: "NORMAL",
-    invitees: []
-  };
-
-  if (userId === undefined) {
-    chatAgent.getContacts(getThreadsParams, function(contactsResult) {
-      var contacts = contactsResult.result.contacts;
-
-      for (var i = 0; i < contacts.length; i++) {
-        if (contacts[i].hasUser) {
-          invitee = formatDataToMakeInvitee(contacts[i]);
-          if (invitee) {
-            createThreadParams.invitees.push(invitee);
-          }
+    for (var i = 0; i < contacts.length; i++) {
+      if (contacts[i].hasUser) {
+        invitee = formatDataToMakeInvitee(contacts[i]);
+        if (invitee) {
+          createThreadParams.invitees.push(invitee);
         }
       }
-    });
-  } else {
-    invitee = formatDataToMakeInvitee({id: userId});
-    if (invitee) {
-      createThreadParams.invitees.push(invitee);
     }
-  }
 
-  setTimeout(function() {
-    chatAgent.createThread(createThreadParams, function(createThreadResult) {
-      console.log(createThreadResult);
-    });
-  }, 5000);
+    setTimeout(function() {
+      chatAgent.createThread(createThreadParams, function(createThreadResult) {
+        console.log(createThreadResult);
+      });
+    }, 5000);
+  });
 }
 
 function formatDataToMakeInvitee(messageContent) {
