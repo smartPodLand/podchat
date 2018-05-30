@@ -14,15 +14,7 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
-  // token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",   // {**REQUIRED**} SSO Token Abedi
-  wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
-  connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
-  connectionCheckTimeout: 90000, // Socket connection live time on server
-  connectionCheckTimeoutThreshold: 20000, // Socket Ping time threshold
-  messageTtl: 5000, // Message time to live
-  reconnectOnClose: true, // auto connect to socket after socket close
+  token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token
   consoleLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
@@ -75,7 +67,7 @@ chatAgent.on("chatReady", function() {
   /**
    * SEND MESSAGE IN THREAD
    */
-  editMessage(308, "This message has been edited at \t" + new Date() + "\t :D");
+   // editMessage(308, "This message has been edited at \t" + new Date() + "\t :D");
 });
 
 function getThreads(getThreadsParams) {

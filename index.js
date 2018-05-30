@@ -9,7 +9,7 @@ var params = {
   // token: "afa51d8291dc4072a0831d3a18cb5030",  {**REQUIRED**} SSO Token Barzegar
   // token: "ed4be26a60c24ed594e266a2181424c5",   // {**REQUIRED**} SSO Token Abedi
   // token: "a11768091eac48f2a7b84ed6a241f9c3",  // {**REQUIRED**} SSO Token FelFeli
-  // token: "da23e13fced4425f9c2b468965901707",  // {**REQUIRED**} SSO Token GhelGheli
+  // token: "da23e13fced4425f9c2b468965901707",  // {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
