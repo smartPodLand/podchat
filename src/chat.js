@@ -301,8 +301,8 @@
         switch (type) {
             // 1
           case chatMessageVOTypes.CREATE_THREAD:
-            if (messagesCallbacks[uniqueId])
-              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+            messageContent.uniqueId = uniqueId;
+            createThread(messageContent, true);
             break;
 
             // 2
@@ -391,6 +391,14 @@
       chatEditMessageHandler = function(threadId, messageContent) {
         var message = reformatMessage(threadId, messageContent);
         fireEvent("editMessage", message);
+      },
+
+      createThread = function(messageContent, addFromService) {
+        var threadData = formatDataToMakeThread(messageContent);
+        if (addFromService) {
+          fireEvent("newThread", threadData);
+        }
+        return threadData;
       },
 
       formatDataToMakeThread = function(messageContent) {
@@ -732,6 +740,7 @@
 
           if (!returnData.hasError) {
             var messageContent = result.result,
+              addFromService = true,
               messageLength = messageContent.length,
               resultData = {
                 threads: [],
@@ -740,8 +749,12 @@
               },
               threadData;
 
+            if (params && typeof params.addFromService == "boolean") {
+              addFromService = params.addFromService;
+            }
+
             for (var i = 0; i < messageLength; i++) {
-              threadData = formatDataToMakeThread(messageContent[i]);
+              threadData = createThread(messageContent[i], addFromService);
               if (threadData) {
                 resultData.threads.push(threadData);
               }
@@ -870,7 +883,7 @@
           if (!returnData.hasError) {
             var messageContent = result.result,
               resultData = {
-                thread: formatDataToMakeThread(messageContent)
+                thread: createThread(messageContent)
               };
 
             returnData.result = resultData;

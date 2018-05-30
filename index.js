@@ -61,7 +61,7 @@ chatAgent.on("chatReady", function() {
   /**
    * CREATE THREAD (Creates Group)
    */
-  // createThread([401, 324]);
+  createThread([323, 443]);
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
@@ -71,7 +71,7 @@ chatAgent.on("chatReady", function() {
   /**
    * SEND MESSAGE IN THREAD
    */
-  sendMessage(83, "This is a Sample Message at " + new Date());
+  // sendMessage(83, "This is a Sample Message at " + new Date());
 
   /**
    * SEND MESSAGE IN THREAD
@@ -107,6 +107,14 @@ chatAgent.on("chatReady", function() {
       chatAgent.seen(params);
     }, 5000);
   });
+
+  /**
+   * Listen to New Thread Creation
+   */
+   chatAgent.on("newThread", function(threadInfo) {
+     console.log("New Thread Has Been Created with You Taking Part in it!");
+     console.log(threadInfo);
+   });
 });
 
 function getUserInfo() {
@@ -183,7 +191,6 @@ function editMessage(messageId, newMessage) {
 }
 
 function createThread(invitees) {
-
   createThreadParams = {
     title: "Thread Title Sample",
     type: "NORMAL",
@@ -194,7 +201,6 @@ function createThread(invitees) {
     for (var i = 0; i < invitees.length; i++) {
       invitee = formatDataToMakeInvitee({id: invitees[i]});
       if (invitee) {
-        console.log(invitee);
         createThreadParams.invitees.push(invitee);
       }
     }

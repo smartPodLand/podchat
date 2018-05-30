@@ -107,6 +107,14 @@ chatAgent.on("chatReady", function() {
       chatAgent.seen(params);
     }, 5000);
   });
+
+  /**
+   * Listen to New Thread Creation
+   */
+   chatAgent.on("newThread", function(threadInfo) {
+     console.log("New Thread Has Been Created with You Taking Part in it!");
+     console.log(threadInfo);
+   });
 });
 
 function getUserInfo() {
