@@ -26,6 +26,7 @@
     var asyncClient,
       peerId,
       oldPeerId,
+      userInfo,
       token = params.token,
       eventCallbacks = {
         connect: {},
@@ -33,6 +34,7 @@
         reconnect: {},
         serverRegister: {},
         message: {},
+        editMessage: {},
         forwardMessage: {},
         newThread: {},
         leaveThread: {},
@@ -108,6 +110,9 @@
 
         asyncClient.asyncReady(function() {
           peerId = asyncClient.getPeerId();
+          getUserInfo(function(userInfoResult) {
+            userInfo = userInfoResult.result.user;
+          });
           fireEvent("chatReady");
         });
 
@@ -131,6 +136,34 @@
         asyncClient.on("message", function(params, ack) {
           pushMessageHandler(params);
           ack && ack();
+        });
+      },
+
+      getUserInfo = function(callback) {
+        var sendMessageParams = {
+          chatMessageVOType: chatMessageVOTypes.USER_INFO,
+          token: token
+        };
+
+        return sendMessage(sendMessageParams, {
+          onResult: function(result) {
+            var returnData = {
+              hasError: result.hasError,
+              errorMessage: result.errorMessage,
+              errorCode: result.errorCode
+            };
+
+            if (!returnData.hasError) {
+              var messageContent = result.result,
+                resultData = {
+                  user: formatDataToMakeUser(messageContent)
+                };
+
+              returnData.result = resultData;
+            }
+
+            callback && callback(returnData);
+          }
         });
       },
 
@@ -320,10 +353,27 @@
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
             break;
 
-            // 28
-          case chatMessageVOTypes.EDIT_MESSAGE:
+            // 19
+          case chatMessageVOTypes.MUTE_THREAD:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+            break;
+
+            // 20
+          case chatMessageVOTypes.UNMUTE_THREAD:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+            break;
+
+            // 23
+          case chatMessageVOTypes.USER_INFO:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+            break;
+
+            // 28
+          case chatMessageVOTypes.EDIT_MESSAGE:
+            chatEditMessageHandler(threadId, messageContent);
             break;
 
             // 999
@@ -337,6 +387,11 @@
       chatMessageHandler = function(threadId, messageContent) {
         var message = reformatMessage(threadId, messageContent);
         fireEvent("message", message);
+      },
+
+      chatEditMessageHandler = function(threadId, messageContent) {
+        var message = reformatMessage(threadId, messageContent);
+        fireEvent("editMessage", message);
       },
 
       formatDataToMakeThread = function(messageContent) {
@@ -431,6 +486,33 @@
         };
 
         return contact;
+      },
+
+      formatDataToMakeUser = function(messageContent) {
+        /**
+         * + User                     {object}
+         *    - id                    {long}
+         *    - name                  {string}
+         *    - email                 {string}
+         *    - cellphoneNumber       {string}
+         *    - image                 {string}
+         *    - lastSeen              {long}
+         *    - sendEnable            {boolean}
+         *    - receiveEnable         {boolean}
+         */
+
+        var user = {
+          id: messageContent.id,
+          name: messageContent.name,
+          email: messageContent.email,
+          cellphoneNumber: messageContent.cellphoneNumber,
+          image: messageContent.image,
+          lastSeen: messageContent.lastSeen,
+          sendEnable: messageContent.sendEnable,
+          receiveEnable: messageContent.receiveEnable
+        };
+
+        return user;
       },
 
       formatDataToMakeInvitee = function(messageContent) {
@@ -544,6 +626,8 @@
         peerId = asyncClient.getPeerId();
       });
     };
+
+    this.getUserInfo = getUserInfo;
 
     this.getContacts = function(params, callback) {
       var count = 50,
@@ -813,7 +897,7 @@
       }, callbacks);
     };
 
-    this.editMessage = function(params, callbacks) {
+    this.editMessage = function(params) {
       return sendMessage({
         token: token,
         chatMessageVOType: chatMessageVOTypes.EDIT_MESSAGE,
@@ -824,24 +908,48 @@
         metaData: params.metaData,
         timeout: params.timeout,
         pushMsgType: 4
-      }, callbacks);
+      });
     };
 
     this.deliver = function(params) {
-      return sendMessage({
-        chatMessageVOType: chatMessageVOTypes.DELIVERY,
-        token: token,
-        content: params.messageId,
-        pushMsgType: 4
-      });
+      return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, token: token, content: params.messageId, pushMsgType: 4});
     }
 
     this.seen = function(params) {
-      return sendMessage({
-        chatMessageVOType: chatMessageVOTypes.SEEN,
+      return sendMessage({chatMessageVOType: chatMessageVOTypes.SEEN, token: token, content: params.messageId, pushMsgType: 4});
+    }
+
+    this.muteThread = function(params, callback) {
+      var muteData = {
+        chatMessageVOType: chatMessageVOTypes.MUTE_THREAD,
+        subjectId: params.subjectId,
+        content: {},
+        pushMsgType: 4,
         token: token,
-        content: params.messageId,
-        pushMsgType: 4
+        timeout: params.timeout
+      };
+
+      return sendMessage(muteData, {
+        onResult: function(result) {
+          callback && callback(result);
+        }
+      });
+    }
+
+    this.unMuteThread = function(params, callback) {
+      var muteData = {
+        chatMessageVOType: chatMessageVOTypes.UNMUTE_THREAD,
+        subjectId: params.subjectId,
+        content: {},
+        pushMsgType: 4,
+        token: token,
+        timeout: params.timeout
+      };
+
+      return sendMessage(muteData, {
+        onResult: function(result) {
+          callback && callback(result);
+        }
       });
     }
 
