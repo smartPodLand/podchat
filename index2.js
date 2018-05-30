@@ -91,7 +91,8 @@ chatAgent.on("chatReady", function() {
    */
   chatAgent.on("message", function(msg) {
     var params = {
-      messageId: msg.messageId
+      messageId: msg.messageId,
+      owner: msg.owner
     };
 
     /**
@@ -182,7 +183,6 @@ function editMessage(messageId, newMessage) {
 }
 
 function createThread(invitees) {
-
   createThreadParams = {
     title: "Thread Title Sample",
     type: "NORMAL",

@@ -91,20 +91,21 @@ chatAgent.on("chatReady", function() {
    */
   chatAgent.on("message", function(msg) {
     var params = {
-      messageId: msg.messageId
+      messageId: msg.messageId,
+      owner: msg.owner
     };
 
     /**
      * Sending Message Delivery to Sender
      */
-    // chatAgent.deliver(params);
+    chatAgent.deliver(params);
 
     /**
      * Sending Message Seen to Sender after 5sec
      */
-    // setTimeout(function() {
-    //   chatAgent.seen(params);
-    // }, 5000);
+    setTimeout(function() {
+      chatAgent.seen(params);
+    }, 5000);
   });
 });
 

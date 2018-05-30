@@ -299,7 +299,6 @@
           uniqueId = params.uniqueId;
 
         switch (type) {
-
             // 1
           case chatMessageVOTypes.CREATE_THREAD:
             if (messagesCallbacks[uniqueId])
@@ -912,11 +911,15 @@
     };
 
     this.deliver = function(params) {
-      return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, token: token, content: params.messageId, pushMsgType: 4});
+      if (params.owner !== userInfo.id) {
+        return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, token: token, content: params.messageId, pushMsgType: 4});
+      }
     }
 
     this.seen = function(params) {
-      return sendMessage({chatMessageVOType: chatMessageVOTypes.SEEN, token: token, content: params.messageId, pushMsgType: 4});
+      if (params.owner !== userInfo.id) {
+        return sendMessage({chatMessageVOType: chatMessageVOTypes.SEEN, token: token, content: params.messageId, pushMsgType: 4});
+      }
     }
 
     this.muteThread = function(params, callback) {
