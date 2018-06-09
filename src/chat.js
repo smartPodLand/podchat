@@ -296,6 +296,7 @@
         var threadId = params.subjectId,
           type = params.type,
           messageContent = JSON.parse(params.content),
+          contentCount = params.contentCount,
           uniqueId = params.uniqueId;
 
         switch (type) {
@@ -337,19 +338,19 @@
             // 13
           case chatMessageVOTypes.GET_CONTACTS:
             if (messagesCallbacks[uniqueId])
-              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
             // 14
           case chatMessageVOTypes.GET_THREADS:
             if (messagesCallbacks[uniqueId])
-              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
             // 15
           case chatMessageVOTypes.GET_HISTORY:
             if (messagesCallbacks[uniqueId])
-              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
             // 19
@@ -368,6 +369,12 @@
           case chatMessageVOTypes.USER_INFO:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+            break;
+
+            // 27
+          case chatMessageVOTypes.THREAD_PARTICIPANTS:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
             // 28
@@ -404,8 +411,10 @@
       formatDataToMakeThread = function(messageContent) {
         /**
          * + Conversation                     {object}
-         *    - threadId                      {long}
+         *    - id                            {long}
+         *    - joinDate                      {long}
          *    - title                         {string}
+         *    - inviter                       {object : ParticipantVO}
          *    - participants                  {list : ParticipantVO}
          *    - time                          {long}
          *    - lastMessage                   {string}
@@ -414,7 +423,8 @@
          *    - partner                       {long}
          *    - image                         {object : ImageInfo}
          *    - unreadCount                   {long}
-         *    - lastMessageVO                 {object : Message}
+         *    - lastMessageId                 {long}
+         *    - lastMessageVO                 {object : ChatMessageVO}
          *    - partnerLastMessageId          {long}
          *    - partnerLastDeliveredMessageId {long}
          *    - type                          {int}
@@ -426,8 +436,9 @@
         var participants = messageContent.participants,
           partnerId = messageContent.partnerId,
           conversationData = {
-            threadId: messageContent.id,
+            id: messageContent.id,
             title: messageContent.title,
+            joinDate: messageContent.joinDate,
             time: messageContent.time,
             lastMessage: messageContent.lastMessage,
             lastParticipantName: messageContent.lastParticipantName,
@@ -443,6 +454,11 @@
             mute: messageContent.mute,
             participantCount: messageContent.participantCount
           };
+
+        // Add inviter if exist
+        if (messageContent.inviter) {
+          conversationData.inviter = formatDataToMakeParticipant(messageContent.inviter);
+        }
 
         // Add lastMessageVO if exist
         if (messageContent.lastMessageVO) {
@@ -596,6 +612,16 @@
         return returnData;
       },
 
+      reformatThreadParticipants = function(participantsContent) {
+        var returnData = [];
+
+        for (var i = 0; i < participantsContent.length; i++) {
+          returnData.push(formatDataToMakeParticipant(participantsContent[i]));
+        }
+
+        return returnData;
+      },
+
       fireEvent = function(eventName, param) {
         for (var id in eventCallbacks[eventName]) {
           eventCallbacks[eventName][id](param);
@@ -673,6 +699,7 @@
               messageLength = messageContent.length,
               resultData = {
                 contacts: [],
+                contentCount: result.contentCount,
                 hasNext: (count === messageLength && messageLength > 0),
                 nextOffset: offset += messageLength
               },
@@ -744,6 +771,7 @@
               messageLength = messageContent.length,
               resultData = {
                 threads: [],
+                contentCount: result.contentCount,
                 hasNext: (count === messageLength && messageLength > 0),
                 nextOffset: offset += messageLength
               },
@@ -814,11 +842,61 @@
               messageLength = messageContent.length,
               resultData = {
                 history: reformatThreadHistory(params.threadId, messageContent),
-                hasHistory: (sendMessageParams.content.count === messageLength && messageLength > 0),
+                contentCount: result.contentCount,
                 hasNext: (sendMessageParams.content.count === messageLength && messageLength > 0),
                 nextOffset: sendMessageParams.content.offset += messageLength
-              },
-              threadData;
+              };
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+        }
+      });
+    };
+
+    this.getThreadParticipants = function(params, callback) {
+      var sendMessageParams = {
+        chatMessageVOType: chatMessageVOTypes.THREAD_PARTICIPANTS,
+        token: token,
+        content: {},
+        subjectId: params.threadId,
+        timeout: params.timeout
+      };
+
+      if (typeof params.count === "number") {
+        sendMessageParams.content.count = params.count;
+      } else {
+        sendMessageParams.content.count = config.getHistoryCount;
+      }
+
+      if (typeof params.offset === "number") {
+        sendMessageParams.content.offset = params.offset;
+      } else {
+        sendMessageParams.content.offset = 0;
+      }
+
+      if (typeof params.name === "string") {
+        content.name = params.name;
+      }
+
+      return sendMessage(sendMessageParams, {
+        onResult: function(result) {
+          var returnData = {
+            hasError: result.hasError,
+            errorMessage: result.errorMessage,
+            errorCode: result.errorCode
+          };
+
+          if (!returnData.hasError) {
+            var messageContent = result.result,
+              messageLength = messageContent.length,
+              resultData = {
+                participants: reformatThreadParticipants(messageContent),
+                contentCount: result.contentCount,
+                hasNext: (sendMessageParams.content.count === messageLength && messageLength > 0),
+                nextOffset: sendMessageParams.content.offset += messageLength
+              };
 
             returnData.result = resultData;
           }

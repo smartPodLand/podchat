@@ -7,7 +7,7 @@ var params = {
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
   // token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",    {**REQUIRED**} SSO Token Abedi
+  // token: "ed4be26a60c24ed594e266a2181424c5",    //{**REQUIRED**} SSO Token Abedi
   // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
@@ -33,50 +33,68 @@ chatAgent.on("chatReady", function() {
    */
   // getUserInfo();
 
+
   /**
    * GET THREADS
    */
   // getThreads();
 
+
+  /**
+   * GET THREAD PARTICIPANTS
+   */
+  // getThreadParticipants(83);
+
+
   /**
    * GET THREAD HISTORY
+   * @param threadId
+   * @param count
    */
-  // getThreadHistory(83);
+  getThreadHistory(83, 10);
+
 
   /**
    * MUTE THREAD
    */
   // muteThread(83);
 
+
   /**
    * UNMUTE THREAD
    */
   // unMuteThread(83);
+
 
   /**
    * GET CONTACTS
    */
   // getContacts();
 
+
   /**
    * CREATE THREAD (Creates Group)
    */
-  createThread([323, 443]);
+  // createThread([323, 443]);
+
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
    */
   // createThread(443);
 
+
   /**
    * SEND MESSAGE IN THREAD
    */
   // sendMessage(83, "This is a Sample Message at " + new Date());
 
+
   /**
    * SEND MESSAGE IN THREAD
    */
   // editMessage(308, "This message has been edited at " + new Date());
+
 
   /**
    * Listen to Edit Message Emitter
@@ -85,6 +103,7 @@ chatAgent.on("chatReady", function() {
     console.log("Message with ID : " + msg.messageId + " inside Thread with ID : " + msg.threadId + " has been edited!");
     console.log(msg);
   });
+
 
   /**
    * Listen to Receive Message Emitter
@@ -108,6 +127,7 @@ chatAgent.on("chatReady", function() {
     }, 5000);
   });
 
+
   /**
    * Listen to New Thread Creation
    */
@@ -130,8 +150,23 @@ function getThreads() {
   };
 
   chatAgent.getThreads(getThreadsParams, function(threadsResult) {
+    var threadsCount = threadsResult.result.contentCount;
     var threads = threadsResult.result.threads;
     console.log(threads);
+  });
+}
+
+function getThreadParticipants(threadId) {
+  var getParticipantsParams = {
+    count: 50,
+    offset: 0,
+    threadId: threadId
+  };
+
+  chatAgent.getThreadParticipants(getParticipantsParams, function(participantsResult) {
+    var participantsCount = participantsResult.result.contentCount;
+    var participants = participantsResult.result.participants;
+    console.log(participants);
   });
 }
 
@@ -142,19 +177,26 @@ function getContacts() {
   };
 
   chatAgent.getContacts(getContactsParams, function(contactsResult) {
+    var contactsCount = contactsResult.result.contentCount;
     var contacts = contactsResult.result.contacts;
     console.log(contacts);
   });
 }
 
-function getThreadHistory(threadId) {
+function getThreadHistory(threadId, count) {
   var getThreadHistoryParams = {
-    count: 50,
     offset: 0,
     threadId: threadId
   };
+
+  if(typeof count == "number") {
+    getThreadHistoryParams.count = count;
+  }
+
   chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
+    var historyCount = historyResult.result.contentCount;
     var history = historyResult.result.history;
+    console.log(historyCount);
     console.log(history);
   });
 }

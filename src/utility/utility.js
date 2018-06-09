@@ -43,13 +43,19 @@
       return uuid;
     };
 
-    this.createReturnData = function (hasError,errorMessage,errorCode,result) {
-      return {
+    this.createReturnData = function (hasError,errorMessage,errorCode,result, contentCount) {
+      var returnData = {
         hasError : hasError,
         errorMessage : typeof errorMessage == "string" ? errorMessage : "",
         errorCode : typeof errorCode == "number" ? errorCode : 0,
         result : result
       };
+
+      if(typeof contentCount == "number") {
+        returnData.contentCount = contentCount;
+      }
+
+      return returnData;
     };
 
   }
