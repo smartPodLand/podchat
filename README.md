@@ -43,7 +43,7 @@ chatAgent.getUserInfo(function(userInfo) {
 
 ### createThread
 
-```Javascript
+```javascript
 var createThreadTypes = {
   NORMAL: 0,
   OWNER_GROUP: 1,
@@ -64,7 +64,7 @@ chatAgent.createThread({
 
 ### getThreads
 
-```Javascript
+```javascript
 chatAgent.getThreads({
     count: 50,
     offset: 0
@@ -77,7 +77,7 @@ chatAgent.getThreads({
 
 ### getThreadHistory
 
-```Javascript
+```javascript
 chatAgent.getThreadHistory({
     count: 50,
     offset: 0,
@@ -104,7 +104,7 @@ chatAgent.getThreadParticipants({
 
 ### getContacts
 
-```Javascript
+```javascript
 chatAgent.getContacts({
     count: 50,
     offset: 0
@@ -116,7 +116,7 @@ chatAgent.getContacts({
 
 ### sendMessage
 
-```Javascript
+```javascript
 chatAgent.send({
     threadId: threadId,
     content: messageText
@@ -138,7 +138,7 @@ chatAgent.send({
 
 ### editMessage
 
-```Javascript
+```javascript
 chatAgent.editMessage({
     messageId: messageId,
     content: newMessage
