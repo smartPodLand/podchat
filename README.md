@@ -1,6 +1,6 @@
 ## Synopsis
 
-**Fanap's POD** Async service (DIRANA)
+**Fanap's POD** Chat service
 
 ## Code Example
 
@@ -22,186 +22,163 @@ var params = {
   }
 };
 
-var PID;
-
 var chatAgent = new Chat(params);
 
 chatAgent.on("chatReady", function() {
-  var getThreadsParams = {
-    count: 50,
-    offset: 0
-  };
-  var createThreadParams,
-    sendChatParams;
-
   /**
-   * GET THREADS
+   * Your code goes here
    */
-  // getThreads(getThreadsParams);
-
-  /**
-   * GET THREAD HISTORY
-   */
-  // getThreadHistory(83);
-
-  /**
-   * GET CONTACTS
-   */
-  // getContacts(getThreadsParams);
-
-  /**
-   * CREATE THREAD (Creates Group With All Friends)
-   */
-  // createThread(getThreadsParams);
-
-  /**
-   * CREATE THREAD (Creates P2P Chat with a specific user)
-   */
-  // createThread(getThreadsParams, 441);
-
-  /**
-   * SEND MESSAGE IN THREAD
-   */
-   // sendMessage(getThreadsParams, 83, "This is a Sample Message at " + new Date());
-
-  /**
-   * SEND MESSAGE IN THREAD
-   */
-   // editMessage(308, "This message has been edited at \t" + new Date() + "\t :D");
 });
+```
 
-function getThreads(getThreadsParams) {
-  chatAgent.getThreads(getThreadsParams, function(threadsResult) {
-    var threads = threadsResult.result.threads;
-    console.log(threads);
-  });
+### getUserInfo
+
+Returns current user's Profile Information
+
+```javascript
+chatAgent.getUserInfo(function(userInfo) {
+  console.log(userInfo);
+});
+```
+
+### createThread
+
+```Javascript
+var createThreadTypes = {
+  NORMAL: 0,
+  OWNER_GROUP: 1,
+  PUBLIC_GROUP: 2,
+  CHANNEL_GROUP: 4,
+  CHANNEL: 8
 }
 
-function getContacts(getThreadsParams) {
-  chatAgent.getContacts(getThreadsParams, function(contactsResult) {
-    var contacts = contactsResult.result.contacts;
-    console.log(contacts);
-  });
-}
-
-function getThreadHistory(threadId) {
-  var getThreadHistoryParams = {
-    count: 50,
-    offset: 0,
-    threadId: threadId
-  };
-  chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
-    var history = historyResult.result.history;
-    console.log(history);
-  });
-}
-
-function sendMessage(getThreadsParams, threadId, message) {
-  var sendMessageThreadId;
-  if (threadId === undefined) {
-    chatAgent.getThreads(getThreadsParams, function(threads) {
-      var thread = threads.result.threads[0];
-      sendMessageThreadId = thread.threadId;
-    });
-  } else {
-    sendMessageThreadId = threadId;
-  }
-
-  setTimeout(function() {
-    sendChatParams = {
-      threadId: sendMessageThreadId,
-      content: message
-    };
-
-    chatAgent.send(sendChatParams, {
-      onSent: function(result) {
-        console.log("\nYour message has been Sent!\n");
-        console.log(result);
-      },
-      onDeliver: function(result) {
-        console.log("\nYour message has been Delivered!\n");
-        console.log(result);
-      },
-      onSeen: function(result) {
-        console.log("\nYour message has been Seen!\n");
-        console.log(result);
-      }
-    });
-  }, 5000);
-}
-
-function editMessage(messageId, newMessage) {
-  editChatParams = {
-    messageId: messageId,
-    content: newMessage
-  };
-
-  chatAgent.editMessage(editChatParams, {
-    onSent: function(result) {
-      console.log("Edited Message has been Sent!");
-      console.log(result);
-    },
-    onDeliver: function(result) {
-      console.log("Edited Message has been Delivered!");
-      console.log(result);
-    },
-    onSeen: function(result) {
-      console.log("Edited Message has been Seen!");
-      console.log(result);
-    }
-  });
-}
-
-function createThread(getThreadsParams, userId) {
-
-  createThreadParams = {
+chatAgent.createThread({
     title: "Thread Title Sample",
     type: "NORMAL",
     invitees: []
-  };
-
-  if (userId === undefined) {
-    chatAgent.getContacts(getThreadsParams, function(contactsResult) {
-      var contacts = contactsResult.result.contacts;
-
-      for (var i = 0; i < contacts.length; i++) {
-        if (contacts[i].hasUser) {
-          invitee = formatDataToMakeInvitee(contacts[i]);
-          if (invitee) {
-            createThreadParams.invitees.push(invitee);
-          }
-        }
-      }
-    });
-  } else {
-    invitee = formatDataToMakeInvitee({id: userId});
-    if (invitee) {
-      createThreadParams.invitees.push(invitee);
-    }
+  }, function(createThreadResult) {
+    console.log(createThreadResult);
   }
-
-  setTimeout(function() {
-    chatAgent.createThread(createThreadParams, function(createThreadResult) {
-      console.log(createThreadResult);
-    });
-  }, 5000);
-}
-
-function formatDataToMakeInvitee(messageContent) {
-  var inviteeData = {
-    id: messageContent.id,
-    idType: "TO_BE_USER_CONTACT_ID"
-  };
-
-  return inviteeData;
-}
-
+);
 ```
 
-To execute your code simple run following command in command line
+### getThreads
 
-    cd /root_of_your_project
-    node index.js
+```Javascript
+chatAgent.getThreads({
+    count: 50,
+    offset: 0
+  }, function(threadsResult) {
+    var threads = threadsResult.result.threads;
+    console.log(threads);
+  }
+);
+```
+
+### getThreadHistory
+
+```Javascript
+chatAgent.getThreadHistory({
+    count: 50,
+    offset: 0,
+    threadId: threadId
+  }, function(historyResult) {
+    var history = historyResult.result.history;
+    console.log(history);
+  }
+);
+```
+
+###getThreadParticipants
+```javascript
+chatAgent.getThreadParticipants({
+    count: 50,
+    offset: 0,
+    threadId: threadId
+  }, function(participantsResult) {
+    var participants = participantsResult.result.participants;
+    console.log(participants);
+  }
+);
+```
+
+### getContacts
+
+```Javascript
+chatAgent.getContacts({
+    count: 50,
+    offset: 0
+  }, function(contactsResult) {
+  var contacts = contactsResult.result.contacts;
+  console.log(contacts);
+});
+```
+
+### sendMessage
+
+```Javascript
+chatAgent.send({
+    threadId: threadId,
+    content: messageText
+  }, {
+  onSent: function(result) {
+    console.log("\nYour message has been Sent!\n");
+    console.log(result);
+  },
+  onDeliver: function(result) {
+    console.log("\nYour message has been Delivered!\n");
+    console.log(result);
+  },
+  onSeen: function(result) {
+    console.log("\nYour message has been Seen!\n");
+    console.log(result);
+  }
+});
+```
+
+### editMessage
+
+```Javascript
+chatAgent.editMessage({
+    messageId: messageId,
+    content: newMessage
+  }, {
+  onSent: function(result) {
+    console.log("Edited Message has been Sent!");
+    console.log(result);
+  },
+  onDeliver: function(result) {
+    console.log("Edited Message has been Delivered!");
+    console.log(result);
+  },
+  onSeen: function(result) {
+    console.log("Edited Message has been Seen!");
+    console.log(result);
+  }
+});
+```
+
+### muteThread
+
+```javascript
+chatAgent.muteThread({
+    subjectId: threadId
+  }, function(result) {
+    console.log("Threaded has been successfully muted!");
+  }
+);
+```
+
+### unMuteThread
+
+```javascript
+chatAgent.unMuteThread({
+    subjectId: threadId
+  }, function(result) {
+    console.log("Threaded has been successfully unMuted!");
+  }
+);
+```
 
 ## Motivation
 
@@ -215,7 +192,7 @@ npm install podchat --save
 
 ## API Reference
 
-[API Docs from POD](http://www.fanapium.com)
+[API Docs from POD](http://docs.pod.land/v1.0.0.0/Chat/javascript/783/Introduction)
 
 ## Tests
 
@@ -231,3 +208,8 @@ You can send me your thoughts about making this repo great :)
 ## License
 
 Under MIT License.
+
+
+## Acknowledgments
+
+A very special thanks to Ali Khanbabaei ([khanbabaeifanap](https://github.com/khanbabaeifanap)), who wrote the early version of chat service and helped me a lot with this repo.

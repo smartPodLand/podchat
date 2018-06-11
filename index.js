@@ -5,11 +5,11 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
+  // token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
   // token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
   // token: "ed4be26a60c24ed594e266a2181424c5",    //{**REQUIRED**} SSO Token Abedi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
-  // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
+  // token: "e4f1d5da7b254d9381d0487387eabb0a",  // {**REQUIRED**} SSO Token Felfeli
+  token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
@@ -51,7 +51,7 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param count
    */
-  getThreadHistory(83, 10);
+  // getThreadHistory(83, 10);
 
 
   /**
@@ -69,7 +69,7 @@ chatAgent.on("chatReady", function() {
   /**
    * GET CONTACTS
    */
-  // getContacts();
+  getContacts();
 
 
   /**
