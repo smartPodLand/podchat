@@ -283,7 +283,7 @@
             }
           }
         });
-
+        
         return {uniqueId: uniqueId}
       },
 
@@ -1077,6 +1077,7 @@
 
     this.deliver = function(params) {
       if (params.owner !== userInfo.id) {
+        console.log("sending delivery ");
         return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, content: params.messageId, pushMsgType: 3});
       }
     }

@@ -81,7 +81,7 @@ chatAgent.on("chatReady", function() {
   /**
    * SEND MESSAGE IN THREAD
    */
-  // sendMessage(83, "This is a Sample Message at " + new Date());
+  sendMessage(83, "This is a Sample Message at " + new Date());
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -101,7 +101,7 @@ chatAgent.on("chatReady", function() {
    * @param uniqueIds
    * @param messagesId
    */
-  forwardMessage(174, ["c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"], [486, 485]);
+  // forwardMessage(174, ["c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"], [486, 485]);
 
   /**
    * Listen to Edit Message Emitter
@@ -117,7 +117,7 @@ chatAgent.on("chatReady", function() {
   chatAgent.on("message", function(msg) {
     var params = {
       messageId: msg.messageId,
-      owner: msg.owner
+      owner: msg.ownerId
     };
 
     console.log(msg);

@@ -7,7 +7,7 @@ var params = {
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   // token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
   token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",    {**REQUIRED**} SSO Token Abedi
+  // token: "ed4be26a60c24ed594e266a2181424c5",  //  {**REQUIRED**} SSO Token Abedi
   // token: "e4f1d5da7b254d9381d0487387eabb0a",  // {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
@@ -37,7 +37,7 @@ chatAgent.on("chatReady", function() {
    * GET THREADS
    * @param count
    */
-  // getThreads(5);
+  // getThreads(2);
 
   /**
    * GET THREAD PARTICIPANTS
@@ -49,7 +49,7 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param count
    */
-  // getThreadHistory(174, 20);
+  // getThreadHistory(83, 10);
 
   /**
    * MUTE THREAD
@@ -68,8 +68,10 @@ chatAgent.on("chatReady", function() {
 
   /**
    * CREATE THREAD (Creates Group)
+   * @param invitees
+   * @param threadType
    */
-  // createThread([323, 443]);
+  // createThread([323, 443], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
@@ -96,10 +98,10 @@ chatAgent.on("chatReady", function() {
   /**
    * REPLY TO MESSAGE
    * @param destination
-   * @param subjectIds
+   * @param uniqueIds
    * @param messagesId
    */
-  // forwardMessage(174, [83, 83], [415, 395]);
+  // forwardMessage(174, ["c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"], [486, 485]);
 
   /**
    * Listen to Edit Message Emitter
@@ -115,8 +117,10 @@ chatAgent.on("chatReady", function() {
   chatAgent.on("message", function(msg) {
     var params = {
       messageId: msg.messageId,
-      owner: msg.owner
+      owner: msg.ownerId
     };
+
+    console.log(msg);
 
     /**
      * Sending Message Delivery to Sender
@@ -142,7 +146,6 @@ chatAgent.on("chatReady", function() {
   /**
    * Listen to Error Messages
    */
-
    chatAgent.on("error", function(error) {
      console.log("Error: \n");
      console.log(error.code, error.message);
@@ -210,10 +213,7 @@ function getThreadHistory(threadId, count) {
   }
 
   chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
-    var historyCount = historyResult.result.contentCount;
-    var history = historyResult.result.history;
-    console.log(historyCount);
-    console.log(history);
+    console.log(historyResult);
   });
 }
 
@@ -271,33 +271,26 @@ function replyMessage(threadId, messageId, message) {
   });
 }
 
-function forwardMessage(destination, subjectIds, messagesId) {
+function forwardMessage(destination, uniqueIds, messagesId) {
   forwardChatParams = {
     subjectId: destination,
-    uniqueId: JSON.stringify(subjectIds),
+    uniqueId: JSON.stringify(uniqueIds),
     content: JSON.stringify(messagesId)
   };
 
-  chatAgent.forwardMessage(forwardChatParams, {
-    onSent: function(result) {
-      console.log("\nYour message has been Forwarded!\n");
-      console.log(result);
-    },
-    onDeliver: function(result) {
-      console.log("\nYour forwarded message has been Delivered!\n");
-      console.log(result);
-    },
-    onSeen: function(result) {
-      console.log("\nYour forwarded message has been Seen!\n");
-      console.log(result);
-    }
-  });
+  chatAgent.forwardMessage(forwardChatParams);
 }
 
-function createThread(invitees) {
+function createThread(invitees, threadType) {
+  if(typeof threadType == "string") {
+    threadTypeText = threadType;
+  } else {
+    threadTypeText = "NORMAL";
+  }
+
   createThreadParams = {
     title: "Thread Title Sample",
-    type: "NORMAL",
+    type: threadTypeText,
     invitees: []
   };
 
