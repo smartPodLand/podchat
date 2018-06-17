@@ -1,16 +1,18 @@
 (function() {
-  /**
-   * General Utilities
-   */
   function ChatUtility() {
     /**
      * Checks if Client is using NodeJS or not
-     * @return {boolean}
+     * @return  {boolean}
      */
     this.isNode = function() {
       return (typeof module !== 'undefined' && typeof module.exports != "undefined");
     }
 
+    /**
+     * Generates Random String
+     * @param   {int}     sectionCount
+     * @return  {string}
+     */
     this.generateUUID = function(sectionCount) {
       var d = new Date().getTime();
       var textData = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
@@ -43,15 +45,28 @@
       return uuid;
     };
 
-    this.createReturnData = function (hasError,errorMessage,errorCode,result, contentCount) {
+    /**
+     * Returns data in ordered structure
+     * @param   {boolean}     hasError
+     * @param   {string}      errorMessage
+     * @param   {string}      errorCode
+     * @param   {object}      result
+     * @param   {int}         contentCount
+     * @return  {object}
+     */
+    this.createReturnData = function(hasError, errorMessage, errorCode, result, contentCount) {
       var returnData = {
-        hasError : hasError,
-        errorMessage : typeof errorMessage == "string" ? errorMessage : "",
-        errorCode : typeof errorCode == "number" ? errorCode : 0,
-        result : result
+        hasError: hasError,
+        errorMessage: typeof errorMessage == "string"
+          ? errorMessage
+          : "",
+        errorCode: typeof errorCode == "number"
+          ? errorCode
+          : 0,
+        result: result
       };
 
-      if(typeof contentCount == "number") {
+      if (typeof contentCount == "number") {
         returnData.contentCount = contentCount;
       }
 

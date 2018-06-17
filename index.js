@@ -5,11 +5,11 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  // token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
+  token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
   // token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",    //{**REQUIRED**} SSO Token Abedi
+  // token: "ed4be26a60c24ed594e266a2181424c5",  //  {**REQUIRED**} SSO Token Abedi
   // token: "e4f1d5da7b254d9381d0487387eabb0a",  // {**REQUIRED**} SSO Token Felfeli
-  token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
+  // token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
@@ -33,18 +33,16 @@ chatAgent.on("chatReady", function() {
    */
   // getUserInfo();
 
-
   /**
    * GET THREADS
+   * @param count
    */
-  // getThreads();
-
+  // getThreads(2);
 
   /**
    * GET THREAD PARTICIPANTS
    */
   // getThreadParticipants(83);
-
 
   /**
    * GET THREAD HISTORY
@@ -53,48 +51,57 @@ chatAgent.on("chatReady", function() {
    */
   // getThreadHistory(83, 10);
 
-
   /**
    * MUTE THREAD
    */
   // muteThread(83);
-
 
   /**
    * UNMUTE THREAD
    */
   // unMuteThread(83);
 
-
   /**
    * GET CONTACTS
    */
-  getContacts();
-
+  // getContacts();
 
   /**
    * CREATE THREAD (Creates Group)
+   * @param invitees
+   * @param threadType
    */
-  // createThread([323, 443]);
-
+  // createThread([323, 443], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
    */
   // createThread(443);
 
-
   /**
    * SEND MESSAGE IN THREAD
    */
   // sendMessage(83, "This is a Sample Message at " + new Date());
 
-
   /**
-   * SEND MESSAGE IN THREAD
+   * EDIT MESSAGE IN THREAD
    */
   // editMessage(308, "This message has been edited at " + new Date());
 
+  /**
+   * REPLY TO MESSAGE
+   * @param threadId
+   * @param messageId
+   */
+  // replyMessage(83, 413, "This is a reply to message #413 at " + new Date());
+
+  /**
+   * REPLY TO MESSAGE
+   * @param destination
+   * @param uniqueIds
+   * @param messagesId
+   */
+  forwardMessage(174, ["c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"], [486, 485]);
 
   /**
    * Listen to Edit Message Emitter
@@ -104,7 +111,6 @@ chatAgent.on("chatReady", function() {
     console.log(msg);
   });
 
-
   /**
    * Listen to Receive Message Emitter
    */
@@ -113,6 +119,8 @@ chatAgent.on("chatReady", function() {
       messageId: msg.messageId,
       owner: msg.owner
     };
+
+    console.log(msg);
 
     /**
      * Sending Message Delivery to Sender
@@ -127,13 +135,20 @@ chatAgent.on("chatReady", function() {
     }, 5000);
   });
 
-
   /**
    * Listen to New Thread Creation
    */
-   chatAgent.on("newThread", function(threadInfo) {
-     console.log("New Thread Has Been Created with You Taking Part in it!");
-     console.log(threadInfo);
+  chatAgent.on("newThread", function(threadInfo) {
+    console.log("New Thread Has Been Created with You Taking Part in it!");
+    console.log(threadInfo);
+  });
+
+  /**
+   * Listen to Error Messages
+   */
+   chatAgent.on("error", function(error) {
+     console.log("Error: \n");
+     console.log(error.code, error.message);
    });
 });
 
@@ -143,11 +158,15 @@ function getUserInfo() {
   });
 }
 
-function getThreads() {
+function getThreads(count) {
   var getThreadsParams = {
     count: 50,
     offset: 0
   };
+
+  if (typeof count == "number") {
+    getThreadsParams.count = count;
+  }
 
   chatAgent.getThreads(getThreadsParams, function(threadsResult) {
     var threadsCount = threadsResult.result.contentCount;
@@ -189,15 +208,12 @@ function getThreadHistory(threadId, count) {
     threadId: threadId
   };
 
-  if(typeof count == "number") {
+  if (typeof count == "number") {
     getThreadHistoryParams.count = count;
   }
 
   chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
-    var historyCount = historyResult.result.contentCount;
-    var history = historyResult.result.history;
-    console.log(historyCount);
-    console.log(history);
+    console.log(historyResult);
   });
 }
 
@@ -232,10 +248,49 @@ function editMessage(messageId, newMessage) {
   chatAgent.editMessage(editChatParams);
 }
 
-function createThread(invitees) {
+function replyMessage(threadId, messageId, message) {
+  replyChatParams = {
+    threadId: threadId,
+    repliedTo: messageId,
+    content: message
+  };
+
+  chatAgent.replyMessage(replyChatParams, {
+    onSent: function(result) {
+      console.log("\nYour reply message has been Sent!\n");
+      console.log(result);
+    },
+    onDeliver: function(result) {
+      console.log("\nYour reply message has been Delivered!\n");
+      console.log(result);
+    },
+    onSeen: function(result) {
+      console.log("\nYour reply message has been Seen!\n");
+      console.log(result);
+    }
+  });
+}
+
+function forwardMessage(destination, uniqueIds, messagesId) {
+  forwardChatParams = {
+    subjectId: destination,
+    uniqueId: JSON.stringify(uniqueIds),
+    content: JSON.stringify(messagesId)
+  };
+
+  chatAgent.forwardMessage(forwardChatParams);
+}
+
+function createThread(invitees, threadType) {
+  if(typeof threadType == "string") {
+    threadTypeText = threadType;
+  } else {
+    threadTypeText = "NORMAL";
+  }
+
   createThreadParams = {
     title: "Thread Title Sample",
-    type: "NORMAL",
+    type: threadTypeText,
     invitees: []
   };
 

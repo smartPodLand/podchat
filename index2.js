@@ -5,11 +5,11 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  // token: "c0866c4cc5274ea7ada6b01575b19d24",  {**REQUIRED**} SSO Token Zamani
+  // token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
   token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
   // token: "ed4be26a60c24ed594e266a2181424c5",    {**REQUIRED**} SSO Token Abedi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
-  // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
+  // token: "e4f1d5da7b254d9381d0487387eabb0a",  // {**REQUIRED**} SSO Token Felfeli
+  // token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
@@ -35,13 +35,21 @@ chatAgent.on("chatReady", function() {
 
   /**
    * GET THREADS
+   * @param count
    */
-  // getThreads();
+  // getThreads(5);
+
+  /**
+   * GET THREAD PARTICIPANTS
+   */
+  // getThreadParticipants(83);
 
   /**
    * GET THREAD HISTORY
+   * @param threadId
+   * @param count
    */
-  // getThreadHistory(83);
+  // getThreadHistory(174, 20);
 
   /**
    * MUTE THREAD
@@ -61,7 +69,7 @@ chatAgent.on("chatReady", function() {
   /**
    * CREATE THREAD (Creates Group)
    */
-  // createThread([401, 324]);
+  // createThread([323, 443]);
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
@@ -74,9 +82,24 @@ chatAgent.on("chatReady", function() {
   // sendMessage(83, "This is a Sample Message at " + new Date());
 
   /**
-   * SEND MESSAGE IN THREAD
+   * EDIT MESSAGE IN THREAD
    */
   // editMessage(308, "This message has been edited at " + new Date());
+
+  /**
+   * REPLY TO MESSAGE
+   * @param threadId
+   * @param messageId
+   */
+  // replyMessage(83, 413, "This is a reply to message #413 at " + new Date());
+
+  /**
+   * REPLY TO MESSAGE
+   * @param destination
+   * @param subjectIds
+   * @param messagesId
+   */
+  // forwardMessage(174, [83, 83], [415, 395]);
 
   /**
    * Listen to Edit Message Emitter
@@ -111,9 +134,18 @@ chatAgent.on("chatReady", function() {
   /**
    * Listen to New Thread Creation
    */
-   chatAgent.on("newThread", function(threadInfo) {
-     console.log("New Thread Has Been Created with You Taking Part in it!");
-     console.log(threadInfo);
+  chatAgent.on("newThread", function(threadInfo) {
+    console.log("New Thread Has Been Created with You Taking Part in it!");
+    console.log(threadInfo);
+  });
+
+  /**
+   * Listen to Error Messages
+   */
+
+   chatAgent.on("error", function(error) {
+     console.log("Error: \n");
+     console.log(error.code, error.message);
    });
 });
 
@@ -123,15 +155,34 @@ function getUserInfo() {
   });
 }
 
-function getThreads() {
+function getThreads(count) {
   var getThreadsParams = {
     count: 50,
     offset: 0
   };
 
+  if (typeof count == "number") {
+    getThreadsParams.count = count;
+  }
+
   chatAgent.getThreads(getThreadsParams, function(threadsResult) {
+    var threadsCount = threadsResult.result.contentCount;
     var threads = threadsResult.result.threads;
     console.log(threads);
+  });
+}
+
+function getThreadParticipants(threadId) {
+  var getParticipantsParams = {
+    count: 50,
+    offset: 0,
+    threadId: threadId
+  };
+
+  chatAgent.getThreadParticipants(getParticipantsParams, function(participantsResult) {
+    var participantsCount = participantsResult.result.contentCount;
+    var participants = participantsResult.result.participants;
+    console.log(participants);
   });
 }
 
@@ -142,19 +193,26 @@ function getContacts() {
   };
 
   chatAgent.getContacts(getContactsParams, function(contactsResult) {
+    var contactsCount = contactsResult.result.contentCount;
     var contacts = contactsResult.result.contacts;
     console.log(contacts);
   });
 }
 
-function getThreadHistory(threadId) {
+function getThreadHistory(threadId, count) {
   var getThreadHistoryParams = {
-    count: 50,
     offset: 0,
     threadId: threadId
   };
+
+  if (typeof count == "number") {
+    getThreadHistoryParams.count = count;
+  }
+
   chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
+    var historyCount = historyResult.result.contentCount;
     var history = historyResult.result.history;
+    console.log(historyCount);
     console.log(history);
   });
 }
@@ -190,6 +248,52 @@ function editMessage(messageId, newMessage) {
   chatAgent.editMessage(editChatParams);
 }
 
+function replyMessage(threadId, messageId, message) {
+  replyChatParams = {
+    threadId: threadId,
+    repliedTo: messageId,
+    content: message
+  };
+
+  chatAgent.replyMessage(replyChatParams, {
+    onSent: function(result) {
+      console.log("\nYour reply message has been Sent!\n");
+      console.log(result);
+    },
+    onDeliver: function(result) {
+      console.log("\nYour reply message has been Delivered!\n");
+      console.log(result);
+    },
+    onSeen: function(result) {
+      console.log("\nYour reply message has been Seen!\n");
+      console.log(result);
+    }
+  });
+}
+
+function forwardMessage(destination, subjectIds, messagesId) {
+  forwardChatParams = {
+    subjectId: destination,
+    uniqueId: JSON.stringify(subjectIds),
+    content: JSON.stringify(messagesId)
+  };
+
+  chatAgent.forwardMessage(forwardChatParams, {
+    onSent: function(result) {
+      console.log("\nYour message has been Forwarded!\n");
+      console.log(result);
+    },
+    onDeliver: function(result) {
+      console.log("\nYour forwarded message has been Delivered!\n");
+      console.log(result);
+    },
+    onSeen: function(result) {
+      console.log("\nYour forwarded message has been Seen!\n");
+      console.log(result);
+    }
+  });
+}
+
 function createThread(invitees) {
   createThreadParams = {
     title: "Thread Title Sample",
@@ -201,7 +305,6 @@ function createThread(invitees) {
     for (var i = 0; i < invitees.length; i++) {
       invitee = formatDataToMakeInvitee({id: invitees[i]});
       if (invitee) {
-        console.log(invitee);
         createThreadParams.invitees.push(invitee);
       }
     }

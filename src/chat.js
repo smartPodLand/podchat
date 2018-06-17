@@ -45,7 +45,8 @@
         login: {},
         logout: {},
         report: {},
-        chatReady: {}
+        chatReady: {},
+        error: {}
       },
       messagesCallbacks = {},
       sendMessageCallbacks = {},
@@ -141,8 +142,7 @@
 
       getUserInfo = function(callback) {
         var sendMessageParams = {
-          chatMessageVOType: chatMessageVOTypes.USER_INFO,
-          token: token
+          chatMessageVOType: chatMessageVOTypes.USER_INFO
         };
 
         return sendMessage(sendMessageParams, {
@@ -182,7 +182,7 @@
          */
         var messageVO = {
           type: params.chatMessageVOType,
-          token: params.token,
+          token: token,
           tokenIssuer: 1
         };
 
@@ -247,15 +247,15 @@
         * Message to send through async SDK
         *
         * + MessageWrapperVO  {object}
-        *    - type           {int}
+        *    - type           {int}       Type of ASYNC message based on content
         *    + content        {string}
-        *       -peerName     {string}
-        *       -receivers[]  {long}
-        *       -priority     {int}
-        *       -messageId    {long}
-        *       -ttl          {long}
+        *       -peerName     {string}    Name of receiver Peer
+        *       -receivers[]  {long}      Array of receiver peer ids (if you use this, peerName will be ignored)
+        *       -priority     {int}       priority of message 1-10, lower has more priority
+        *       -messageId    {long}      id of message on your side, not required
+        *       -ttl          {long}      Time to live for message in milliseconds
         *       -content      {string}    Chat Message goes here after stringifying
-        *    - trackId        {long}
+        *    - trackId        {long}      Tracker id of message that you receive from DIRANA previously (if you are replying a sync message)
         */
 
         var data = {
@@ -288,6 +288,16 @@
       },
 
       pushMessageHandler = function(params) {
+        /**
+         * + Message Received From Async      {object}
+         *    - id                            {long}
+         *    - senderMessageId               {long}
+         *    - senderName                    {string}
+         *    - senderId                      {long}
+         *    - type                          {int}
+         *    - content                       {string}
+         */
+
         var content = JSON.parse(params.content);
         receivedMessageHandler(content);
       },
@@ -365,6 +375,11 @@
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
             break;
 
+            // 22
+          case chatMessageVOTypes.FORWARD_MESSAGE:
+            chatMessageHandler(threadId, messageContent);
+            break;
+
             // 23
           case chatMessageVOTypes.USER_INFO:
             if (messagesCallbacks[uniqueId])
@@ -385,7 +400,8 @@
             // 999
           case chatMessageVOTypes.ERROR:
             if (messagesCallbacks[uniqueId])
-              messagesCallbacks[uniqueId](Utility.createReturnData(true, messageContent, messageContent, messageContent));
+              messagesCallbacks[uniqueId](Utility.createReturnData(true, messageContent.message, messageContent.code, messageContent, 0));
+            fireEvent("error", messageContent);
             break;
         }
       },
@@ -584,20 +600,54 @@
       },
 
       reformatMessage = function(threadId, pushMessageVO) {
-        // TODO: Message Structure?!
+
+        /**
+         * + MessageVO                       {object}
+         *    - id                           {long}
+         *    - uniqueId                     {string}
+         *    - previousId                   {long}
+         *    - message                      {string}
+         *    - edited                       {boolean}
+         *    + participant                  {object : ParticipantVO}
+         *      - id                         {long}
+         *      - name                       {string}
+         *      - lastSeen                   {long}
+         *    + conversation                 {object : ConversationSummary}
+         *      - id                         {long}
+         *      - title                      {string}
+         *      - metadata                   {string}
+         *    + replyInfoVO                  {object : replyInfoVO}
+         *      + participant                {object : ParticipantVO}
+         *        - id                       {long}
+         *        - name                     {string}
+         *        - lastSeen                 {long}
+         *      - repliedToMessageId         {long}
+         *      - repliedToMessage           {string}
+         *    + forwardInfo                  {object : forwardInfoVO}
+         *      + participant                {object : ParticipantVO}
+         *        - id                       {long}
+         *        - name                     {string}
+         *        - lastSeen                 {long}
+         *      + conversation               {object : ConversationSummary}
+         *        - id                       {long}
+         *        - title                    {string}
+         *        - metadata                 {string}
+         *    - time                         {long}
+         */
+
         return {
           threadId: threadId,
           messageId: pushMessageVO.id,
-          participant: pushMessageVO.participant,
-          message: pushMessageVO.message,
-          metaData: pushMessageVO.metadata,
+          ownerId: pushMessageVO.participant.id,
           uniqueId: pushMessageVO.uniqueId,
-          seen: pushMessageVO.seen,
-          delivered: pushMessageVO.delivered,
-          replyInfoVO: pushMessageVO.replyInfoVO,
-          forwardInfo: pushMessageVO.forwardInfo,
           previousId: pushMessageVO.previousId,
-          owner: pushMessageVO.participant.id,
+          message: pushMessageVO.message,
+          edited: pushMessageVO.edited,
+          participant: pushMessageVO.participant,
+          conversation: pushMessageVO.conversation,
+          replyInfo: pushMessageVO.replyInfoVO,
+          forwardInfo: pushMessageVO.forwardInfo,
+          metaData: pushMessageVO.metadata,
           time: pushMessageVO.time
         };
       },
@@ -682,8 +732,7 @@
 
       var sendMessageParams = {
         chatMessageVOType: chatMessageVOTypes.GET_CONTACTS,
-        content: content,
-        token: token
+        content: content
       };
 
       return sendMessage(sendMessageParams, {
@@ -752,9 +801,7 @@
 
       var sendMessageParams = {
         chatMessageVOType: chatMessageVOTypes.GET_THREADS,
-        content: content,
-        token: token,
-        timeout: params.timeout
+        content: content
       };
 
       return sendMessage(sendMessageParams, {
@@ -767,7 +814,6 @@
 
           if (!returnData.hasError) {
             var messageContent = result.result,
-              addFromService = true,
               messageLength = messageContent.length,
               resultData = {
                 threads: [],
@@ -777,12 +823,8 @@
               },
               threadData;
 
-            if (params && typeof params.addFromService == "boolean") {
-              addFromService = params.addFromService;
-            }
-
             for (var i = 0; i < messageLength; i++) {
-              threadData = createThread(messageContent[i], addFromService);
+              threadData = createThread(messageContent[i], false);
               if (threadData) {
                 resultData.threads.push(threadData);
               }
@@ -799,10 +841,8 @@
     this.getThreadHistory = function(params, callback) {
       var sendMessageParams = {
         chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
-        token: token,
         content: {},
-        subjectId: params.threadId,
-        timeout: params.timeout
+        subjectId: params.threadId
       };
 
       if (typeof params.count === "number") {
@@ -858,10 +898,8 @@
     this.getThreadParticipants = function(params, callback) {
       var sendMessageParams = {
         chatMessageVOType: chatMessageVOTypes.THREAD_PARTICIPANTS,
-        token: token,
         content: {},
-        subjectId: params.threadId,
-        timeout: params.timeout
+        subjectId: params.threadId
       };
 
       if (typeof params.count === "number") {
@@ -946,8 +984,7 @@
 
       var sendMessageParams = {
         chatMessageVOType: chatMessageVOTypes.CREATE_THREAD,
-        content: content,
-        token: token
+        content: content
       };
 
       return sendMessage(sendMessageParams, {
@@ -975,41 +1012,78 @@
 
     this.send = function(params, callbacks) {
       return sendMessage({
-        token: token,
         chatMessageVOType: chatMessageVOTypes.MESSAGE,
         subjectId: params.threadId,
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
         metaData: params.metaData,
-        timeout: params.timeout,
         pushMsgType: 4
       }, callbacks);
     };
 
     this.editMessage = function(params) {
       return sendMessage({
-        token: token,
         chatMessageVOType: chatMessageVOTypes.EDIT_MESSAGE,
         subjectId: params.messageId,
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
         metaData: params.metaData,
-        timeout: params.timeout,
         pushMsgType: 4
       });
     };
 
+    this.replyMessage = function(params, callbacks) {
+      return sendMessage({
+        chatMessageVOType: chatMessageVOTypes.MESSAGE,
+        subjectId: params.threadId,
+        repliedTo: params.repliedTo,
+        content: params.content,
+        uniqueId: params.uniqueId,
+        metaData: params.metaData,
+        pushMsgType: 4
+      }, callbacks);
+    };
+
+    this.forwardMessage = function(params) {
+      var callbacks = {};
+
+      // {
+      //   onSent: function(result) {;
+      //     console.log("\nYour message has been Forwarded!\n");
+      //     console.log(result);
+      //   },
+      //   onDeliver: function(result) {
+      //     console.log("\nYour forwarded message has been Delivered!\n");
+      //     console.log(result);
+      //   },
+      //   onSeen: function(result) {
+      //     console.log("\nYour forwarded message has been Seen!\n");
+      //     console.log(result);
+      //   }
+      // }
+
+      return sendMessage({
+        chatMessageVOType: chatMessageVOTypes.FORWARD_MESSAGE,
+        subjectId: params.subjectId,
+        repliedTo: params.repliedTo,
+        content: params.content,
+        uniqueId: params.uniqueId,
+        metaData: params.metaData,
+        pushMsgType: 4
+      }, callbacks);
+    };
+
     this.deliver = function(params) {
       if (params.owner !== userInfo.id) {
-        return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, token: token, content: params.messageId, pushMsgType: 4});
+        return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, content: params.messageId, pushMsgType: 3});
       }
     }
 
     this.seen = function(params) {
       if (params.owner !== userInfo.id) {
-        return sendMessage({chatMessageVOType: chatMessageVOTypes.SEEN, token: token, content: params.messageId, pushMsgType: 4});
+        return sendMessage({chatMessageVOType: chatMessageVOTypes.SEEN, content: params.messageId, pushMsgType: 3});
       }
     }
 
