@@ -127,7 +127,7 @@
             connectionCheckTimeoutThreshold: params.connectionCheckTimeoutThreshold,
             messageTtl: params.messageTtl,
             reconnectOnClose: params.reconnectOnClose,
-            asyncLogging: params.consoleLogging
+            asyncLogging: params.asyncLogging
           });
 
           asyncClient.asyncReady(function() {

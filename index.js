@@ -16,7 +16,7 @@ var params = {
   connectionCheckTimeoutThreshold: 20000, // Socket Ping time threshold
   messageTtl: 5000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
-  consoleLogging: {
+  asyncLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
     onMessageSend: true // log sent messaged on console
