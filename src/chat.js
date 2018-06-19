@@ -107,6 +107,11 @@
       serverName = params.serverName || "",
       config = {
         getHistoryCount: 100
+      },
+      CHAT_ERRORS = {
+        6000 : "Invalid Token!",
+        6001 : "No Active Device found for this Token!",
+        6002 : "User not found!"
       };
 
     /*******************************************************
@@ -134,7 +139,14 @@
             peerId = asyncClient.getPeerId();
 
             getUserInfo(function(userInfoResult) {
-              userInfo = userInfoResult.result.user;
+              if (!userInfoResult.hasError) {
+                userInfo = userInfoResult.result.user;
+              } else {
+                fireEvent("error", {
+                  code: 6002,
+                  message: CHAT_ERRORS[6002]
+                });
+              }
             });
 
             fireEvent("chatReady");
@@ -196,7 +208,7 @@
                 if (!deviceId) {
                   fireEvent("error", {
                     code: 6000,
-                    message: "Invalid Token!"
+                    message: CHAT_ERRORS[6000]
                   });
                 } else {
                   callback(deviceId);
@@ -204,7 +216,7 @@
               } else {
                 fireEvent("error", {
                   code: 6001,
-                  message: "No Active Device found for this Token!"
+                  message: CHAT_ERRORS[6001]
                 });
               }
             });
@@ -233,7 +245,7 @@
                 if (!deviceId) {
                   fireEvent("error", {
                     code: 6000,
-                    message: "Invalid Token!"
+                    message: CHAT_ERRORS[6000]
                   });
                 } else {
                   callback(deviceId);
@@ -241,7 +253,7 @@
               } else {
                 fireEvent("error", {
                   code: 6001,
-                  message: "No Active Device found for this Token!"
+                  message: CHAT_ERRORS[6001]
                 });
               }
             }

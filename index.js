@@ -7,7 +7,7 @@ var params = {
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
   // token: "afa51d8291dc4072a0831d3a18cb5030",  {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5", //  {**REQUIRED**} SSO Token Abedi
+  // token: "ed4be26a60c24ed594e266a2181424c5",   {**REQUIRED**} SSO Token Abedi
   // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
@@ -125,7 +125,7 @@ chatAgent.on("chatReady", function() {
    * Listen to Edit Message Emitter
    */
   chatAgent.on("editMessage", function(msg) {
-    console.log("Message with ID : " + msg.messageId + " inside Thread with ID : " + msg.threadId + " has been edited!");
+    console.log("Message with ID : " + msg.id + " inside Thread with ID : " + msg.threadId + " has been edited!");
     console.log(msg);
   });
 
@@ -179,9 +179,11 @@ function getThreads(count) {
   }
 
   chatAgent.getThreads(getThreadsParams, function(threadsResult) {
-    var threadsCount = threadsResult.result.contentCount;
-    var threads = threadsResult.result.threads;
-    console.log(threads);
+    if (!threadsResult.hasError) {
+      var threadsCount = threadsResult.result.contentCount;
+      var threads = threadsResult.result.threads;
+      console.log(threads);
+    }
   });
 }
 
@@ -193,9 +195,11 @@ function getThreadParticipants(threadId) {
   };
 
   chatAgent.getThreadParticipants(getParticipantsParams, function(participantsResult) {
-    var participantsCount = participantsResult.result.contentCount;
-    var participants = participantsResult.result.participants;
-    console.log(participants);
+    if (!participantsResult.hasError) {
+      var participantsCount = participantsResult.result.contentCount;
+      var participants = participantsResult.result.participants;
+      console.log(participants);
+    }
   });
 }
 
@@ -206,9 +210,11 @@ function getContacts() {
   };
 
   chatAgent.getContacts(getContactsParams, function(contactsResult) {
-    var contactsCount = contactsResult.result.contentCount;
-    var contacts = contactsResult.result.contacts;
-    console.log(contacts);
+    if (!contactsResult.hasError) {
+      var contactsCount = contactsResult.result.contentCount;
+      var contacts = contactsResult.result.contacts;
+      console.log(contacts);
+    }
   });
 }
 
@@ -220,7 +226,9 @@ function getSingleMessage(threadId, messageId) {
   };
 
   chatAgent.getThreadHistory(getSingleMessageParams, function(historyResult) {
-    console.log(historyResult.result.history);
+    if (!historyResult.hasError) {
+      console.log(historyResult.result.history);
+    }
   });
 }
 
@@ -239,7 +247,9 @@ function getThreadHistory(threadId, count, offset) {
   }
 
   chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
-    console.log(historyResult.result.history);
+    if (!historyResult.hasError) {
+      console.log(historyResult.result.history);
+    }
   });
 }
 
@@ -346,7 +356,8 @@ function muteThread(threadId) {
     subjectId: threadId
   }
   chatAgent.muteThread(data, function(result) {
-    console.log("Threaded has been successfully muted!");
+    if (!result.hasError)
+      console.log("Threaded has been successfully muted!");
     console.log(result);
   });
 }
@@ -356,7 +367,8 @@ function unMuteThread(threadId) {
     subjectId: threadId
   }
   chatAgent.unMuteThread(data, function(result) {
-    console.log("Threaded has been successfully unMuted!");
+    if (!result.hasError)
+      console.log("Threaded has been successfully unMuted!");
     console.log(result);
   });
 }
