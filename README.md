@@ -29,6 +29,14 @@ chatAgent.on("chatReady", function() {
    * Your code goes here
    */
 });
+
+
+/**
+* Listen to Error Messages
+*/
+chatAgent.on("error", function(error) {
+  console.log("Error: ", error.code, error.message);
+});
 ```
 
 ### getUserInfo
@@ -90,6 +98,7 @@ chatAgent.getThreadHistory({
 ```
 
 ###getThreadParticipants
+
 ```javascript
 chatAgent.getThreadParticipants({
     count: 50,
@@ -158,6 +167,39 @@ chatAgent.editMessage({
 });
 ```
 
+### replyMessage
+
+```javascript
+chatAgent.replyMessage({
+    threadId: threadId,
+    repliedTo: messageId,
+    content: message
+  }, {
+  onSent: function(result) {
+    console.log("Your reply message has been Sent!");
+    console.log(result);
+  },
+  onDeliver: function(result) {
+    console.log("Your reply message has been Delivered!");
+    console.log(result);
+  },
+  onSeen: function(result) {
+    console.log("Your reply message has been Seen!");
+    console.log(result);
+  }
+});
+```
+
+### forwardMessage
+
+```javascript
+chatAgent.replyMessage({
+  subjectId: threadId,
+  uniqueId: JSON.stringify(uniqueIds),
+  content: JSON.stringify(messagesId)
+});
+```
+
 ### muteThread
 
 ```javascript
@@ -179,10 +221,6 @@ chatAgent.unMuteThread({
   }
 );
 ```
-
-## Motivation
-
-This module helps you to easily connect POD chat service.
 
 ## Installation
 

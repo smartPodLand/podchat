@@ -7,9 +7,9 @@ var params = {
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   // token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
   token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",  //  {**REQUIRED**} SSO Token Abedi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a",  // {**REQUIRED**} SSO Token Felfeli
-  // token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
+  // token: "ed4be26a60c24ed594e266a2181424c5", //  {**REQUIRED**} SSO Token Abedi
+  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
+  // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
@@ -27,6 +27,14 @@ var PID;
 
 var chatAgent = new Chat(params);
 
+/**
+* Listen to Error Messages
+*/
+chatAgent.on("error", function(error) {
+  console.log("Error: ");
+  console.log(error.code, error.message);
+});
+
 chatAgent.on("chatReady", function() {
   /**
    *  Get User Info
@@ -37,7 +45,7 @@ chatAgent.on("chatReady", function() {
    * GET THREADS
    * @param count
    */
-  // getThreads(2);
+  // getThreads(10);
 
   /**
    * GET THREAD PARTICIPANTS
@@ -48,8 +56,16 @@ chatAgent.on("chatReady", function() {
    * GET THREAD HISTORY
    * @param threadId
    * @param count
+   * @param offset
    */
-  // getThreadHistory(83, 10);
+  // getThreadHistory(83, 5, 0);
+
+  /**
+   * GET SINGLE MESSAGE
+   * @param threadId
+   * @param messageId
+   */
+  // getSingleMessage(83, 696);
 
   /**
    * MUTE THREAD
@@ -85,8 +101,10 @@ chatAgent.on("chatReady", function() {
 
   /**
    * EDIT MESSAGE IN THREAD
+   * @param messageId  325 editable: false
+   * @param newMessage
    */
-  // editMessage(308, "This message has been edited at " + new Date());
+  // editMessage(696, "This message has been edited at " + new Date());
 
   /**
    * REPLY TO MESSAGE
@@ -116,7 +134,7 @@ chatAgent.on("chatReady", function() {
    */
   chatAgent.on("message", function(msg) {
     var params = {
-      messageId: msg.messageId,
+      messageId: msg.id,
       owner: msg.ownerId
     };
 
@@ -142,14 +160,6 @@ chatAgent.on("chatReady", function() {
     console.log("New Thread Has Been Created with You Taking Part in it!");
     console.log(threadInfo);
   });
-
-  /**
-   * Listen to Error Messages
-   */
-   chatAgent.on("error", function(error) {
-     console.log("Error: \n");
-     console.log(error.code, error.message);
-   });
 });
 
 function getUserInfo() {
@@ -202,7 +212,19 @@ function getContacts() {
   });
 }
 
-function getThreadHistory(threadId, count) {
+function getSingleMessage(threadId, messageId) {
+  var getSingleMessageParams = {
+    offset: 0,
+    threadId: threadId,
+    id: messageId
+  };
+
+  chatAgent.getThreadHistory(getSingleMessageParams, function(historyResult) {
+    console.log(historyResult.result.history);
+  });
+}
+
+function getThreadHistory(threadId, count, offset) {
   var getThreadHistoryParams = {
     offset: 0,
     threadId: threadId
@@ -212,8 +234,12 @@ function getThreadHistory(threadId, count) {
     getThreadHistoryParams.count = count;
   }
 
+  if (typeof offset == "number") {
+    getThreadHistoryParams.offset = offset;
+  }
+
   chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
-    console.log(historyResult);
+    console.log(historyResult.result.history);
   });
 }
 
@@ -245,7 +271,9 @@ function editMessage(messageId, newMessage) {
     content: newMessage
   };
 
-  chatAgent.editMessage(editChatParams);
+  chatAgent.editMessage(editChatParams, function(result) {
+    console.log(result);
+  });
 }
 
 function replyMessage(threadId, messageId, message) {
@@ -282,7 +310,7 @@ function forwardMessage(destination, uniqueIds, messagesId) {
 }
 
 function createThread(invitees, threadType) {
-  if(typeof threadType == "string") {
+  if (typeof threadType == "string") {
     threadTypeText = threadType;
   } else {
     threadTypeText = "NORMAL";

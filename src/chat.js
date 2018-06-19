@@ -12,9 +12,12 @@
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
       Async = require('podasync');
       ChatUtility = require('./utility/utility.js');
+      podLogger = require('./log/log.js');
+      http = require('http');
     } else {
       Async = POD.Async;
       ChatUtility = POD.ChatUtility;
+      podLogger = POD.Log;
     }
 
     /*******************************************************
@@ -28,6 +31,10 @@
       oldPeerId,
       userInfo,
       token = params.token,
+      deviceId,
+      isNode = Utility.isNode(),
+      ssoGrantDevicesAddress = params.ssoGrantDevicesAddress,
+      ssoHost = params.ssoHost,
       eventCallbacks = {
         connect: {},
         disconnect: {},
@@ -107,37 +114,139 @@
      *******************************************************/
 
     var init = function() {
-        asyncClient = new Async(params);
+        getDeviceIdWithToken(function(retrievedDeviceId) {
+          deviceId = retrievedDeviceId;
 
-        asyncClient.asyncReady(function() {
-          peerId = asyncClient.getPeerId();
-          getUserInfo(function(userInfoResult) {
-            userInfo = userInfoResult.result.user;
+          asyncClient = new Async({
+            socketAddress: params.socketAddress,
+            serverName: params.serverName,
+            deviceId: retrievedDeviceId,
+            wsConnectionWaitTime: params.wsConnectionWaitTime,
+            connectionRetryInterval: params.connectionRetryInterval,
+            connectionCheckTimeout: params.connectionCheckTimeout,
+            connectionCheckTimeoutThreshold: params.connectionCheckTimeoutThreshold,
+            messageTtl: params.messageTtl,
+            reconnectOnClose: params.reconnectOnClose,
+            asyncLogging: params.consoleLogging
           });
-          fireEvent("chatReady");
-        });
 
-        asyncClient.on("connect", function(newPeerId) {
-          peerId = newPeerId;
-          fireEvent("connect");
-        });
+          asyncClient.asyncReady(function() {
+            peerId = asyncClient.getPeerId();
 
-        asyncClient.on("disconnect", function() {
-          oldPeerId = peerId;
-          peerId = undefined;
-          fireEvent("disconnect");
-        });
+            getUserInfo(function(userInfoResult) {
+              userInfo = userInfoResult.result.user;
+            });
 
-        asyncClient.on("reconnect", function(newPeerId) {
-          // TODO: check if its needed to do some registeration here
-          peerId = newPeerId;
-          fireEvent("reconnect");
-        });
+            fireEvent("chatReady");
+          });
 
-        asyncClient.on("message", function(params, ack) {
-          pushMessageHandler(params);
-          ack && ack();
+          asyncClient.on("connect", function(newPeerId) {
+            peerId = newPeerId;
+            fireEvent("connect");
+          });
+
+          asyncClient.on("disconnect", function() {
+            oldPeerId = peerId;
+            peerId = undefined;
+            fireEvent("disconnect");
+          });
+
+          asyncClient.on("reconnect", function(newPeerId) {
+            peerId = newPeerId;
+            fireEvent("reconnect");
+          });
+
+          asyncClient.on("message", function(params, ack) {
+            pushMessageHandler(params);
+            ack && ack();
+          });
         });
+      },
+
+      getDeviceIdWithToken = function(callback) {
+        var deviceId;
+
+        if (isNode) {
+          var options = {
+            host: ssoHost,
+            path: ssoGrantDevicesAddress,
+            method: "GET",
+            headers: {
+              "Authorization": "Bearer " + token
+            }
+          };
+
+          http.get(options, function(response) {
+            var resultText = '';
+
+            response.on('data', function(data) {
+              resultText += data;
+            });
+
+            response.on('end', function() {
+              var devices = JSON.parse(resultText).devices;
+              if (devices && devices.length > 0) {
+                for (var i = 0; i < devices.length; i++) {
+                  if (devices[i].current) {
+                    deviceId = devices[i].uid;
+                    break;
+                  }
+                }
+
+                if (!deviceId) {
+                  fireEvent("error", {
+                    code: 6000,
+                    message: "Invalid Token!"
+                  });
+                } else {
+                  callback(deviceId);
+                }
+              } else {
+                fireEvent("error", {
+                  code: 6001,
+                  message: "No Active Device found for this Token!"
+                });
+              }
+            });
+          });
+
+        } else {
+          var request = new XMLHttpRequest();
+          request.open("GET", "http://" + ssoHost + ssoGrantDevicesAddress, true);
+          request.setRequestHeader("Authorization", "Bearer " + token);
+          request.send();
+
+          request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+              var response = request.responseText;
+
+              var devices = JSON.parse(response).devices;
+
+              if (devices && devices.length > 0) {
+                for (var i = 0; i < devices.length; i++) {
+                  if (devices[i].current) {
+                    deviceId = devices[i].uid;
+                    break;
+                  }
+                }
+
+                if (!deviceId) {
+                  fireEvent("error", {
+                    code: 6000,
+                    message: "Invalid Token!"
+                  });
+                } else {
+                  callback(deviceId);
+                }
+              } else {
+                fireEvent("error", {
+                  code: 6001,
+                  message: "No Active Device found for this Token!"
+                });
+              }
+            }
+          }
+        }
       },
 
       getUserInfo = function(callback) {
@@ -283,7 +392,7 @@
             }
           }
         });
-        
+
         return {uniqueId: uniqueId}
       },
 
@@ -394,6 +503,8 @@
 
             // 28
           case chatMessageVOTypes.EDIT_MESSAGE:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             chatEditMessageHandler(threadId, messageContent);
             break;
 
@@ -407,116 +518,66 @@
       },
 
       chatMessageHandler = function(threadId, messageContent) {
-        var message = reformatMessage(threadId, messageContent);
+        var message = formatDataToMakeMessage(messageContent);
         fireEvent("message", message);
       },
 
       chatEditMessageHandler = function(threadId, messageContent) {
-        var message = reformatMessage(threadId, messageContent);
+        var message = formatDataToMakeMessage(messageContent);
         fireEvent("editMessage", message);
       },
 
       createThread = function(messageContent, addFromService) {
-        var threadData = formatDataToMakeThread(messageContent);
+        var threadData = formatDataToMakeConversation(messageContent);
         if (addFromService) {
           fireEvent("newThread", threadData);
         }
         return threadData;
       },
 
-      formatDataToMakeThread = function(messageContent) {
+      formatdataToMakeLinkedUser = function(messageContent) {
         /**
-         * + Conversation                     {object}
-         *    - id                            {long}
-         *    - joinDate                      {long}
-         *    - title                         {string}
-         *    - inviter                       {object : ParticipantVO}
-         *    - participants                  {list : ParticipantVO}
-         *    - time                          {long}
-         *    - lastMessage                   {string}
-         *    - lastParticipantName           {string}
-         *    - group                         {boolean}
-         *    - partner                       {long}
-         *    - image                         {object : ImageInfo}
-         *    - unreadCount                   {long}
-         *    - lastMessageId                 {long}
-         *    - lastMessageVO                 {object : ChatMessageVO}
-         *    - partnerLastMessageId          {long}
-         *    - partnerLastDeliveredMessageId {long}
-         *    - type                          {int}
-         *    - metadata                      {string}
-         *    - mute                          {boolean}
-         *    - participantCount              {long}
+         * + RelatedUserVO                 {object}
+         *   - username                    {string}
+         *   - nickname                    {string}
+         *   - name                        {string}
+         *   - image                       {string}
          */
 
-        var participants = messageContent.participants,
-          partnerId = messageContent.partnerId,
-          conversationData = {
-            id: messageContent.id,
-            title: messageContent.title,
-            joinDate: messageContent.joinDate,
-            time: messageContent.time,
-            lastMessage: messageContent.lastMessage,
-            lastParticipantName: messageContent.lastParticipantName,
-            group: messageContent.group,
-            partner: messageContent.partner,
-            image: messageContent.image,
-            unreadCount: messageContent.unreadCount,
-            lastMessageId: messageContent.lastMessageId,
-            partnerLastMessageId: messageContent.partnerLastMessageId,
-            partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
-            type: messageContent.type,
-            metadata: messageContent.metadata,
-            mute: messageContent.mute,
-            participantCount: messageContent.participantCount
-          };
+        var linkedUser = {
+          username: messageContent.username,
+          nickname: messageContent.nickname,
+          name: messageContent.name,
+          image: messageContent.image
+        };
 
-        // Add inviter if exist
-        if (messageContent.inviter) {
-          conversationData.inviter = formatDataToMakeParticipant(messageContent.inviter);
-        }
-
-        // Add lastMessageVO if exist
-        if (messageContent.lastMessageVO) {
-          try {
-            conversationData.lastMessageVO = JSON.parse(messageContent.lastMessageVO);
-          } catch (e) {
-            conversationData.lastMessageVO = messageContent.lastMessageVO;
-          }
-        }
-
-        // Add participants Array if exist
-        if (participants && Array.isArray(participants)) {
-          conversationData.participants = [];
-
-          for (var i = 0; i < participants.length; i++) {
-            var participantData = formatDataToMakeParticipant(participants[i]);
-            if (participantData) {
-              conversationData.participants.push(participantData);
-            }
-          }
-        }
-
-        return conversationData;
+        return JSON.parse(JSON.stringify(linkedUser));
       },
 
       formatDataToMakeContact = function(messageContent) {
         /**
-         * + Contact                          {object}
+         * + ContactVO                        {object}
          *    - id                            {long}
          *    - firstName                     {string}
          *    - lastName                      {string}
+         *    - profileImage                  {string}
          *    - email                         {string}
          *    - cellphoneNumber               {string}
          *    - uniqueId                      {string}
          *    - lastseen                      {long}
          *    - hasUser                       {boolean}
+         *    + linkedUser                    {object : RelatedUserVO}
+         *      - username                    {string}
+         *      - nickname                    {string}
+         *      - name                        {string}
+         *      - image                       {string}
          */
 
         var contact = {
           id: messageContent.id,
           firstName: messageContent.firstName,
           lastName: messageContent.lastName,
+          profileImage: messageContent.profileImage,
           email: messageContent.email,
           cellphoneNumber: messageContent.cellphoneNumber,
           uniqueId: messageContent.uniqueId,
@@ -524,7 +585,11 @@
           hasUser: messageContent.hasUser
         };
 
-        return contact;
+        if (messageContent.linkedUser !== undefined) {
+          contact.linkedUser = formatdataToMakeLinkedUser(messageContent.linkedUser);
+        }
+
+        return JSON.parse(JSON.stringify(contact));
       },
 
       formatDataToMakeUser = function(messageContent) {
@@ -551,7 +616,7 @@
           receiveEnable: messageContent.receiveEnable
         };
 
-        return user;
+        return JSON.parse(JSON.stringify(user));
       },
 
       formatDataToMakeInvitee = function(messageContent) {
@@ -566,7 +631,7 @@
           idType: inviteeVOidTypes[messageContent.idType]
         };
 
-        return inviteeData;
+        return JSON.parse(JSON.stringify(inviteeData));
       },
 
       formatDataToMakeParticipant = function(messageContent) {
@@ -596,11 +661,131 @@
         if (messageContent.image)
           participant.image = messageContent.image;
 
-        return participant;
+        return JSON.parse(JSON.stringify(participant));
       },
 
-      reformatMessage = function(threadId, pushMessageVO) {
+      formatDataToMakeConversation = function(messageContent) {
 
+        /**
+         * + Conversation                     {object}
+         *    - id                            {long}
+         *    - joinDate                      {long}
+         *    - title                         {string}
+         *    - inviter                       {object : ParticipantVO}
+         *    - participants                  {list : ParticipantVO}
+         *    - time                          {long}
+         *    - lastMessage                   {string}
+         *    - lastParticipantName           {string}
+         *    - group                         {boolean}
+         *    - partner                       {long}
+         *    - image                         {string}
+         *    - unreadCount                   {long}
+         *    - lastMessageId                 {long}
+         *    - lastMessageVO                 {object : ChatMessageVO}
+         *    - partnerLastMessageId          {long}
+         *    - partnerLastDeliveredMessageId {long}
+         *    - type                          {int}
+         *    - metadata                      {string}
+         *    - mute                          {boolean}
+         *    - participantCount              {long}
+         */
+
+        var conversation = {
+          id: messageContent.id,
+          joinDate: messageContent.joinDate,
+          title: messageContent.title,
+          time: messageContent.time,
+          lastMessage: messageContent.lastMessage,
+          lastParticipantName: messageContent.lastParticipantName,
+          group: messageContent.group,
+          partner: messageContent.partner,
+          image: messageContent.image,
+          unreadCount: messageContent.unreadCount,
+          lastMessageId: messageContent.lastMessageId,
+          partnerLastMessageId: messageContent.partnerLastMessageId,
+          partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
+          type: messageContent.type,
+          metadata: messageContent.metadata,
+          mute: messageContent.mute,
+          participantCount: messageContent.participantCount
+        };
+
+        // Add inviter if exist
+        if (messageContent.inviter) {
+          conversation.inviter = formatDataToMakeParticipant(messageContent.inviter);
+        }
+
+        // Add participants list if exist
+        if (messageContent.participants && Array.isArray(messageContent.participants)) {
+          conversation.participants = [];
+
+          for (var i = 0; i < messageContent.participants.length; i++) {
+            var participantData = formatDataToMakeParticipant(messageContent.participants[i]);
+            if (participantData) {
+              conversation.participants.push(participantData);
+            }
+          }
+        }
+
+        // Add lastMessageVO if exist
+        if (messageContent.lastMessageVO) {
+          conversation.lastMessageVO = formatDataToMakeMessage(messageContent.lastMessageVO);
+        }
+
+        return JSON.parse(JSON.stringify(conversation));
+      },
+
+      formatDataToMakeReplyInfo = function(messageContent) {
+        /**
+         * + replyInfoVO                  {object : replyInfoVO}
+         *   + participant                {object : ParticipantVO}
+         *     - id                       {long}
+         *     - name                     {string}
+         *     - lastSeen                 {long}
+         *   - repliedToMessageId         {long}
+         *   - repliedToMessage           {string}
+         */
+
+        var replyInfo = {
+          participant: formatDataToMakeParticipant(messageContent.participant),
+          repliedToMessageId: messageContent.repliedToMessageId,
+          repliedToMessage: messageContent.repliedToMessage
+        };
+
+        if (messageContent.participant) {
+          replyInfo.participant = formatDataToMakeParticipant(messageContent.participant);
+        }
+
+        return JSON.parse(JSON.stringify(replyInfo));
+      },
+
+      formatDataToMakeForwardInfo = function(messageContent) {
+        /**
+         * + forwardInfo                  {object : forwardInfoVO}
+         *   + participant                {object : ParticipantVO}
+         *     - id                       {long}
+         *     - name                     {string}
+         *     - lastSeen                 {long}
+         *   + conversation               {object : ConversationSummary}
+         *     - id                       {long}
+         *     - title                    {string}
+         *     - metadata                 {string}
+         */
+
+        var forwardInfo = {};
+
+        if (messageContent.conversation) {
+          forwardInfo.conversation = formatDataToMakeConversation(messageContent.conversation);
+        }
+
+        if (messageContent.participant) {
+          forwardInfo.participant = formatDataToMakeParticipant(messageContent.participant);
+        }
+
+        return JSON.parse(JSON.stringify(forwardInfo));
+      },
+
+      formatDataToMakeMessage = function(pushMessageVO) {
         /**
          * + MessageVO                       {object}
          *    - id                           {long}
@@ -608,11 +793,14 @@
          *    - previousId                   {long}
          *    - message                      {string}
          *    - edited                       {boolean}
+         *    - editable                     {boolean}
+         *    - delivered                    {boolean}
+         *    - seen                         {boolean}
          *    + participant                  {object : ParticipantVO}
          *      - id                         {long}
          *      - name                       {string}
          *      - lastSeen                   {long}
-         *    + conversation                 {object : ConversationSummary}
+         *    + conversation                 {object : ConversationVO}
          *      - id                         {long}
          *      - title                      {string}
          *      - metadata                   {string}
@@ -628,35 +816,56 @@
          *        - id                       {long}
          *        - name                     {string}
          *        - lastSeen                 {long}
-         *      + conversation               {object : ConversationSummary}
+         *      + conversation               {object : ConversationVO}
          *        - id                       {long}
          *        - title                    {string}
          *        - metadata                 {string}
          *    - time                         {long}
+         *    - metadata                     {string}
          */
 
-        return {
-          threadId: threadId,
-          messageId: pushMessageVO.id,
-          ownerId: pushMessageVO.participant.id,
+        var message = {
+          id: pushMessageVO.id,
           uniqueId: pushMessageVO.uniqueId,
           previousId: pushMessageVO.previousId,
           message: pushMessageVO.message,
           edited: pushMessageVO.edited,
-          participant: pushMessageVO.participant,
-          conversation: pushMessageVO.conversation,
-          replyInfo: pushMessageVO.replyInfoVO,
-          forwardInfo: pushMessageVO.forwardInfo,
+          editable: pushMessageVO.editable,
+          delivered: pushMessageVO.delivered,
+          seen: pushMessageVO.seen,
           metaData: pushMessageVO.metadata,
           time: pushMessageVO.time
         };
+
+        if (pushMessageVO.participant) {
+          message.ownerId = pushMessageVO.participant.id;
+        }
+
+        if (pushMessageVO.conversation) {
+          message.conversation = formatDataToMakeConversation(pushMessageVO.conversation);
+          message.threadId = pushMessageVO.conversation.id;
+        }
+
+        if (pushMessageVO.replyInfoVO) {
+          message.replyInfo = formatDataToMakeReplyInfo(pushMessageVO.replyInfoVO);
+        }
+
+        if (pushMessageVO.forwardInfo) {
+          message.forwardInfo = formatDataToMakeForwardInfo(pushMessageVO.forwardInfo);
+        }
+
+        if (pushMessageVO.participant) {
+          message.participant = formatDataToMakeParticipant(pushMessageVO.participant);
+        }
+
+        return JSON.parse(JSON.stringify(message));
       },
 
       reformatThreadHistory = function(threadId, historyContent) {
         var returnData = [];
 
         for (var i = 0; i < historyContent.length; i++) {
-          returnData.push(reformatMessage(threadId, historyContent[i]));
+          returnData.push(formatDataToMakeMessage(historyContent[i]));
         }
 
         return returnData;
@@ -686,27 +895,13 @@
       if (eventCallbacks[eventName]) {
         var id = Utility.generateUUID();
         eventCallbacks[eventName][id] = callback;
-
-        // TODO: Multi Event Handling Here?!
-        // if (eventName == "login" && isLogin) {
-        //   callback(userData);
-        // }
-        //
-        // if (eventName == "connect" && peerId) {
-        //   callback();
-        // }
-        //
-        // if (eventName == "serverRegister" && isRegisterInChatServer) {
-        //   callback();
-        // }
-
         return id;
       }
     };
 
     this.getPeerId = function() {
       asyncClient.asyncReady(function() {
-        peerId = asyncClient.getPeerId();
+        return peerId = asyncClient.getPeerId();
       });
     };
 
@@ -749,7 +944,7 @@
               resultData = {
                 contacts: [],
                 contentCount: result.contentCount,
-                hasNext: (count === messageLength && messageLength > 0),
+                hasNext: (offset + count < result.contentCount && messageLength > 0),
                 nextOffset: offset += messageLength
               },
               contactData;
@@ -818,7 +1013,7 @@
               resultData = {
                 threads: [],
                 contentCount: result.contentCount,
-                hasNext: (count === messageLength && messageLength > 0),
+                hasNext: (offset + count < result.contentCount && messageLength > 0),
                 nextOffset: offset += messageLength
               },
               threadData;
@@ -861,6 +1056,10 @@
         sendMessageParams.content.firstMessageId = params.firstMessageId;
       }
 
+      if (typeof params.id != "undefined") {
+        sendMessageParams.content.id = params.id;
+      }
+
       if (typeof params.lastMessageId != "undefined") {
         sendMessageParams.content.lastMessageId = params.lastMessageId;
       }
@@ -883,7 +1082,7 @@
               resultData = {
                 history: reformatThreadHistory(params.threadId, messageContent),
                 contentCount: result.contentCount,
-                hasNext: (sendMessageParams.content.count === messageLength && messageLength > 0),
+                hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount && messageLength > 0),
                 nextOffset: sendMessageParams.content.offset += messageLength
               };
 
@@ -932,7 +1131,7 @@
               resultData = {
                 participants: reformatThreadParticipants(messageContent),
                 contentCount: result.contentCount,
-                hasNext: (sendMessageParams.content.count === messageLength && messageLength > 0),
+                hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount && messageLength > 0),
                 nextOffset: sendMessageParams.content.offset += messageLength
               };
 
@@ -978,8 +1177,6 @@
             }
           }
         }
-
-        // TODO: ownerSsoId??
       }
 
       var sendMessageParams = {
@@ -1022,7 +1219,7 @@
       }, callbacks);
     };
 
-    this.editMessage = function(params) {
+    this.editMessage = function(params, callback) {
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.EDIT_MESSAGE,
         subjectId: params.messageId,
@@ -1031,6 +1228,25 @@
         uniqueId: params.uniqueId,
         metaData: params.metaData,
         pushMsgType: 4
+      }, {
+        onResult: function(result) {
+          var returnData = {
+            hasError: result.hasError,
+            errorMessage: result.errorMessage,
+            errorCode: result.errorCode
+          };
+
+          if (!returnData.hasError) {
+            var messageContent = result.result,
+              resultData = {
+                editedMessage: formatDataToMakeMessage(messageContent)
+              };
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+        }
       });
     };
 
@@ -1049,21 +1265,6 @@
     this.forwardMessage = function(params) {
       var callbacks = {};
 
-      // {
-      //   onSent: function(result) {;
-      //     console.log("\nYour message has been Forwarded!\n");
-      //     console.log(result);
-      //   },
-      //   onDeliver: function(result) {
-      //     console.log("\nYour forwarded message has been Delivered!\n");
-      //     console.log(result);
-      //   },
-      //   onSeen: function(result) {
-      //     console.log("\nYour forwarded message has been Seen!\n");
-      //     console.log(result);
-      //   }
-      // }
-
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.FORWARD_MESSAGE,
         subjectId: params.subjectId,
@@ -1077,7 +1278,6 @@
 
     this.deliver = function(params) {
       if (params.owner !== userInfo.id) {
-        console.log("sending delivery ");
         return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, content: params.messageId, pushMsgType: 3});
       }
     }
