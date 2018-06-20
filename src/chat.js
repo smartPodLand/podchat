@@ -336,7 +336,7 @@
 
         if (typeof params.uniqueId != "undefined") {
           uniqueId = params.uniqueId;
-        } else {
+        } else if (params.chatMessageVOType !== chatMessageVOTypes.PING) {
           uniqueId = Utility.generateUUID();
         }
 
