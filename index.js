@@ -103,15 +103,15 @@ chatAgent.on("chatReady", function() {
    * SEND MESSAGE IN THREAD
    */
 
-  var testCounter = 0;
-  var testInterval = setInterval(function() {
-    sendMessage(83, "This is a Sample Message at " + new Date());
-    if (testCounter % 2 == 0)
-      sendMessage(213, "This is a Sample Message at " + new Date());
-    testCounter += 1;
-    if(testCounter > 3)
-      clearInterval(testInterval);
-  }, 100);
+  // var testCounter = 0;
+  // var testInterval = setInterval(function() {
+  //   sendMessage(83, "This is a Sample Message at " + new Date());
+  //   if (testCounter % 2 == 0)
+  //     sendMessage(213, "This is a Sample Message at " + new Date());
+  //   testCounter += 1;
+  //   if(testCounter > 3)
+  //     clearInterval(testInterval);
+  // }, 100);
   // sendMessage(83, "This is a Sample Message at " + new Date());
 
   /**

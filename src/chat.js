@@ -664,7 +664,8 @@
           cellphoneNumber: messageContent.cellphoneNumber,
           uniqueId: messageContent.uniqueId,
           notSeenDuration: messageContent.notSeenDuration,
-          hasUser: messageContent.hasUser
+          hasUser: messageContent.hasUser,
+          linkedUser: undefined
         };
 
         if (messageContent.linkedUser !== undefined) {
@@ -737,11 +738,9 @@
           myFriend: messageContent.myFriend,
           online: messageContent.online,
           notSeenDuration: messageContent.notSeenDuration,
-          userId: messageContent.userId
+          userId: messageContent.userId,
+          image: messageContent.image
         };
-
-        if (messageContent.image)
-          participant.image = messageContent.image;
 
         return participant;
       },
@@ -776,6 +775,8 @@
           id: messageContent.id,
           joinDate: messageContent.joinDate,
           title: messageContent.title,
+          inviter: undefined,
+          participants: undefined,
           time: messageContent.time,
           lastMessage: messageContent.lastMessage,
           lastParticipantName: messageContent.lastParticipantName,
@@ -784,6 +785,7 @@
           image: messageContent.image,
           unreadCount: messageContent.unreadCount,
           lastMessageId: messageContent.lastMessageId,
+          lastMessageVO: undefined,
           partnerLastMessageId: messageContent.partnerLastMessageId,
           partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
           type: messageContent.type,
@@ -829,7 +831,7 @@
          */
 
         var replyInfo = {
-          participant: formatDataToMakeParticipant(messageContent.participant),
+          participant: undefined,
           repliedToMessageId: messageContent.repliedToMessageId,
           repliedToMessage: messageContent.repliedToMessage
         };
@@ -854,7 +856,10 @@
          *     - metadata                 {string}
          */
 
-        var forwardInfo = {};
+        var forwardInfo = {
+          participant: undefined,
+          conversation: undefined
+        };
 
         if (messageContent.conversation) {
           forwardInfo.conversation = formatDataToMakeConversation(messageContent.conversation);
@@ -908,6 +913,7 @@
 
         var message = {
           id: pushMessageVO.id,
+          ownerId: undefined,
           uniqueId: pushMessageVO.uniqueId,
           previousId: pushMessageVO.previousId,
           message: pushMessageVO.message,
@@ -915,6 +921,10 @@
           editable: pushMessageVO.editable,
           delivered: pushMessageVO.delivered,
           seen: pushMessageVO.seen,
+          participant: undefined,
+          conversation: undefined,
+          replyInfo: undefined,
+          forwardInfo: undefined,
           metaData: pushMessageVO.metadata,
           time: pushMessageVO.time
         };
