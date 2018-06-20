@@ -83,10 +83,10 @@ chatAgent.getThreads({
 );
 ```
 
-### getThreadHistory
+### getHistory
 
 ```javascript
-chatAgent.getThreadHistory({
+chatAgent.getHistory({
     count: 50,
     offset: 0,
     threadId: threadId

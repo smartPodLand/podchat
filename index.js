@@ -58,7 +58,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getThreadHistory(83, 5, 0);
+  // getHistory(83, 5, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -95,8 +95,23 @@ chatAgent.on("chatReady", function() {
   // createThread(443);
 
   /**
+   * RENAME THREAD
+   */
+  // renameThread(213, "New Thread Name");
+
+  /**
    * SEND MESSAGE IN THREAD
    */
+
+  // var testCounter = 0;
+  // var testInterval = setInterval(function() {
+  //   sendMessage(83, "This is a Sample Message at " + new Date());
+  //   if (testCounter % 2 == 0)
+  //     sendMessage(213, "This is a Sample Message at " + new Date());
+  //   testCounter += 1;
+  //   if(testCounter > 3)
+  //     clearInterval(testInterval);
+  // }, 100);
   // sendMessage(83, "This is a Sample Message at " + new Date());
 
   /**
@@ -104,7 +119,7 @@ chatAgent.on("chatReady", function() {
    * @param messageId  325 editable: false
    * @param newMessage
    */
-  // editMessage(696, "This message has been edited at " + new Date());
+  // editMessage(887, "This message has been edited at " + new Date());
 
   /**
    * REPLY TO MESSAGE
@@ -138,7 +153,7 @@ chatAgent.on("chatReady", function() {
       owner: msg.ownerId
     };
 
-    console.log(msg);
+    // console.log(msg);
 
     /**
      * Sending Message Delivery to Sender
@@ -158,6 +173,22 @@ chatAgent.on("chatReady", function() {
    */
   chatAgent.on("newThread", function(threadInfo) {
     console.log("New Thread Has Been Created with You Taking Part in it!");
+    console.log(threadInfo);
+  });
+
+  /**
+   * Listen to Thread Info Update
+   */
+  chatAgent.on("threadInfoUpdated", function(threadInfo) {
+    console.log("Some Thread has changed!");
+    console.log(threadInfo);
+  });
+
+  /**
+   * Listen to Thread Rename
+   */
+  chatAgent.on("threadRename", function(threadInfo) {
+    console.log("Some Thread has renamed!");
     console.log(threadInfo);
   });
 });
@@ -225,28 +256,28 @@ function getSingleMessage(threadId, messageId) {
     id: messageId
   };
 
-  chatAgent.getThreadHistory(getSingleMessageParams, function(historyResult) {
+  chatAgent.getHistory(getSingleMessageParams, function(historyResult) {
     if (!historyResult.hasError) {
       console.log(historyResult.result.history);
     }
   });
 }
 
-function getThreadHistory(threadId, count, offset) {
-  var getThreadHistoryParams = {
+function getHistory(threadId, count, offset) {
+  var getHistoryParams = {
     offset: 0,
     threadId: threadId
   };
 
   if (typeof count == "number") {
-    getThreadHistoryParams.count = count;
+    getHistoryParams.count = count;
   }
 
   if (typeof offset == "number") {
-    getThreadHistoryParams.offset = offset;
+    getHistoryParams.offset = offset;
   }
 
-  chatAgent.getThreadHistory(getThreadHistoryParams, function(historyResult) {
+  chatAgent.getHistory(getHistoryParams, function(historyResult) {
     if (!historyResult.hasError) {
       console.log(historyResult.result.history);
     }
@@ -259,18 +290,15 @@ function sendMessage(threadId, message) {
     content: message
   };
 
-  chatAgent.send(sendChatParams, {
+  chatAgent.sendTextMessage(sendChatParams, {
     onSent: function(result) {
-      console.log("\nYour message has been Sent!\n");
-      console.log(result);
+      console.log(result.uniqueId + " \t has been Sent!");
     },
     onDeliver: function(result) {
-      console.log("\nYour message has been Delivered!\n");
-      console.log(result);
+      console.log(result.uniqueId + " \t has been Delivered!");
     },
     onSeen: function(result) {
-      console.log("\nYour message has been Seen!\n");
-      console.log(result);
+      console.log(result.uniqueId + " \t has been Seen!");
     }
   });
 }
@@ -295,16 +323,13 @@ function replyMessage(threadId, messageId, message) {
 
   chatAgent.replyMessage(replyChatParams, {
     onSent: function(result) {
-      console.log("\nYour reply message has been Sent!\n");
-      console.log(result);
+      console.log(result.uniqueId + " \t has been Sent!");
     },
     onDeliver: function(result) {
-      console.log("\nYour reply message has been Delivered!\n");
-      console.log(result);
+      console.log(result.uniqueId + " \t has been Delivered!");
     },
     onSeen: function(result) {
-      console.log("\nYour reply message has been Seen!\n");
-      console.log(result);
+      console.log(result.uniqueId + " \t has been Seen!");
     }
   });
 }
@@ -348,6 +373,17 @@ function createThread(invitees, threadType) {
 
   chatAgent.createThread(createThreadParams, function(createThreadResult) {
     console.log(createThreadResult);
+  });
+}
+
+function renameThread(threadId, newName) {
+  renameThreadParams = {
+    title: newName,
+    threadId: threadId
+  };
+
+  chatAgent.renameThread(renameThreadParams, function(renameThreadResult) {
+    console.log(renameThreadResult);
   });
 }
 

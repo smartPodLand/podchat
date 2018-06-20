@@ -44,6 +44,8 @@
         editMessage: {},
         forwardMessage: {},
         newThread: {},
+        threadInfoUpdated: {},
+        threadRename: {},
         leaveThread: {},
         newParticipant: {},
         deliver: {},
@@ -57,6 +59,7 @@
       },
       messagesCallbacks = {},
       sendMessageCallbacks = {},
+      threadCallbacks = {},
       chatMessageVOTypes = {
         CREATE_THREAD: 1,
         MESSAGE: 2,
@@ -87,6 +90,7 @@
         THREAD_PARTICIPANTS: 27,
         EDIT_MESSAGE: 28,
         DELETE_MESSAGE: 29,
+        THREAD_INFO_UPDATED: 30,
         ERROR: 999
       },
       inviteeVOidTypes = {
@@ -105,13 +109,17 @@
       msgPriority = params.msgPriority || 1,
       msgTTL = params.msgTTL || 10000,
       serverName = params.serverName || "",
+      chatPingMessageInterval = 20000,
+      lastReceivedMessageTime,
+      lastSentMessageTime,
+      lastSentMessageTimeoutId,
       config = {
         getHistoryCount: 100
       },
       CHAT_ERRORS = {
-        6000 : "Invalid Token!",
-        6001 : "No Active Device found for this Token!",
-        6002 : "User not found!"
+        6000: "Invalid Token!",
+        6001: "No Active Device found for this Token!",
+        6002: "User not found!"
       };
 
     /*******************************************************
@@ -141,11 +149,6 @@
             getUserInfo(function(userInfoResult) {
               if (!userInfoResult.hasError) {
                 userInfo = userInfoResult.result.user;
-              } else {
-                fireEvent("error", {
-                  code: 6002,
-                  message: CHAT_ERRORS[6002]
-                });
               }
             });
 
@@ -307,6 +310,8 @@
           tokenIssuer: 1
         };
 
+        var threadId = params.subjectId;
+
         if (params.subjectId) {
           messageVO.subjectId = params.subjectId;
         }
@@ -343,18 +348,28 @@
 
         if (typeof callbacks == "object") {
           if (callbacks.onSeen || callbacks.onDeliver || callbacks.onSent) {
+            if (!threadCallbacks[threadId]) {
+              threadCallbacks[threadId] = {};
+            }
+
+            threadCallbacks[threadId][uniqueId] = {};
+
             sendMessageCallbacks[uniqueId] = {};
 
             if (callbacks.onSent) {
               sendMessageCallbacks[uniqueId].onSent = callbacks.onSent;
+              threadCallbacks[threadId][uniqueId].onSent = false;
+              threadCallbacks[threadId][uniqueId].uniqueId = uniqueId;
             }
 
             if (callbacks.onSeen) {
               sendMessageCallbacks[uniqueId].onSeen = callbacks.onSeen;
+              threadCallbacks[threadId][uniqueId].onSeen = false;
             }
 
             if (callbacks.onDeliver) {
               sendMessageCallbacks[uniqueId].onDeliver = callbacks.onDeliver;
+              threadCallbacks[threadId][uniqueId].onDeliver = false;
             }
 
           } else if (callbacks.onResult) {
@@ -405,7 +420,21 @@
           }
         });
 
+        lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
+        lastSentMessageTime = new Date();
+        lastSentMessageTimeoutId = setTimeout(function() {
+          var currentTime = new Date();
+
+          if (currentTime - lastSentMessageTime > chatPingMessageInterval) {
+            ping();
+          }
+        }, chatPingMessageInterval);
+
         return {uniqueId: uniqueId}
+      },
+
+      ping = function() {
+        sendMessage({chatMessageVOType: chatMessageVOTypes.PING, pushMsgType: 4});
       },
 
       pushMessageHandler = function(params) {
@@ -419,6 +448,8 @@
          *    - content                       {string}
          */
 
+        lastReceivedMessageTime = new Date();
+
         var content = JSON.parse(params.content);
         receivedMessageHandler(content);
       },
@@ -426,7 +457,7 @@
       receivedMessageHandler = function(params) {
         var threadId = params.subjectId,
           type = params.type,
-          messageContent = JSON.parse(params.content),
+          messageContent = (typeof params.content === 'string') ? JSON.parse(params.content) : {},
           contentCount = params.contentCount,
           uniqueId = params.uniqueId;
 
@@ -452,6 +483,33 @@
 
             // 4
           case chatMessageVOTypes.DELIVERY:
+            console.log("\n");
+            console.log(threadCallbacks[threadId]);
+            // console.log(Object.keys(threadCallbacks[threadId]).indexOf(uniqueId));
+
+            // var lastCallbackIndex = threadCallbacks[threadId].indexOf(uniqueId);
+            var lastCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
+            console.log(lastCallbackIndex);
+            console.log(uniqueId);
+            console.log(threadCallbacks[threadId][uniqueId]);
+            console.log("\n\n");
+
+            while (lastCallbackIndex > -1) {
+              // console.log(Object.entries(threadCallbacks[threadId][lastCallbackIndex]));
+              //   var lastEventCallbackIndex = threadCallbacks[threadId][lastCallbackIndex];
+              //   if (sendMessageCallbacks[lastEventCallbackIndex] && sendMessageCallbacks[lastEventCallbackIndex].onDeliver) {
+              //     sendMessageCallbacks[lastEventCallbackIndex].onDeliver({uniqueId: lastEventCallbackIndex});
+              //     delete(sendMessageCallbacks[lastEventCallbackIndex].onDeliver);
+              //     threadCallbacks[threadId][lastCallbackIndex].onDeliver = true;
+              //   }
+              //   lastCallbackIndex -= 1;
+              //   lastEventCallbackIndex = undefined;
+              // }
+              //
+              // if (threadCallbacks[threadId][uniqueId]) {
+              //   delete(threadCallbacks[threadId][uniqueId]);
+            }
+
             if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onDeliver) {
               sendMessageCallbacks[uniqueId].onDeliver(params);
               delete(sendMessageCallbacks[uniqueId].onDeliver);
@@ -464,6 +522,13 @@
               sendMessageCallbacks[uniqueId].onSeen(params);
               delete(sendMessageCallbacks[uniqueId].onSeen);
             }
+            break;
+
+            // 10
+          case chatMessageVOTypes.RENAME:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+            fireEvent("threadRename", messageContent);
             break;
 
             // 13
@@ -520,6 +585,11 @@
             chatEditMessageHandler(threadId, messageContent);
             break;
 
+            // 30
+          case chatMessageVOTypes.THREAD_INFO_UPDATED:
+            fireEvent("threadInfoUpdated", messageContent);
+            break;
+
             // 999
           case chatMessageVOTypes.ERROR:
             if (messagesCallbacks[uniqueId])
@@ -563,7 +633,7 @@
           image: messageContent.image
         };
 
-        return JSON.parse(JSON.stringify(linkedUser));
+        return linkedUser;
       },
 
       formatDataToMakeContact = function(messageContent) {
@@ -576,7 +646,7 @@
          *    - email                         {string}
          *    - cellphoneNumber               {string}
          *    - uniqueId                      {string}
-         *    - lastseen                      {long}
+         *    - notSeenDuration               {long}
          *    - hasUser                       {boolean}
          *    + linkedUser                    {object : RelatedUserVO}
          *      - username                    {string}
@@ -593,7 +663,7 @@
           email: messageContent.email,
           cellphoneNumber: messageContent.cellphoneNumber,
           uniqueId: messageContent.uniqueId,
-          lastseen: messageContent.lastseen,
+          notSeenDuration: messageContent.notSeenDuration,
           hasUser: messageContent.hasUser
         };
 
@@ -601,7 +671,7 @@
           contact.linkedUser = formatdataToMakeLinkedUser(messageContent.linkedUser);
         }
 
-        return JSON.parse(JSON.stringify(contact));
+        return contact;
       },
 
       formatDataToMakeUser = function(messageContent) {
@@ -628,7 +698,7 @@
           receiveEnable: messageContent.receiveEnable
         };
 
-        return JSON.parse(JSON.stringify(user));
+        return user;
       },
 
       formatDataToMakeInvitee = function(messageContent) {
@@ -643,7 +713,7 @@
           idType: inviteeVOidTypes[messageContent.idType]
         };
 
-        return JSON.parse(JSON.stringify(inviteeData));
+        return inviteeData;
       },
 
       formatDataToMakeParticipant = function(messageContent) {
@@ -655,7 +725,7 @@
          *    - name                         {string}
          *    - myFriend                     {boolean}
          *    - online                       {boolean}
-         *    - lastseen                     {long}
+         *    - notSeenDuration              {long}
          *    - userId                       {long}
          */
 
@@ -666,14 +736,14 @@
           name: messageContent.name,
           myFriend: messageContent.myFriend,
           online: messageContent.online,
-          lastseen: messageContent.lastseen,
+          notSeenDuration: messageContent.notSeenDuration,
           userId: messageContent.userId
         };
 
         if (messageContent.image)
           participant.image = messageContent.image;
 
-        return JSON.parse(JSON.stringify(participant));
+        return participant;
       },
 
       formatDataToMakeConversation = function(messageContent) {
@@ -744,7 +814,7 @@
           conversation.lastMessageVO = formatDataToMakeMessage(messageContent.lastMessageVO);
         }
 
-        return JSON.parse(JSON.stringify(conversation));
+        return conversation;
       },
 
       formatDataToMakeReplyInfo = function(messageContent) {
@@ -768,7 +838,7 @@
           replyInfo.participant = formatDataToMakeParticipant(messageContent.participant);
         }
 
-        return JSON.parse(JSON.stringify(replyInfo));
+        return replyInfo;
       },
 
       formatDataToMakeForwardInfo = function(messageContent) {
@@ -794,7 +864,7 @@
           forwardInfo.participant = formatDataToMakeParticipant(messageContent.participant);
         }
 
-        return JSON.parse(JSON.stringify(forwardInfo));
+        return forwardInfo;
       },
 
       formatDataToMakeMessage = function(pushMessageVO) {
@@ -870,7 +940,7 @@
           message.participant = formatDataToMakeParticipant(pushMessageVO.participant);
         }
 
-        return JSON.parse(JSON.stringify(message));
+        return message;
       },
 
       reformatThreadHistory = function(threadId, historyContent) {
@@ -1045,7 +1115,7 @@
       });
     };
 
-    this.getThreadHistory = function(params, callback) {
+    this.getHistory = function(params, callback) {
       var sendMessageParams = {
         chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
         content: {},
@@ -1219,7 +1289,42 @@
 
     };
 
-    this.send = function(params, callbacks) {
+    this.renameThread = function(params, callback) {
+
+      var sendMessageParams = {
+        chatMessageVOType: chatMessageVOTypes.RENAME,
+        subjectId: params.threadId
+      };
+
+      if (params) {
+        if (typeof params.title === "string") {
+          sendMessageParams.content = params.title;
+        }
+      }
+
+      return sendMessage(sendMessageParams, {
+        onResult: function(result) {
+          var returnData = {
+            hasError: result.hasError,
+            errorMessage: result.errorMessage,
+            errorCode: result.errorCode
+          };
+
+          if (!returnData.hasError) {
+            var messageContent = result.result,
+              resultData = {
+                thread: createThread(messageContent)
+              };
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+        }
+      });
+    };
+
+    this.sendTextMessage = function(params, callbacks) {
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.MESSAGE,
         subjectId: params.threadId,
