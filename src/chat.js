@@ -117,10 +117,14 @@
         getHistoryCount: 100
       },
       CHAT_ERRORS = {
-        6000: "Invalid Token!",
-        6001: "No Active Device found for this Token!",
-        6002: "User not found!"
-      };
+        6000: "No Active Device found for this Token!",
+        6001: "Invalid Token!",
+        6002: "User not found!",
+        6100: "Cant get UserInfo!",
+        6101: "Getting User Info Retry Count exceded 5 times; Connection Not Estabilished!"
+      },
+      getUserInfoRetry = 5,
+      getUserInfoRetryCount = 0;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -149,10 +153,9 @@
             getUserInfo(function(userInfoResult) {
               if (!userInfoResult.hasError) {
                 userInfo = userInfoResult.result.user;
+                fireEvent("chatReady");
               }
             });
-
-            fireEvent("chatReady");
           });
 
           asyncClient.on("connect", function(newPeerId) {
@@ -264,7 +267,9 @@
         }
       },
 
-      getUserInfo = function(callback) {
+      getUserInfo = function getUserInfoRecursive(callback) {
+        getUserInfoRetryCount++;
+
         var sendMessageParams = {
           chatMessageVOType: chatMessageVOTypes.USER_INFO
         };
@@ -284,9 +289,18 @@
                 };
 
               returnData.result = resultData;
+              getUserInfoRetryCount = 0;
+              callback && callback(returnData);
+            } else {
+              if (getUserInfoRetryCount > getUserInfoRetry) {
+                fireEvent("error", {
+                  code: 6101,
+                  message: CHAT_ERRORS[6101]
+                });
+              } else {
+                getUserInfoRecursive(callback);
+              }
             }
-
-            callback && callback(returnData);
           }
         });
       },
@@ -457,7 +471,9 @@
       receivedMessageHandler = function(params) {
         var threadId = params.subjectId,
           type = params.type,
-          messageContent = (typeof params.content === 'string') ? JSON.parse(params.content) : {},
+          messageContent = (typeof params.content === 'string')
+            ? JSON.parse(params.content)
+            : {},
           contentCount = params.contentCount,
           uniqueId = params.uniqueId;
 
@@ -475,53 +491,23 @@
 
             // 3
           case chatMessageVOTypes.SENT:
-            if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onSent) {
-              sendMessageCallbacks[uniqueId].onSent(params);
-              delete(sendMessageCallbacks[uniqueId].onSent);
-            }
+            // if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onSent) {
+            //   sendMessageCallbacks[uniqueId].onSent(params);
+            //   delete(sendMessageCallbacks[uniqueId].onSent);
+            // }
+
+            // TODO: Should Sent callbacks works like delivery & seen too?
+            sendMessageCallbacksHandler(chatMessageVOTypes.SENT, threadId, uniqueId);
             break;
 
             // 4
           case chatMessageVOTypes.DELIVERY:
-            console.log("\n");
-            console.log(threadCallbacks[threadId]);
-            // console.log(Object.keys(threadCallbacks[threadId]).indexOf(uniqueId));
-
-            // var lastCallbackIndex = threadCallbacks[threadId].indexOf(uniqueId);
-            var lastCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
-            console.log(lastCallbackIndex);
-            console.log(uniqueId);
-            console.log(threadCallbacks[threadId][uniqueId]);
-            console.log("\n\n");
-
-            while (lastCallbackIndex > -1) {
-              // console.log(Object.entries(threadCallbacks[threadId][lastCallbackIndex]));
-              //   var lastEventCallbackIndex = threadCallbacks[threadId][lastCallbackIndex];
-              //   if (sendMessageCallbacks[lastEventCallbackIndex] && sendMessageCallbacks[lastEventCallbackIndex].onDeliver) {
-              //     sendMessageCallbacks[lastEventCallbackIndex].onDeliver({uniqueId: lastEventCallbackIndex});
-              //     delete(sendMessageCallbacks[lastEventCallbackIndex].onDeliver);
-              //     threadCallbacks[threadId][lastCallbackIndex].onDeliver = true;
-              //   }
-              //   lastCallbackIndex -= 1;
-              //   lastEventCallbackIndex = undefined;
-              // }
-              //
-              // if (threadCallbacks[threadId][uniqueId]) {
-              //   delete(threadCallbacks[threadId][uniqueId]);
-            }
-
-            if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onDeliver) {
-              sendMessageCallbacks[uniqueId].onDeliver(params);
-              delete(sendMessageCallbacks[uniqueId].onDeliver);
-            }
+            sendMessageCallbacksHandler(chatMessageVOTypes.DELIVERY, threadId, uniqueId);
             break;
 
             // 5
           case chatMessageVOTypes.SEEN:
-            if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onSeen) {
-              sendMessageCallbacks[uniqueId].onSeen(params);
-              delete(sendMessageCallbacks[uniqueId].onSeen);
-            }
+            sendMessageCallbacksHandler(chatMessageVOTypes.SEEN, threadId, uniqueId);
             break;
 
             // 10
@@ -599,13 +585,81 @@
         }
       },
 
+      sendMessageCallbacksHandler = function(actionType, threadId, uniqueId) {
+        switch (actionType) {
+          case chatMessageVOTypes.SENT:
+            var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
+            while (lastThreadCallbackIndex > -1) {
+              var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
+
+              if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onSent) {
+                sendMessageCallbacks[tempUniqueId].onSent({uniqueId: tempUniqueId});
+                delete(sendMessageCallbacks[tempUniqueId].onSent);
+                threadCallbacks[threadId][tempUniqueId].onSent = true;
+              }
+
+              lastThreadCallbackIndex -= 1;
+            }
+            break;
+
+          case chatMessageVOTypes.DELIVERY:
+            var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
+            while (lastThreadCallbackIndex > -1) {
+              var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
+
+              if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onDeliver) {
+                if (threadCallbacks[threadId][tempUniqueId] && threadCallbacks[threadId][tempUniqueId].onSent) {
+                  sendMessageCallbacks[tempUniqueId].onDeliver({uniqueId: tempUniqueId});
+                  delete(sendMessageCallbacks[tempUniqueId].onDeliver);
+                  threadCallbacks[threadId][tempUniqueId].onDeliver = true;
+                }
+              }
+
+              lastThreadCallbackIndex -= 1;
+            }
+            break;
+
+          case chatMessageVOTypes.SEEN:
+            var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
+            while (lastThreadCallbackIndex > -1) {
+              var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
+
+              if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onSeen) {
+                if (threadCallbacks[threadId][tempUniqueId] && threadCallbacks[threadId][tempUniqueId].onSent) {
+                  if (!threadCallbacks[threadId][tempUniqueId].onDeliver) {
+                    sendMessageCallbacks[tempUniqueId].onDeliver({uniqueId: tempUniqueId});
+                    delete(sendMessageCallbacks[tempUniqueId].onDeliver);
+                    threadCallbacks[threadId][tempUniqueId].onDeliver = true;
+                  }
+
+                  sendMessageCallbacks[tempUniqueId].onSeen({uniqueId: tempUniqueId});
+
+                  delete(sendMessageCallbacks[tempUniqueId].onSeen);
+                  threadCallbacks[threadId][tempUniqueId].onSeen = true;
+
+                  if (threadCallbacks[threadId][tempUniqueId].onSent && threadCallbacks[threadId][tempUniqueId].onDeliver && threadCallbacks[threadId][tempUniqueId].onSeen) {
+                    delete threadCallbacks[threadId][tempUniqueId];
+                    delete sendMessageCallbacks[tempUniqueId];
+                  }
+                }
+              }
+
+              lastThreadCallbackIndex -= 1;
+            }
+            break;
+
+          default:
+            break;
+        }
+      },
+
       chatMessageHandler = function(threadId, messageContent) {
-        var message = formatDataToMakeMessage(messageContent);
+        var message = formatDataToMakeMessage(threadId, messageContent);
         fireEvent("message", message);
       },
 
       chatEditMessageHandler = function(threadId, messageContent) {
-        var message = formatDataToMakeMessage(messageContent);
+        var message = formatDataToMakeMessage(threadId, messageContent);
         fireEvent("editMessage", message);
       },
 
@@ -648,11 +702,7 @@
          *    - uniqueId                      {string}
          *    - notSeenDuration               {long}
          *    - hasUser                       {boolean}
-         *    + linkedUser                    {object : RelatedUserVO}
-         *      - username                    {string}
-         *      - nickname                    {string}
-         *      - name                        {string}
-         *      - image                       {string}
+         *    - linkedUser                    {object : RelatedUserVO}
          */
 
         var contact = {
@@ -728,6 +778,7 @@
          *    - online                       {boolean}
          *    - notSeenDuration              {long}
          *    - userId                       {long}
+         *    - image                        {string}
          */
 
         var participant = {
@@ -813,7 +864,7 @@
 
         // Add lastMessageVO if exist
         if (messageContent.lastMessageVO) {
-          conversation.lastMessageVO = formatDataToMakeMessage(messageContent.lastMessageVO);
+          conversation.lastMessageVO = formatDataToMakeMessage(undefined, messageContent.lastMessageVO);
         }
 
         return conversation;
@@ -822,10 +873,7 @@
       formatDataToMakeReplyInfo = function(messageContent) {
         /**
          * + replyInfoVO                  {object : replyInfoVO}
-         *   + participant                {object : ParticipantVO}
-         *     - id                       {long}
-         *     - name                     {string}
-         *     - lastSeen                 {long}
+         *   - participant                {object : ParticipantVO}
          *   - repliedToMessageId         {long}
          *   - repliedToMessage           {string}
          */
@@ -846,14 +894,8 @@
       formatDataToMakeForwardInfo = function(messageContent) {
         /**
          * + forwardInfo                  {object : forwardInfoVO}
-         *   + participant                {object : ParticipantVO}
-         *     - id                       {long}
-         *     - name                     {string}
-         *     - lastSeen                 {long}
-         *   + conversation               {object : ConversationSummary}
-         *     - id                       {long}
-         *     - title                    {string}
-         *     - metadata                 {string}
+         *   - participant                {object : ParticipantVO}
+         *   - conversation               {object : ConversationSummary}
          */
 
         var forwardInfo = {
@@ -872,10 +914,12 @@
         return forwardInfo;
       },
 
-      formatDataToMakeMessage = function(pushMessageVO) {
+      formatDataToMakeMessage = function(threadId, pushMessageVO) {
         /**
          * + MessageVO                       {object}
          *    - id                           {long}
+         *    - threadId                     {long}
+         *    - ownerId                      {long}
          *    - uniqueId                     {string}
          *    - previousId                   {long}
          *    - message                      {string}
@@ -883,36 +927,17 @@
          *    - editable                     {boolean}
          *    - delivered                    {boolean}
          *    - seen                         {boolean}
-         *    + participant                  {object : ParticipantVO}
-         *      - id                         {long}
-         *      - name                       {string}
-         *      - lastSeen                   {long}
-         *    + conversation                 {object : ConversationVO}
-         *      - id                         {long}
-         *      - title                      {string}
-         *      - metadata                   {string}
-         *    + replyInfoVO                  {object : replyInfoVO}
-         *      + participant                {object : ParticipantVO}
-         *        - id                       {long}
-         *        - name                     {string}
-         *        - lastSeen                 {long}
-         *      - repliedToMessageId         {long}
-         *      - repliedToMessage           {string}
-         *    + forwardInfo                  {object : forwardInfoVO}
-         *      + participant                {object : ParticipantVO}
-         *        - id                       {long}
-         *        - name                     {string}
-         *        - lastSeen                 {long}
-         *      + conversation               {object : ConversationVO}
-         *        - id                       {long}
-         *        - title                    {string}
-         *        - metadata                 {string}
-         *    - time                         {long}
+         *    - participant                  {object : ParticipantVO}
+         *    - conversation                 {object : ConversationVO}
+         *    - replyInfoVO                  {object : replyInfoVO}
+         *    - forwardInfo                  {object : forwardInfoVO}
          *    - metadata                     {string}
+         *    - time                         {long}
          */
 
         var message = {
           id: pushMessageVO.id,
+          threadId: threadId,
           ownerId: undefined,
           uniqueId: pushMessageVO.uniqueId,
           previousId: pushMessageVO.previousId,
@@ -957,7 +982,7 @@
         var returnData = [];
 
         for (var i = 0; i < historyContent.length; i++) {
-          returnData.push(formatDataToMakeMessage(historyContent[i]));
+          returnData.push(formatDataToMakeMessage(threadId, historyContent[i]));
         }
 
         return returnData;
@@ -1366,7 +1391,7 @@
           if (!returnData.hasError) {
             var messageContent = result.result,
               resultData = {
-                editedMessage: formatDataToMakeMessage(messageContent)
+                editedMessage: formatDataToMakeMessage(undefined, messageContent)
               };
 
             returnData.result = resultData;
@@ -1389,8 +1414,37 @@
       }, callbacks);
     };
 
-    this.forwardMessage = function(params) {
-      var callbacks = {};
+    this.forwardMessage = function(params, callbacks) {
+      var threadId = params.subjectId,
+        uniqueIdsList = JSON.parse(params.uniqueId);
+
+      for (i in uniqueIdsList) {
+        var uniqueId = uniqueIdsList[i];
+
+        if (!threadCallbacks[threadId]) {
+          threadCallbacks[threadId] = {};
+        }
+
+        threadCallbacks[threadId][uniqueId] = {};
+
+        sendMessageCallbacks[uniqueId] = {};
+
+        if (callbacks.onSent) {
+          sendMessageCallbacks[uniqueId].onSent = callbacks.onSent;
+          threadCallbacks[threadId][uniqueId].onSent = false;
+          threadCallbacks[threadId][uniqueId].uniqueId = uniqueId;
+        }
+
+        if (callbacks.onSeen) {
+          sendMessageCallbacks[uniqueId].onSeen = callbacks.onSeen;
+          threadCallbacks[threadId][uniqueId].onSeen = false;
+        }
+
+        if (callbacks.onDeliver) {
+          sendMessageCallbacks[uniqueId].onDeliver = callbacks.onDeliver;
+          threadCallbacks[threadId][uniqueId].onDeliver = false;
+        }
+      }
 
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.FORWARD_MESSAGE,

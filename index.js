@@ -6,20 +6,20 @@ var params = {
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
-  // token: "afa51d8291dc4072a0831d3a18cb5030",  {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",   {**REQUIRED**} SSO Token Abedi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
-  // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
+  // token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
+  // token: "ed4be26a60c24ed594e266a2181424c5",  // {**REQUIRED**} SSO Token Abedi
+  // token: "e4f1d5da7b254d9381d0487387eabb0a", //  {**REQUIRED**} SSO Token Felfeli
+  // token: "bebc31c4ead6458c90b607496dae25c6", //  {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
   connectionCheckTimeoutThreshold: 20000, // Socket Ping time threshold
-  messageTtl: 5000, // Message time to live
+  messageTtl: 10000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    onMessageReceive: true, // log received messages on console
-    onMessageSend: true // log sent messaged on console
+    // onMessageReceive: true, // log received messages on console
+    // onMessageSend: true // log sent messaged on console
   }
 };
 
@@ -106,10 +106,10 @@ chatAgent.on("chatReady", function() {
   // var testCounter = 0;
   // var testInterval = setInterval(function() {
   //   sendMessage(83, "This is a Sample Message at " + new Date());
-  //   if (testCounter % 2 == 0)
-  //     sendMessage(213, "This is a Sample Message at " + new Date());
+  //    if (testCounter % 2 == 0)
+  //      sendMessage(213, "This is a Sample Message at " + new Date());
   //   testCounter += 1;
-  //   if(testCounter > 3)
+  //   if(testCounter > 5)
   //     clearInterval(testInterval);
   // }, 100);
   // sendMessage(83, "This is a Sample Message at " + new Date());
@@ -134,7 +134,9 @@ chatAgent.on("chatReady", function() {
    * @param uniqueIds
    * @param messagesId
    */
-  // forwardMessage(174, ["c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"], [486, 485]);
+  // forwardMessage(174, [
+  //   "c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"
+  // ], [486, 485]);
 
   /**
    * Listen to Edit Message Emitter
@@ -341,7 +343,17 @@ function forwardMessage(destination, uniqueIds, messagesId) {
     content: JSON.stringify(messagesId)
   };
 
-  chatAgent.forwardMessage(forwardChatParams);
+  chatAgent.forwardMessage(forwardChatParams, {
+    onSent: function(result) {
+      console.log(result.uniqueId + " \t has been Sent! (FORWARD)");
+    },
+    onDeliver: function(result) {
+      console.log(result.uniqueId + " \t has been Delivered! (FORWARD)");
+    },
+    onSeen: function(result) {
+      console.log(result.uniqueId + " \t has been Seen! (FORWARD)");
+    }
+  });
 }
 
 function createThread(invitees, threadType) {
