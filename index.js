@@ -5,11 +5,11 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
-  // token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",  // {**REQUIRED**} SSO Token Abedi
+  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  // token: "f53f39a1893e4c4da18e59822290a552", // {**REQUIRED**} SSO Token JiJi
+  // token: "1fcecc269a8949d6b58312cab66a4926", // {**REQUIRED**} SSO Token FiFi
   // token: "e4f1d5da7b254d9381d0487387eabb0a", //  {**REQUIRED**} SSO Token Felfeli
-  // token: "bebc31c4ead6458c90b607496dae25c6", //  {**REQUIRED**} SSO Token Alexi
+  // token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
@@ -58,7 +58,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(83, 5, 0);
+  // getHistory(293, 10, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -87,12 +87,12 @@ chatAgent.on("chatReady", function() {
    * @param invitees
    * @param threadType
    */
-  // createThread([323, 443], "NORMAL");
+  // createThread([562, 563], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
    */
-  // createThread(443);
+  // createThread(562);
 
   /**
    * RENAME THREAD
@@ -105,14 +105,14 @@ chatAgent.on("chatReady", function() {
 
   // var testCounter = 0;
   // var testInterval = setInterval(function() {
-  //   sendMessage(83, "This is a Sample Message at " + new Date());
-  //    if (testCounter % 2 == 0)
-  //      sendMessage(213, "This is a Sample Message at " + new Date());
+  //   sendMessage(293, "This is a Sample Message at " + new Date());
+  //     // if (testCounter % 2 == 0)
+  //     //   sendMessage(213, "This is a Sample Message at " + new Date());
   //   testCounter += 1;
-  //   if(testCounter > 5)
+  //   if(testCounter > 15)
   //     clearInterval(testInterval);
   // }, 100);
-  // sendMessage(83, "This is a Sample Message at " + new Date());
+  // sendMessage(293, "This is a Sample Message at " + new Date());
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -134,9 +134,9 @@ chatAgent.on("chatReady", function() {
    * @param uniqueIds
    * @param messagesId
    */
-  // forwardMessage(174, [
-  //   "c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"
-  // ], [486, 485]);
+  // forwardMessage(293, [
+  //   "f4647fdf-3db4-40c8-a038-bd87fdb084d0", "3d7b3b61-67d7-4a80-c63c-a4b4f9c3411a", "e51949d5-e2fd-4072-9f37-0fee797b9083"
+  // ], [2539, 2538, 2537]);
 
   /**
    * Listen to Edit Message Emitter

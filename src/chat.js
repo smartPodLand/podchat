@@ -318,6 +318,7 @@
          *    - medadata    {string}
          *    - repliedTo   {long}
          */
+
         var messageVO = {
           type: params.chatMessageVOType,
           token: token,

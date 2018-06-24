@@ -5,16 +5,16 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  // token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token Zamani
-  token: "afa51d8291dc4072a0831d3a18cb5030", // {**REQUIRED**} SSO Token Barzegar
-  // token: "ed4be26a60c24ed594e266a2181424c5",   {**REQUIRED**} SSO Token Abedi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
+  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
+  // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
+  // token: "e4f1d5da7b254d9381d0487387eabb0a", //  {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 90000, // Socket connection live time on server
   connectionCheckTimeoutThreshold: 20000, // Socket Ping time threshold
-  messageTtl: 5000, // Message time to live
+  messageTtl: 10000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
@@ -58,7 +58,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(83, 5, 0);
+  // getHistory(312, 10, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -87,7 +87,7 @@ chatAgent.on("chatReady", function() {
    * @param invitees
    * @param threadType
    */
-  // createThread([323, 443], "NORMAL");
+  // createThread([481, 482], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
@@ -103,11 +103,15 @@ chatAgent.on("chatReady", function() {
    * SEND MESSAGE IN THREAD
    */
 
-  // for (var m = 0; m < 3; m++) {
-  //   sendMessage(83, "This is a Sample Message at " + new Date());
-  //   if (m % 2 == 0)
-  //     sendMessage(213, "This is a Sample Message at " + new Date());
-  //   }
+  // var testCounter = 0;
+  // var testInterval = setInterval(function() {
+  //   sendMessage(291, "This is a Sample Message at " + new Date());
+  //     if (testCounter % 2 == 0)
+  //       sendMessage(213, "This is a Sample Message at " + new Date());
+  //   testCounter += 1;
+  //   if(testCounter > 15)
+  //     clearInterval(testInterval);
+  // }, 100);
   // sendMessage(83, "This is a Sample Message at " + new Date());
 
   /**
@@ -130,7 +134,13 @@ chatAgent.on("chatReady", function() {
    * @param uniqueIds
    * @param messagesId
    */
-  // forwardMessage(174, ["c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"], [486, 485]);
+  // forwardMessage(174, [
+  //   "c1561f36-3b46-422c-a5b2-ec1f044d222e", "3276dbea-33b2-4753-e29e-f1fc4640e1ab"
+  // ], [486, 485]);
+
+  // forwardMessage(231, [
+  //   "b22ce2ef-3572-4cb5-f434-96614d402df2", "bab2948c-c662-43f5-fbed-520265ef275a", "7fe9c1e1-b4a3-45d5-ee6d-72b104759a06"
+  // ], [2466, 2465, 2464]);
 
   /**
    * Listen to Edit Message Emitter
@@ -337,7 +347,17 @@ function forwardMessage(destination, uniqueIds, messagesId) {
     content: JSON.stringify(messagesId)
   };
 
-  chatAgent.forwardMessage(forwardChatParams);
+  chatAgent.forwardMessage(forwardChatParams, {
+    onSent: function(result) {
+      console.log(result.uniqueId + " \t has been Sent! (FORWARD)");
+    },
+    onDeliver: function(result) {
+      console.log(result.uniqueId + " \t has been Delivered! (FORWARD)");
+    },
+    onSeen: function(result) {
+      console.log(result.uniqueId + " \t has been Seen! (FORWARD)");
+    }
+  });
 }
 
 function createThread(invitees, threadType) {
