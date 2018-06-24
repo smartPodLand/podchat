@@ -69,11 +69,13 @@ chatAgent.on("chatReady", function() {
 
   /**
    * MUTE THREAD
+   * @param threadId
    */
   // muteThread(83);
 
   /**
    * UNMUTE THREAD
+   * @param threadId
    */
   // unMuteThread(83);
 
@@ -91,16 +93,20 @@ chatAgent.on("chatReady", function() {
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
+   * @param contactId
    */
   // createThread(562);
 
   /**
    * RENAME THREAD
+   * @param threadId
    */
   // renameThread(213, "New Thread Name");
 
   /**
    * SEND MESSAGE IN THREAD
+   * @param threadId
+   * @param newMessage
    */
 
   // var testCounter = 0;

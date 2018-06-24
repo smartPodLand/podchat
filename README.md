@@ -14,7 +14,7 @@ var params = {
   ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "c0866c4cc5274ea7ada6b01575b19d24", // {**REQUIRED**} SSO Token
+  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token
   consoleLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
@@ -37,6 +37,66 @@ chatAgent.on("chatReady", function() {
 chatAgent.on("error", function(error) {
   console.log("Error: ", error.code, error.message);
 });
+
+
+/**
+ * Listen to Receive Message Emitter
+ */
+chatAgent.on("message", function(msg) {
+  var params = {
+    messageId: msg.id,
+    owner: msg.ownerId
+  };
+
+  /**
+   * Sending Message Delivery to Sender
+   */
+  chatAgent.deliver(params);
+
+  /**
+   * Sending Message Seen to Sender after 5sec
+   */
+  setTimeout(function() {
+    chatAgent.seen(params);
+  }, 5000);
+});
+
+
+/**
+ * Listen to Edit Message Emitter
+ */
+chatAgent.on("editMessage", function(msg) {
+  console.log("Message with ID : " + msg.id + " inside Thread with ID : " + msg.threadId + " has been edited!");
+  console.log(msg);
+});
+
+
+/**
+ * Listen to New Thread Creation
+ */
+chatAgent.on("newThread", function(threadInfo) {
+  console.log("New Thread Has Been Created with You Taking Part in it!");
+  console.log(threadInfo);
+});
+
+
+/**
+ * Listen to Thread Info Update
+ */
+chatAgent.on("threadInfoUpdated", function(threadInfo) {
+  console.log("Some Thread has changed!");
+  console.log(threadInfo);
+});
+
+
+/**
+ * Listen to Thread Rename
+ */
+chatAgent.on("threadRename", function(threadInfo) {
+  console.log("Some Thread has renamed!");
+  console.log(threadInfo);
+});
+
 ```
 
 ### getUserInfo
@@ -193,10 +253,23 @@ chatAgent.replyMessage({
 ### forwardMessage
 
 ```javascript
-chatAgent.replyMessage({
-  subjectId: threadId,
-  uniqueId: JSON.stringify(uniqueIds),
-  content: JSON.stringify(messagesId)
+var uniqueIds = ["f4647fdf-3db4-40c8-a038-bd87fdb084d0", "3d7b3b61-67d7-4a80-c63c-a4b4f9c3411a", "e51949d5-e2fd-4072-9f37-0fee797b9083"],
+    messagesIds = [2539, 2538, 2537];
+
+chatAgent.forwardMessage({
+    subjectId: threadId,
+    uniqueId: JSON.stringify(uniqueIds),
+    content: JSON.stringify(messagesIds)
+  }, {
+  onSent: function(result) {
+    console.log(result.uniqueId + " \t has been Sent! (FORWARD)");
+  },
+  onDeliver: function(result) {
+    console.log(result.uniqueId + " \t has been Delivered! (FORWARD)");
+  },
+  onSeen: function(result) {
+    console.log(result.uniqueId + " \t has been Seen! (FORWARD)");
+  }
 });
 ```
 
@@ -218,6 +291,18 @@ chatAgent.unMuteThread({
     subjectId: threadId
   }, function(result) {
     console.log("Threaded has been successfully unMuted!");
+  }
+);
+```
+
+### renameThread
+
+```javascript
+chatAgent.renameThread({
+    title: newName,
+    threadId: threadId
+  }, function(result) {
+    console.log("Threaded has been successfully Renamed!");
   }
 );
 ```
