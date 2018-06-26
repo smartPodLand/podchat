@@ -6,34 +6,29 @@ var params = {
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552", // {**REQUIRED**} SSO Token JiJi
-  // token: "1fcecc269a8949d6b58312cab66a4926", // {**REQUIRED**} SSO Token FiFi
+  // token: "f53f39a1893e4c4da18e59822290a552",  {**REQUIRED**} SSO Token JiJi
+  // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   // token: "e4f1d5da7b254d9381d0487387eabb0a", //  {**REQUIRED**} SSO Token Felfeli
-  // token: "bebc31c4ead6458c90b607496dae25c6",  // {**REQUIRED**} SSO Token Alexi
+  // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
-  connectionCheckTimeout: 90000, // Socket connection live time on server
-  connectionCheckTimeoutThreshold: 20000, // Socket Ping time threshold
+  connectionCheckTimeout: 10000, // Socket connection live time on server
+  connectionCheckTimeoutThreshold: 2000, // Socket Ping time threshold
   messageTtl: 10000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    // onMessageReceive: true, // log received messages on console
-    // onMessageSend: true // log sent messaged on console
-  }
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true // log sent messaged on console
+  },
+  chatLogging: true,
+  chatLogFile: "errors.log",
+  chatLogLevel: 'info'
 };
 
 var PID;
 
 var chatAgent = new Chat(params);
-
-/**
-* Listen to Error Messages
-*/
-chatAgent.on("error", function(error) {
-  console.log("Error: ");
-  console.log(error.code, error.message);
-});
 
 chatAgent.on("chatReady", function() {
   /**
@@ -50,7 +45,7 @@ chatAgent.on("chatReady", function() {
   /**
    * GET THREAD PARTICIPANTS
    */
-  // getThreadParticipants(83);
+  // getThreadParticipants(312);
 
   /**
    * GET THREAD HISTORY
@@ -65,19 +60,19 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param messageId
    */
-  // getSingleMessage(83, 696);
+  // getSingleMessage(293, 2551);
 
   /**
    * MUTE THREAD
    * @param threadId
    */
-  // muteThread(83);
+  // muteThread(293);
 
   /**
    * UNMUTE THREAD
    * @param threadId
    */
-  // unMuteThread(83);
+  // unMuteThread(293);
 
   /**
    * GET CONTACTS
@@ -89,50 +84,40 @@ chatAgent.on("chatReady", function() {
    * @param invitees
    * @param threadType
    */
-  // createThread([562, 563], "NORMAL");
+  // createThread([568, 563], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
    * @param contactId
    */
-  // createThread(562);
+  // createThread(563);
 
   /**
    * RENAME THREAD
    * @param threadId
    */
-  // renameThread(213, "New Thread Name");
+  // renameThread(312, "New Thread Name");
 
   /**
    * SEND MESSAGE IN THREAD
    * @param threadId
    * @param newMessage
    */
-
-  // var testCounter = 0;
-  // var testInterval = setInterval(function() {
-  //   sendMessage(293, "This is a Sample Message at " + new Date());
-  //     // if (testCounter % 2 == 0)
-  //     //   sendMessage(213, "This is a Sample Message at " + new Date());
-  //   testCounter += 1;
-  //   if(testCounter > 15)
-  //     clearInterval(testInterval);
-  // }, 100);
-  // sendMessage(293, "This is a Sample Message at " + new Date());
+  // sendMessage(351, "This is a Sample Message at " + new Date());
 
   /**
    * EDIT MESSAGE IN THREAD
    * @param messageId  325 editable: false
    * @param newMessage
    */
-  // editMessage(887, "This message has been edited at " + new Date());
+  // editMessage(2551, "This message has been edited at " + new Date());
 
   /**
    * REPLY TO MESSAGE
    * @param threadId
    * @param messageId
    */
-  // replyMessage(83, 413, "This is a reply to message #413 at " + new Date());
+  // replyMessage(293, 2551, "This is a reply to message #413 at " + new Date());
 
   /**
    * REPLY TO MESSAGE
@@ -143,62 +128,77 @@ chatAgent.on("chatReady", function() {
   // forwardMessage(293, [
   //   "f4647fdf-3db4-40c8-a038-bd87fdb084d0", "3d7b3b61-67d7-4a80-c63c-a4b4f9c3411a", "e51949d5-e2fd-4072-9f37-0fee797b9083"
   // ], [2539, 2538, 2537]);
+});
+
+/**
+* Listen to Error Messages
+*/
+chatAgent.on("error", function(error) {
+  console.log("Error: ");
+  console.log(error.code, error.message, error.error);
+});
+
+/**
+* Listen to Chat State Changes
+*/
+chatAgent.on("chatState", function(chatState) {
+  // console.log("Current Chat state is", chatState);
+});
+
+/**
+ * Listen to Edit Message Emitter
+ */
+chatAgent.on("editMessage", function(msg) {
+  console.log("Message with ID : " + msg.id + " inside Thread with ID : " + msg.threadId + " has been edited!");
+  console.log(msg);
+});
+
+/**
+ * Listen to Receive Message Emitter
+ */
+chatAgent.on("message", function(msg) {
+  var params = {
+    messageId: msg.id,
+    owner: msg.ownerId
+  };
+
+  // console.log(msg);
 
   /**
-   * Listen to Edit Message Emitter
+   * Sending Message Delivery to Sender
    */
-  chatAgent.on("editMessage", function(msg) {
-    console.log("Message with ID : " + msg.id + " inside Thread with ID : " + msg.threadId + " has been edited!");
-    console.log(msg);
-  });
+  chatAgent.deliver(params);
 
   /**
-   * Listen to Receive Message Emitter
+   * Sending Message Seen to Sender after 5sec
    */
-  chatAgent.on("message", function(msg) {
-    var params = {
-      messageId: msg.id,
-      owner: msg.ownerId
-    };
+  setTimeout(function() {
+    chatAgent.seen(params);
+  }, 5000);
+});
 
-    // console.log(msg);
+/**
+ * Listen to New Thread Creation
+ */
+chatAgent.on("newThread", function(threadInfo) {
+  console.log("New Thread Has Been Created with You Taking Part in it!");
+  console.log(threadInfo);
+});
 
-    /**
-     * Sending Message Delivery to Sender
-     */
-    chatAgent.deliver(params);
+/**
+ * Listen to Thread Info Update
+ */
+chatAgent.on("threadInfoUpdated", function(threadInfo) {
+  console.log("Some Thread has changed!");
+  console.log(threadInfo);
+});
 
-    /**
-     * Sending Message Seen to Sender after 5sec
-     */
-    setTimeout(function() {
-      chatAgent.seen(params);
-    }, 5000);
-  });
-
-  /**
-   * Listen to New Thread Creation
-   */
-  chatAgent.on("newThread", function(threadInfo) {
-    console.log("New Thread Has Been Created with You Taking Part in it!");
-    console.log(threadInfo);
-  });
-
-  /**
-   * Listen to Thread Info Update
-   */
-  chatAgent.on("threadInfoUpdated", function(threadInfo) {
-    console.log("Some Thread has changed!");
-    console.log(threadInfo);
-  });
-
-  /**
-   * Listen to Thread Rename
-   */
-  chatAgent.on("threadRename", function(threadInfo) {
-    console.log("Some Thread has renamed!");
-    console.log(threadInfo);
-  });
+/**
+ * Listen to Thread Rename
+ */
+chatAgent.on("threadRename", function(threadInfo) {
+  console.log("Some Thread has renamed!");
+  console.log(threadInfo);
 });
 
 function getUserInfo() {
@@ -331,13 +331,13 @@ function replyMessage(threadId, messageId, message) {
 
   chatAgent.replyMessage(replyChatParams, {
     onSent: function(result) {
-      console.log(result.uniqueId + " \t has been Sent!");
+      console.log(result.uniqueId + " \t has been Sent! (Reply)");
     },
     onDeliver: function(result) {
-      console.log(result.uniqueId + " \t has been Delivered!");
+      console.log(result.uniqueId + " \t has been Delivered! (Reply)");
     },
     onSeen: function(result) {
-      console.log(result.uniqueId + " \t has been Seen!");
+      console.log(result.uniqueId + " \t has been Seen! (Reply)");
     }
   });
 }

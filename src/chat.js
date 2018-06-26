@@ -10,14 +10,13 @@
 
   function Chat(params) {
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
-      Async = require('podasync');
-      ChatUtility = require('./utility/utility.js');
-      podLogger = require('./log/log.js');
-      http = require('http');
+      var Async = require('podasync'),
+        ChatUtility = require('./utility/utility.js'),
+        http = require('http'),
+        winston = require('winston');
     } else {
       Async = POD.Async;
       ChatUtility = POD.ChatUtility;
-      podLogger = POD.Log;
     }
 
     /*******************************************************
@@ -25,6 +24,23 @@
      *******************************************************/
 
     var Utility = new ChatUtility();
+
+    var loggerTransports = [new winston.transports.File({filename: 'chatLog.log'})];
+
+    if (params.chatLogging)
+      loggerTransports.push(new winston.transports.Console());
+
+    if (params.chatLogFile)
+      loggerTransports.push(new winston.transports.File({filename: params.chatLogFile, level: params.chatLogLevel}));
+
+    var logger = winston.createLogger({
+      exitOnError: false,
+      level: (params.chatLogLevel)
+        ? params.chatLogLevel
+        : 'info',
+      format: winston.format.combine(winston.format.colorize(), winston.format.timestamp(), winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)),
+      transports: loggerTransports
+    });
 
     var asyncClient,
       peerId,
@@ -55,7 +71,8 @@
         logout: {},
         report: {},
         chatReady: {},
-        error: {}
+        error: {},
+        chatState: {}
       },
       messagesCallbacks = {},
       sendMessageCallbacks = {},
@@ -121,10 +138,17 @@
         6001: "Invalid Token!",
         6002: "User not found!",
         6100: "Cant get UserInfo!",
-        6101: "Getting User Info Retry Count exceded 5 times; Connection Not Estabilished!"
+        6101: "Getting User Info Retry Count exceeded 5 times; Connection Can Not Estabilish!",
+        6200: "Network Error"
       },
       getUserInfoRetry = 5,
-      getUserInfoRetryCount = 0;
+      getUserInfoRetryCount = 0,
+      asyncStateTypes = {
+        0: "CONNECTING",
+        1: "CONNECTED",
+        2: "CLOSING",
+        3: "CLOSED"
+      };
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -147,15 +171,39 @@
             asyncLogging: params.asyncLogging
           });
 
-          asyncClient.asyncReady(function() {
+          asyncClient.on("asyncReady", function() {
+            logger.info("Async Client is ready!");
             peerId = asyncClient.getPeerId();
 
-            getUserInfo(function(userInfoResult) {
-              if (!userInfoResult.hasError) {
-                userInfo = userInfoResult.result.user;
-                fireEvent("chatReady");
-              }
-            });
+            if (!userInfo) {
+              getUserInfo(function(userInfoResult) {
+                if (!userInfoResult.hasError) {
+                  userInfo = userInfoResult.result.user;
+                  fireEvent("chatReady");
+                }
+              });
+            }
+          });
+
+          asyncClient.on("stateChange", function(state) {
+            logger.info(JSON.stringify(state));
+            fireEvent("chatState", asyncStateTypes[state.socketState]);
+
+            switch (state) {
+                // CONNECTED
+              case 1:
+                break;
+
+                // CONNECTING
+              case 0:
+
+                // CLOSING
+              case 2:
+
+                // CLOSED
+              case 3:
+                break;
+            }
           });
 
           asyncClient.on("connect", function(newPeerId) {
@@ -177,6 +225,10 @@
           asyncClient.on("message", function(params, ack) {
             pushMessageHandler(params);
             ack && ack();
+          });
+
+          asyncClient.on("error", function(error) {
+            logger.error(JSON.stringify(error));
           });
         });
       },
@@ -214,7 +266,8 @@
                 if (!deviceId) {
                   fireEvent("error", {
                     code: 6000,
-                    message: CHAT_ERRORS[6000]
+                    message: CHAT_ERRORS[6000],
+                    error: null
                   });
                 } else {
                   callback(deviceId);
@@ -222,9 +275,16 @@
               } else {
                 fireEvent("error", {
                   code: 6001,
-                  message: CHAT_ERRORS[6001]
+                  message: CHAT_ERRORS[6001],
+                  error: null
                 });
               }
+            });
+          }).on('error', function(error) {
+            fireEvent("error", {
+              code: 6200,
+              message: CHAT_ERRORS[6200],
+              error: error
             });
           });
 
@@ -251,7 +311,8 @@
                 if (!deviceId) {
                   fireEvent("error", {
                     code: 6000,
-                    message: CHAT_ERRORS[6000]
+                    message: CHAT_ERRORS[6000],
+                    error: null
                   });
                 } else {
                   callback(deviceId);
@@ -259,9 +320,16 @@
               } else {
                 fireEvent("error", {
                   code: 6001,
-                  message: CHAT_ERRORS[6001]
+                  message: CHAT_ERRORS[6001],
+                  error: null
                 });
               }
+            } else {
+              fireEvent("error", {
+                code: 6200,
+                message: CHAT_ERRORS[6200],
+                error: null
+              });
             }
           }
         }
@@ -295,7 +363,8 @@
               if (getUserInfoRetryCount > getUserInfoRetry) {
                 fireEvent("error", {
                   code: 6101,
-                  message: CHAT_ERRORS[6101]
+                  message: CHAT_ERRORS[6101],
+                  error: null
                 });
               } else {
                 getUserInfoRecursive(callback);
@@ -307,17 +376,17 @@
 
       sendMessage = function(params, callbacks) {
         /**
-         * + ChatMessage    {object}
-         *    - token       {string}
-         *    - tokenIssuer {string}
-         *    - type        {int}
-         *    - subjectId   {long}
-         *    - uniqueId    {string}
-         *    - content     {string}
-         *    - time        {long}
-         *    - medadata    {string}
-         *    - repliedTo   {long}
-         */
+           * + ChatMessage    {object}
+           *    - token       {string}
+           *    - tokenIssuer {string}
+           *    - type        {int}
+           *    - subjectId   {long}
+           *    - uniqueId    {string}
+           *    - content     {string}
+           *    - time        {long}
+           *    - medadata    {string}
+           *    - repliedTo   {long}
+           */
 
         var messageVO = {
           type: params.chatMessageVOType,
@@ -395,19 +464,19 @@
         }
 
         /**
-        * Message to send through async SDK
-        *
-        * + MessageWrapperVO  {object}
-        *    - type           {int}       Type of ASYNC message based on content
-        *    + content        {string}
-        *       -peerName     {string}    Name of receiver Peer
-        *       -receivers[]  {long}      Array of receiver peer ids (if you use this, peerName will be ignored)
-        *       -priority     {int}       priority of message 1-10, lower has more priority
-        *       -messageId    {long}      id of message on your side, not required
-        *       -ttl          {long}      Time to live for message in milliseconds
-        *       -content      {string}    Chat Message goes here after stringifying
-        *    - trackId        {long}      Tracker id of message that you receive from DIRANA previously (if you are replying a sync message)
-        */
+            * Message to send through async SDK
+            *
+            * + MessageWrapperVO  {object}
+            *    - type           {int}       Type of ASYNC message based on content
+            *    + content        {string}
+            *       -peerName     {string}    Name of receiver Peer
+            *       -receivers[]  {long}      Array of receiver peer ids (if you use this, peerName will be ignored)
+            *       -priority     {int}       priority of message 1-10, lower has more priority
+            *       -messageId    {long}      id of message on your side, not required
+            *       -ttl          {long}      Time to live for message in milliseconds
+            *       -content      {string}    Chat Message goes here after stringifying
+            *    - trackId        {long}      Tracker id of message that you receive from DIRANA previously (if you are replying a sync message)
+            */
 
         var data = {
           type: (typeof params.pushMsgType == "number")
@@ -439,8 +508,7 @@
         lastSentMessageTime = new Date();
         lastSentMessageTimeoutId = setTimeout(function() {
           var currentTime = new Date();
-
-          if (currentTime - lastSentMessageTime > chatPingMessageInterval) {
+          if (currentTime - lastSentMessageTime > chatPingMessageInterval - 100) {
             ping();
           }
         }, chatPingMessageInterval);
@@ -492,13 +560,11 @@
 
             // 3
           case chatMessageVOTypes.SENT:
-            // if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onSent) {
-            //   sendMessageCallbacks[uniqueId].onSent(params);
-            //   delete(sendMessageCallbacks[uniqueId].onSent);
-            // }
-
-            // TODO: Should Sent callbacks works like delivery & seen too?
-            sendMessageCallbacksHandler(chatMessageVOTypes.SENT, threadId, uniqueId);
+            if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onSent) {
+              sendMessageCallbacks[uniqueId].onSent({uniqueId: uniqueId});
+              delete(sendMessageCallbacks[uniqueId].onSent);
+              threadCallbacks[threadId][uniqueId].onSent = true;
+            }
             break;
 
             // 4
@@ -581,27 +647,18 @@
           case chatMessageVOTypes.ERROR:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(true, messageContent.message, messageContent.code, messageContent, 0));
-            fireEvent("error", messageContent);
+
+            fireEvent("error", "error", {
+              code: messageContent.code,
+              message: messageContent.message,
+              error: messageContent
+            });
             break;
         }
       },
 
       sendMessageCallbacksHandler = function(actionType, threadId, uniqueId) {
         switch (actionType) {
-          case chatMessageVOTypes.SENT:
-            var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
-            while (lastThreadCallbackIndex > -1) {
-              var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
-
-              if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onSent) {
-                sendMessageCallbacks[tempUniqueId].onSent({uniqueId: tempUniqueId});
-                delete(sendMessageCallbacks[tempUniqueId].onSent);
-                threadCallbacks[threadId][tempUniqueId].onSent = true;
-              }
-
-              lastThreadCallbackIndex -= 1;
-            }
-            break;
 
           case chatMessageVOTypes.DELIVERY:
             var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
@@ -1018,9 +1075,7 @@
     };
 
     this.getPeerId = function() {
-      asyncClient.asyncReady(function() {
-        return peerId = asyncClient.getPeerId();
-      });
+      return peerId;
     };
 
     this.getUserInfo = getUserInfo;

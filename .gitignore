@@ -57,3 +57,7 @@ typings/
 
 # dotenv environment variables file
 .env
+
+# test index files
+# index.js
+index2.js
