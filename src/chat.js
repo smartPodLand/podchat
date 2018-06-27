@@ -12,8 +12,7 @@
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
       var Async = require('podasync'),
         ChatUtility = require('./utility/utility.js'),
-        http = require('http'),
-        winston = require('winston');
+        http = require('http');
     } else {
       Async = POD.Async;
       ChatUtility = POD.ChatUtility;
@@ -24,23 +23,6 @@
      *******************************************************/
 
     var Utility = new ChatUtility();
-
-    var loggerTransports = [new winston.transports.File({filename: 'chatLog.log'})];
-
-    if (params.chatLogging)
-      loggerTransports.push(new winston.transports.Console());
-
-    if (params.chatLogFile)
-      loggerTransports.push(new winston.transports.File({filename: params.chatLogFile, level: params.chatLogLevel}));
-
-    var logger = winston.createLogger({
-      exitOnError: false,
-      level: (params.chatLogLevel)
-        ? params.chatLogLevel
-        : 'info',
-      format: winston.format.combine(winston.format.colorize(), winston.format.timestamp(), winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)),
-      transports: loggerTransports
-    });
 
     var asyncClient,
       peerId,
@@ -148,7 +130,8 @@
         1: "CONNECTED",
         2: "CLOSING",
         3: "CLOSED"
-      };
+      },
+      chatState = false;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -172,13 +155,13 @@
           });
 
           asyncClient.on("asyncReady", function() {
-            logger.info("Async Client is ready!");
             peerId = asyncClient.getPeerId();
 
             if (!userInfo) {
               getUserInfo(function(userInfoResult) {
                 if (!userInfoResult.hasError) {
                   userInfo = userInfoResult.result.user;
+                  chatState = true;
                   fireEvent("chatReady");
                 }
               });
@@ -186,22 +169,18 @@
           });
 
           asyncClient.on("stateChange", function(state) {
-            logger.info(JSON.stringify(state));
             fireEvent("chatState", asyncStateTypes[state.socketState]);
 
-            switch (state) {
-                // CONNECTED
-              case 1:
+            switch (state.socketState) {
+              case 1: // CONNECTED
+                chatState = true;
+                ping();
                 break;
 
-                // CONNECTING
-              case 0:
-
-                // CLOSING
-              case 2:
-
-                // CLOSED
-              case 3:
+              case 0: // CONNECTING
+              case 2: // CLOSING
+              case 3: // CLOSED
+                chatState = false;
                 break;
             }
           });
@@ -228,7 +207,11 @@
           });
 
           asyncClient.on("error", function(error) {
-            logger.error(JSON.stringify(error));
+            fireEvent("error", {
+              code: error.errorCode,
+              message: error.errorMessage,
+              error: error.errorEvent
+            });
           });
         });
       },
@@ -517,7 +500,8 @@
       },
 
       ping = function() {
-        sendMessage({chatMessageVOType: chatMessageVOTypes.PING, pushMsgType: 4});
+        if (chatState)
+          sendMessage({chatMessageVOType: chatMessageVOTypes.PING, pushMsgType: 4});
       },
 
       pushMessageHandler = function(params) {
@@ -648,7 +632,7 @@
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(true, messageContent.message, messageContent.code, messageContent, 0));
 
-            fireEvent("error", "error", {
+            fireEvent("error", {
               code: messageContent.code,
               message: messageContent.message,
               error: messageContent

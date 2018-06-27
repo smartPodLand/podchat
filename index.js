@@ -20,10 +20,7 @@ var params = {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
     onMessageSend: true // log sent messaged on console
-  },
-  chatLogging: true,
-  chatLogFile: "errors.log",
-  chatLogLevel: 'info'
+  }
 };
 
 var PID;

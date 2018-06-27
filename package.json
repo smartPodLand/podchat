@@ -26,8 +26,7 @@
   },
   "homepage": "https://github.com/masoudmanson/pod-chat#readme",
   "dependencies": {
-    "podasync": "^2.3.0",
-    "winston": "^3.0.0"
+    "podasync": "^2.3.0"
   },
   "devDependencies": {
     "mocha": "^5.1.1"
