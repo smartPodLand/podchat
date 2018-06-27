@@ -500,8 +500,9 @@
       },
 
       ping = function() {
-        if (chatState)
+        if (chatState) {
           sendMessage({chatMessageVOType: chatMessageVOTypes.PING, pushMsgType: 4});
+        }
       },
 
       pushMessageHandler = function(params) {
@@ -645,48 +646,56 @@
         switch (actionType) {
 
           case chatMessageVOTypes.DELIVERY:
-            var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
-            while (lastThreadCallbackIndex > -1) {
-              var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
+            if (threadCallbacks[threadId]) {
+              var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
+              if (lastThreadCallbackIndex) {
+                while (lastThreadCallbackIndex > -1) {
+                  var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
 
-              if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onDeliver) {
-                if (threadCallbacks[threadId][tempUniqueId] && threadCallbacks[threadId][tempUniqueId].onSent) {
-                  sendMessageCallbacks[tempUniqueId].onDeliver({uniqueId: tempUniqueId});
-                  delete(sendMessageCallbacks[tempUniqueId].onDeliver);
-                  threadCallbacks[threadId][tempUniqueId].onDeliver = true;
+                  if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onDeliver) {
+                    if (threadCallbacks[threadId][tempUniqueId] && threadCallbacks[threadId][tempUniqueId].onSent) {
+                      sendMessageCallbacks[tempUniqueId].onDeliver({uniqueId: tempUniqueId});
+                      delete(sendMessageCallbacks[tempUniqueId].onDeliver);
+                      threadCallbacks[threadId][tempUniqueId].onDeliver = true;
+                    }
+                  }
+
+                  lastThreadCallbackIndex -= 1;
                 }
               }
-
-              lastThreadCallbackIndex -= 1;
             }
             break;
 
           case chatMessageVOTypes.SEEN:
-            var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
-            while (lastThreadCallbackIndex > -1) {
-              var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
+            if (threadCallbacks[threadId]) {
+              var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
+              if (lastThreadCallbackIndex) {
+                while (lastThreadCallbackIndex > -1) {
+                  var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
 
-              if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onSeen) {
-                if (threadCallbacks[threadId][tempUniqueId] && threadCallbacks[threadId][tempUniqueId].onSent) {
-                  if (!threadCallbacks[threadId][tempUniqueId].onDeliver) {
-                    sendMessageCallbacks[tempUniqueId].onDeliver({uniqueId: tempUniqueId});
-                    delete(sendMessageCallbacks[tempUniqueId].onDeliver);
-                    threadCallbacks[threadId][tempUniqueId].onDeliver = true;
+                  if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onSeen) {
+                    if (threadCallbacks[threadId][tempUniqueId] && threadCallbacks[threadId][tempUniqueId].onSent) {
+                      if (!threadCallbacks[threadId][tempUniqueId].onDeliver) {
+                        sendMessageCallbacks[tempUniqueId].onDeliver({uniqueId: tempUniqueId});
+                        delete(sendMessageCallbacks[tempUniqueId].onDeliver);
+                        threadCallbacks[threadId][tempUniqueId].onDeliver = true;
+                      }
+
+                      sendMessageCallbacks[tempUniqueId].onSeen({uniqueId: tempUniqueId});
+
+                      delete(sendMessageCallbacks[tempUniqueId].onSeen);
+                      threadCallbacks[threadId][tempUniqueId].onSeen = true;
+
+                      if (threadCallbacks[threadId][tempUniqueId].onSent && threadCallbacks[threadId][tempUniqueId].onDeliver && threadCallbacks[threadId][tempUniqueId].onSeen) {
+                        delete threadCallbacks[threadId][tempUniqueId];
+                        delete sendMessageCallbacks[tempUniqueId];
+                      }
+                    }
                   }
 
-                  sendMessageCallbacks[tempUniqueId].onSeen({uniqueId: tempUniqueId});
-
-                  delete(sendMessageCallbacks[tempUniqueId].onSeen);
-                  threadCallbacks[threadId][tempUniqueId].onSeen = true;
-
-                  if (threadCallbacks[threadId][tempUniqueId].onSent && threadCallbacks[threadId][tempUniqueId].onDeliver && threadCallbacks[threadId][tempUniqueId].onSeen) {
-                    delete threadCallbacks[threadId][tempUniqueId];
-                    delete sendMessageCallbacks[tempUniqueId];
-                  }
+                  lastThreadCallbackIndex -= 1;
                 }
               }
-
-              lastThreadCallbackIndex -= 1;
             }
             break;
 
@@ -1498,7 +1507,7 @@
     };
 
     this.deliver = function(params) {
-      if (params.owner !== userInfo.id) {
+      if (userInfo && params.owner !== userInfo.id) {
         return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, content: params.messageId, pushMsgType: 3});
       }
     }

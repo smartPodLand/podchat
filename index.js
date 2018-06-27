@@ -8,7 +8,7 @@ var params = {
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   // token: "f53f39a1893e4c4da18e59822290a552",  {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a", //  {**REQUIRED**} SSO Token Felfeli
+  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -35,9 +35,12 @@ chatAgent.on("chatReady", function() {
 
   /**
    * GET THREADS
-   * @param count
    */
-  // getThreads(10);
+  getThreads({
+    count: 50,
+    offset: 0,
+    threadIds: [351, 376]
+  });
 
   /**
    * GET THREAD PARTICIPANTS
@@ -50,7 +53,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(293, 10, 0);
+  // getHistory(351, 10, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -100,6 +103,11 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param newMessage
    */
+  // setTimeout(() => {
+  //   setInterval(() => {
+  //     sendMessage(351, "This is a Sample Message at " + new Date());
+  //   }, 500);
+  // }, 10000);
   // sendMessage(351, "This is a Sample Message at " + new Date());
 
   /**
@@ -204,17 +212,8 @@ function getUserInfo() {
   });
 }
 
-function getThreads(count) {
-  var getThreadsParams = {
-    count: 50,
-    offset: 0
-  };
-
-  if (typeof count == "number") {
-    getThreadsParams.count = count;
-  }
-
-  chatAgent.getThreads(getThreadsParams, function(threadsResult) {
+function getThreads(params) {
+  chatAgent.getThreads(params, function(threadsResult) {
     if (!threadsResult.hasError) {
       var threadsCount = threadsResult.result.contentCount;
       var threads = threadsResult.result.threads;
