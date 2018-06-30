@@ -500,7 +500,7 @@
       },
 
       ping = function() {
-        if (chatState) {
+        if (chatState && peerId !== undefined) {
           sendMessage({chatMessageVOType: chatMessageVOTypes.PING, pushMsgType: 4});
         }
       },
@@ -648,10 +648,9 @@
           case chatMessageVOTypes.DELIVERY:
             if (threadCallbacks[threadId]) {
               var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
-              if (lastThreadCallbackIndex) {
+              if (lastThreadCallbackIndex !== undefined) {
                 while (lastThreadCallbackIndex > -1) {
                   var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
-
                   if (sendMessageCallbacks[tempUniqueId] && sendMessageCallbacks[tempUniqueId].onDeliver) {
                     if (threadCallbacks[threadId][tempUniqueId] && threadCallbacks[threadId][tempUniqueId].onSent) {
                       sendMessageCallbacks[tempUniqueId].onDeliver({uniqueId: tempUniqueId});
@@ -669,7 +668,7 @@
           case chatMessageVOTypes.SEEN:
             if (threadCallbacks[threadId]) {
               var lastThreadCallbackIndex = Object.keys(threadCallbacks[threadId]).indexOf(uniqueId);
-              if (lastThreadCallbackIndex) {
+              if (lastThreadCallbackIndex !== undefined) {
                 while (lastThreadCallbackIndex > -1) {
                   var tempUniqueId = Object.entries(threadCallbacks[threadId])[lastThreadCallbackIndex][0];
 
@@ -706,6 +705,7 @@
 
       chatMessageHandler = function(threadId, messageContent) {
         var message = formatDataToMakeMessage(threadId, messageContent);
+        deliver({messageId: message.id, ownerId: message.participant.id});
         fireEvent("message", message);
       },
 
@@ -1049,6 +1049,12 @@
         return returnData;
       },
 
+      deliver = function(params) {
+        if (userInfo && params.ownerId !== userInfo.id) {
+          return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, content: params.messageId, pushMsgType: 3});
+        }
+      },
+
       fireEvent = function(eventName, param) {
         for (var id in eventCallbacks[eventName]) {
           eventCallbacks[eventName][id](param);
@@ -1251,6 +1257,11 @@
                 hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount && messageLength > 0),
                 nextOffset: sendMessageParams.content.offset += messageLength
               };
+
+            if (messageLength > 0) {
+              var lastMessage = messageContent.shift();
+              deliver({messageId: lastMessage.id, ownerId: lastMessage.participant.id});
+            }
 
             returnData.result = resultData;
           }
@@ -1465,14 +1476,18 @@
 
     this.forwardMessage = function(params, callbacks) {
       var threadId = params.subjectId,
-        uniqueIdsList = JSON.parse(params.uniqueId);
+      messageIdsList = JSON.parse(params.content),
+      uniqueIdsList = [];
 
-      for (i in uniqueIdsList) {
-        var uniqueId = uniqueIdsList[i];
+      for (i in messageIdsList) {
+        var messageId = messageIdsList[i];
 
         if (!threadCallbacks[threadId]) {
           threadCallbacks[threadId] = {};
         }
+
+        var uniqueId = Utility.generateUUID();
+        uniqueIdsList.push(uniqueId);
 
         threadCallbacks[threadId][uniqueId] = {};
 
@@ -1495,25 +1510,22 @@
         }
       }
 
+
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.FORWARD_MESSAGE,
         subjectId: params.subjectId,
         repliedTo: params.repliedTo,
         content: params.content,
-        uniqueId: params.uniqueId,
+        uniqueId: JSON.stringify(uniqueIdsList),
         metaData: params.metaData,
         pushMsgType: 4
       }, callbacks);
     };
 
-    this.deliver = function(params) {
-      if (userInfo && params.owner !== userInfo.id) {
-        return sendMessage({chatMessageVOType: chatMessageVOTypes.DELIVERY, content: params.messageId, pushMsgType: 3});
-      }
-    }
+    this.deliver = deliver(params);
 
     this.seen = function(params) {
-      if (params.owner !== userInfo.id) {
+      if (userInfo && params.ownerId !== userInfo.id) {
         return sendMessage({chatMessageVOType: chatMessageVOTypes.SEEN, content: params.messageId, pushMsgType: 3});
       }
     }

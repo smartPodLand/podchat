@@ -6,8 +6,8 @@ var params = {
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552",  {**REQUIRED**} SSO Token JiJi
-  token: "1fcecc269a8949d6b58312cab66a4926",  //{**REQUIRED**} SSO Token FiFi
+  token: "f53f39a1893e4c4da18e59822290a552", // {**REQUIRED**} SSO Token JiJi
+  // token: "1fcecc269a8949d6b58312cab66a4926",  //{**REQUIRED**} SSO Token FiFi
   // token: "e4f1d5da7b254d9381d0487387eabb0a", //  {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
@@ -53,7 +53,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(293, 10, 0);
+  // getHistory(293, 5, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -159,15 +159,8 @@ chatAgent.on("editMessage", function(msg) {
 chatAgent.on("message", function(msg) {
   var params = {
     messageId: msg.id,
-    owner: msg.ownerId
+    ownerID: msg.ownerId
   };
-
-  // console.log(msg);
-
-  /**
-   * Sending Message Delivery to Sender
-   */
-  chatAgent.deliver(params);
 
   /**
    * Sending Message Seen to Sender after 5sec

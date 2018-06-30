@@ -6,7 +6,7 @@ var params = {
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552",  {**REQUIRED**} SSO Token JiJi
+  // token: "f53f39a1893e4c4da18e59822290a552",   {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
@@ -36,16 +36,16 @@ chatAgent.on("chatReady", function() {
   /**
    * GET THREADS
    */
-  getThreads({
-    count: 50,
-    offset: 0,
-    threadIds: [351, 376]
-  });
+  // getThreads({
+  //   count: 50,
+  //   offset: 0,
+  //   threadIds: [351, 376]
+  // });
 
   /**
    * GET THREAD PARTICIPANTS
    */
-  // getThreadParticipants(312);
+  // getThreadParticipants(293);
 
   /**
    * GET THREAD HISTORY
@@ -53,7 +53,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(351, 10, 0);
+  // getHistory(293, 4, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -103,12 +103,7 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param newMessage
    */
-  // setTimeout(() => {
-  //   setInterval(() => {
-  //     sendMessage(351, "This is a Sample Message at " + new Date());
-  //   }, 500);
-  // }, 10000);
-  // sendMessage(351, "This is a Sample Message at " + new Date());
+  // sendMessage(293, "This is a Sample Message at " + new Date());
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -127,12 +122,9 @@ chatAgent.on("chatReady", function() {
   /**
    * REPLY TO MESSAGE
    * @param destination
-   * @param uniqueIds
-   * @param messagesId
+   * @param messageIds
    */
-  // forwardMessage(293, [
-  //   "f4647fdf-3db4-40c8-a038-bd87fdb084d0", "3d7b3b61-67d7-4a80-c63c-a4b4f9c3411a", "e51949d5-e2fd-4072-9f37-0fee797b9083"
-  // ], [2539, 2538, 2537]);
+  // forwardMessage(293, [2539, 2538, 2537]);
 });
 
 /**
@@ -164,15 +156,8 @@ chatAgent.on("editMessage", function(msg) {
 chatAgent.on("message", function(msg) {
   var params = {
     messageId: msg.id,
-    owner: msg.ownerId
+    ownerId: msg.ownerId
   };
-
-  // console.log(msg);
-
-  /**
-   * Sending Message Delivery to Sender
-   */
-  chatAgent.deliver(params);
 
   /**
    * Sending Message Seen to Sender after 5sec
@@ -338,11 +323,10 @@ function replyMessage(threadId, messageId, message) {
   });
 }
 
-function forwardMessage(destination, uniqueIds, messagesId) {
+function forwardMessage(destination, messageIds) {
   forwardChatParams = {
     subjectId: destination,
-    uniqueId: JSON.stringify(uniqueIds),
-    content: JSON.stringify(messagesId)
+    content: JSON.stringify(messageIds)
   };
 
   chatAgent.forwardMessage(forwardChatParams, {
