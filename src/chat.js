@@ -6,16 +6,21 @@
    * @param {Object} params
    */
   var Async,
-    ChatUtility;
+    ChatUtility,
+    Request,
+    FormData;
 
   function Chat(params) {
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
       var Async = require('podasync'),
         ChatUtility = require('./utility/utility.js'),
-        http = require('http');
+        http = require('http'),
+        Request = require('request'),
+        FormData = require('form-data');
     } else {
       Async = POD.Async;
       ChatUtility = POD.ChatUtility;
+      FormData = window.FormData;
     }
 
     /*******************************************************
@@ -44,6 +49,7 @@
         newThread: {},
         threadInfoUpdated: {},
         threadRename: {},
+        lastSeenUpdated: {},
         leaveThread: {},
         newParticipant: {},
         deliver: {},
@@ -90,6 +96,7 @@
         EDIT_MESSAGE: 28,
         DELETE_MESSAGE: 29,
         THREAD_INFO_UPDATED: 30,
+        LAST_SEEN_UPDATED: 31,
         ERROR: 999
       },
       inviteeVOidTypes = {
@@ -115,13 +122,24 @@
       config = {
         getHistoryCount: 100
       },
+      SERVICE_ADDRESSES = {
+        SSO_ADDRESS: params.ssoHost || "http://172.16.110.76",
+        PLATFORM_ADDRESS: params.platformHost || "http://172.16.106.26:8080/hamsam"
+      },
+      SERVICES_PATH = {
+        SSO_DEVICES: params.ssoGrantDevicesAddress || "/oauth2/grants/devices",
+        ADD_CONTACTS: "/nzh/addContacts",
+        UPDATE_CONTACTS: "/nzh/updateContacts",
+        REMOVE_CONTACTS: "/nzh/removeContacts"
+      },
       CHAT_ERRORS = {
         6000: "No Active Device found for this Token!",
         6001: "Invalid Token!",
         6002: "User not found!",
         6100: "Cant get UserInfo!",
         6101: "Getting User Info Retry Count exceeded 5 times; Connection Can Not Estabilish!",
-        6200: "Network Error"
+        6200: "Network Error",
+        6201: "URL is not clarified!"
       },
       getUserInfoRetry = 5,
       getUserInfoRetryCount = 0,
@@ -131,7 +149,8 @@
         2: "CLOSING",
         3: "CLOSED"
       },
-      chatState = false;
+      chatState = false,
+      httpRequestTimeout = params.httpRequestTimeout || 20000;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -219,102 +238,201 @@
       getDeviceIdWithToken = function(callback) {
         var deviceId;
 
-        if (isNode) {
-          var options = {
-            host: ssoHost,
-            path: ssoGrantDevicesAddress,
-            method: "GET",
-            headers: {
-              "Authorization": "Bearer " + token
-            }
-          };
+        var params = {
+          url: SERVICE_ADDRESSES.SSO_ADDRESS + SERVICES_PATH.SSO_DEVICES,
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        };
 
-          http.get(options, function(response) {
-            var resultText = '';
-
-            response.on('data', function(data) {
-              resultText += data;
-            });
-
-            response.on('end', function() {
-              var devices = JSON.parse(resultText).devices;
-              if (devices && devices.length > 0) {
-                for (var i = 0; i < devices.length; i++) {
-                  if (devices[i].current) {
-                    deviceId = devices[i].uid;
-                    break;
-                  }
+        httpRequest(params, function(result) {
+          if (!result.hasError) {
+            var devices = JSON.parse(result.result.responseText).devices;
+            if (devices && devices.length > 0) {
+              for (var i = 0; i < devices.length; i++) {
+                if (devices[i].current) {
+                  deviceId = devices[i].uid;
+                  break;
                 }
-
-                if (!deviceId) {
-                  fireEvent("error", {
-                    code: 6000,
-                    message: CHAT_ERRORS[6000],
-                    error: null
-                  });
-                } else {
-                  callback(deviceId);
-                }
-              } else {
-                fireEvent("error", {
-                  code: 6001,
-                  message: CHAT_ERRORS[6001],
-                  error: null
-                });
               }
-            });
-          }).on('error', function(error) {
-            fireEvent("error", {
-              code: 6200,
-              message: CHAT_ERRORS[6200],
-              error: error
-            });
-          });
 
-        } else {
-          var request = new XMLHttpRequest();
-          request.open("GET", "http://" + ssoHost + ssoGrantDevicesAddress, true);
-          request.setRequestHeader("Authorization", "Bearer " + token);
-          request.send();
-
-          request.onreadystatechange = function() {
-            if (request.readyState == 4 && request.status == 200) {
-              var response = request.responseText;
-
-              var devices = JSON.parse(response).devices;
-
-              if (devices && devices.length > 0) {
-                for (var i = 0; i < devices.length; i++) {
-                  if (devices[i].current) {
-                    deviceId = devices[i].uid;
-                    break;
-                  }
-                }
-
-                if (!deviceId) {
-                  fireEvent("error", {
-                    code: 6000,
-                    message: CHAT_ERRORS[6000],
-                    error: null
-                  });
-                } else {
-                  callback(deviceId);
-                }
-              } else {
+              if (!deviceId) {
                 fireEvent("error", {
-                  code: 6001,
-                  message: CHAT_ERRORS[6001],
+                  code: 6000,
+                  message: CHAT_ERRORS[6000],
                   error: null
                 });
+              } else {
+                callback(deviceId);
               }
             } else {
               fireEvent("error", {
-                code: 6200,
-                message: CHAT_ERRORS[6200],
+                code: 6001,
+                message: CHAT_ERRORS[6001],
                 error: null
               });
             }
+          } else {
+            fireEvent("error", {
+              code: result.errorCode,
+              message: result.errorMessage,
+              error: result
+            });
           }
+        });
+      },
+
+      httpRequest = function(params, callback) {
+        var url = params.url,
+          data = params.data,
+          method = (typeof params.method == "string")
+            ? params.method
+            : "GET";
+
+        if (!url) {
+          callback({hasError: true, errorCode: 6201, errorMessage: CHAT_ERRORS[6201]});
+          return;
+        }
+
+        if (isNode && Request) {
+          var requestMethod = (params.method === "GET")
+            ? Request.get
+            : Request.post;
+
+          // if (typeof data === "object") {
+          //   var formData = new FormData;
+          //   for (var i = 0; i < data.length; i++) {
+          //     for (var key in data[i]) {
+          //       formData.append(key, data[i][key]);
+          //     }
+          //   }
+          //
+          //   data = formData;
+          // }
+          //
+          // console.log({
+          //   url: url,
+          //   formData: data,
+          //     body: data,
+          //   headers: params.headers
+          // });
+
+          requestMethod({
+            url: url,
+            formData: data,
+            headers: params.headers
+          }, function(error, response, body) {
+            if (!error) {
+              if (response.statusCode == 200) {
+                callback && callback({
+                  hasError: false,
+                  result: {
+                    responseText: body
+                  }
+                });
+              } else {
+                callback && callback({hasError: true, errorCode: response.statusCode, errorMessage: body});
+              }
+            } else {
+              callback && callback({
+                hasError: true,
+                errorCode: 6200,
+                errorMessage: CHAT_ERRORS[6200] + " (Request Error)",
+                errorEvent: error
+              });
+            }
+          });
+
+          return;
+        } else {
+          var request = new XMLHttpRequest(),
+            settings = params.settings;
+
+          request.timeout = (settings && typeof settings.timeout === "number" && settings.timeout > 0)
+            ? settings.timeout
+            : httpRequestTimeout;
+
+          request.addEventListener("error", function(event) {
+            if (callback) {
+              callback({
+                hasError: true,
+                errorCode: 6200,
+                errorMessage: CHAT_ERRORS[6200] + " (XMLHttpRequest Error Event Listener)"
+              });
+            }
+          }, false);
+
+          try {
+            if (typeof data === "object" && data !== null && method == "GET") {
+              var keys = Object.keys(data);
+
+              if (keys.length > 0) {
+                url += "?";
+
+                for (var i = 0; i < keys.length; i++) {
+                  var key = keys[i];
+                  url += key + "=" + data[key];
+                  if (i < keys.length - 1) {
+                    url += "&";
+                  }
+                }
+              }
+            } else if (typeof data === "string") {
+              url += "?" + data;
+            }
+
+            request.open(method, url, true);
+
+            if (typeof params.headers === "object") {
+              for (var key in params.headers) {
+                request.setRequestHeader(key, params.headers[key]);
+              }
+            }
+
+            if (method === "POST" && data) {
+              if (typeof data === "object") {
+                var formData = new FormData;
+                for (var key in data) {
+                  formData.append(key, data[key]);
+                }
+                request.send(formData);
+              } else {
+                request.send(data);
+              }
+            } else {
+              request.send();
+            }
+          } catch (e) {
+            callback && callback({
+              hasError: true,
+              errorCode: 6200,
+              errorMessage: CHAT_ERRORS[6200] + " (Request Catch Error)"
+            });
+          }
+
+          request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+              if (request.status == 200) {
+                callback && callback({
+                  hasError: false,
+                  result: {
+                    responseText: request.responseText,
+                    responseHeaders: request.getAllResponseHeaders()
+                  }
+                });
+              } else {
+                if (callback) {
+                  callback({
+                    hasError: true,
+                    errorCode: 6200,
+                    errorMessage: CHAT_ERRORS[6200] + " (Request Status != 200)",
+                    statusCode: request.status
+                  });
+                }
+              }
+            }
+          };
         }
       },
 
@@ -628,6 +746,11 @@
             fireEvent("threadInfoUpdated", messageContent);
             break;
 
+            // 31
+          case chatMessageVOTypes.LAST_SEEN_UPDATED:
+            fireEvent("lastSeenUpdated", messageContent);
+            break;
+
             // 999
           case chatMessageVOTypes.ERROR:
             if (messagesCallbacks[uniqueId])
@@ -871,6 +994,7 @@
          *    - metadata                      {string}
          *    - mute                          {boolean}
          *    - participantCount              {long}
+         *    - canEditInfo                   {boolean}
          */
 
         var conversation = {
@@ -893,7 +1017,8 @@
           type: messageContent.type,
           metadata: messageContent.metadata,
           mute: messageContent.mute,
-          participantCount: messageContent.participantCount
+          participantCount: messageContent.participantCount,
+          canEditInfo: messageContent.canEditInfo
         };
 
         // Add inviter if exist
@@ -1476,8 +1601,8 @@
 
     this.forwardMessage = function(params, callbacks) {
       var threadId = params.subjectId,
-      messageIdsList = JSON.parse(params.content),
-      uniqueIdsList = [];
+        messageIdsList = JSON.parse(params.content),
+        uniqueIdsList = [];
 
       for (i in messageIdsList) {
         var messageId = messageIdsList[i];
@@ -1509,7 +1634,6 @@
           threadCallbacks[threadId][uniqueId].onDeliver = false;
         }
       }
-
 
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.FORWARD_MESSAGE,
@@ -1563,6 +1687,250 @@
         }
       });
     }
+
+    this.addContacts = function(params, callback) {
+      var data = {};
+
+      if (params) {
+        if (typeof params.firstName === "string") {
+          data.firstName = params.firstName;
+        } else {
+          data.firstName = "";
+        }
+
+        if (typeof params.lastName === "string") {
+          data.lastName = params.lastName;
+        } else {
+          data.lastName = "";
+        }
+
+        if (typeof params.cellphoneNumber === "string") {
+          data.cellphoneNumber = params.cellphoneNumber;
+        } else {
+          data.cellphoneNumber = "";
+        }
+
+        if (typeof params.email === "string") {
+          data.email = params.email;
+        } else {
+          data.email = "";
+        }
+
+        data.uniqueId = Utility.generateUUID();
+        data._token_ = token;
+        data._token_issuer_ = 1;
+      }
+
+      var requestParams = {
+        url: SERVICE_ADDRESSES.PLATFORM_ADDRESS + SERVICES_PATH.ADD_CONTACTS,
+        method: "POST",
+        data: data
+        // headers: {
+        //   "_token_": token,
+        //   "_token_issuer_": 1
+        // }
+      };
+
+      httpRequest(requestParams, function(result) {
+        if (!result.hasError) {
+          var responseData = JSON.parse(result.result.responseText);
+
+          var returnData = {
+            hasError: responseData.hasError,
+            errorMessage: responseData.message,
+            errorCode: responseData.errorCode
+          };
+
+          if (!responseData.hasError) {
+            var messageContent = responseData.result,
+              messageLength = responseData.result.length,
+              resultData = {
+                contacts: [],
+                contentCount: messageLength
+              },
+              contactData;
+
+            for (var i = 0; i < messageLength; i++) {
+              contactData = formatDataToMakeContact(messageContent[i]);
+              if (contactData) {
+                resultData.contacts.push(contactData);
+              }
+            }
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+
+        } else {
+          fireEvent("error", {
+            code: result.errorCode,
+            message: result.errorMessage,
+            error: result
+          });
+        }
+      });
+    };
+
+    this.updateContacts = function(params, callback) {
+      var data = {};
+
+      if (params) {
+        if (typeof params.id === "string") {
+          data.id = params.id;
+        } else {
+          fireEvent("error", {
+            code: 999,
+            message: "ID is required for Updating Contact!",
+            error: undefined
+          });
+        }
+
+        if (typeof params.firstName === "string") {
+          data.firstName = params.firstName;
+        } else {
+          fireEvent("error", {
+            code: 999,
+            message: "firstName is required for Updating Contact!"
+          });
+        }
+
+        if (typeof params.lastName === "string") {
+          data.lastName = params.lastName;
+        } else {
+          fireEvent("error", {
+            code: 999,
+            message: "lastName is required for Updating Contact!"
+          });
+        }
+
+        if (typeof params.cellphoneNumber === "string") {
+          data.cellphoneNumber = params.cellphoneNumber;
+        } else {
+          fireEvent("error", {
+            code: 999,
+            message: "cellphoneNumber is required for Updating Contact!"
+          });
+        }
+
+        if (typeof params.email === "string") {
+          data.email = params.email;
+        } else {
+          fireEvent("error", {
+            code: 999,
+            message: "email is required for Updating Contact!"
+          });
+        }
+
+        data.uniqueId = Utility.generateUUID();
+        data._token_ = token;
+        data._token_issuer_ = 1;
+      }
+
+      var requestParams = {
+        url: SERVICE_ADDRESSES.PLATFORM_ADDRESS + SERVICES_PATH.UPDATE_CONTACTS,
+        method: "POST",
+        data: data
+        // headers: {
+        //   "_token_": token,
+        //   "_token_issuer_": 1
+        // }
+      };
+
+      httpRequest(requestParams, function(result) {
+        if (!result.hasError) {
+          var responseData = JSON.parse(result.result.responseText);
+
+          var returnData = {
+            hasError: responseData.hasError,
+            errorMessage: responseData.message,
+            errorCode: responseData.errorCode
+          };
+
+          if (!responseData.hasError) {
+            var messageContent = responseData.result,
+              messageLength = responseData.result.length,
+              resultData = {
+                contacts: [],
+                contentCount: messageLength
+              },
+              contactData;
+
+            for (var i = 0; i < messageLength; i++) {
+              contactData = formatDataToMakeContact(messageContent[i]);
+              if (contactData) {
+                resultData.contacts.push(contactData);
+              }
+            }
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+
+        } else {
+          fireEvent("error", {
+            code: result.errorCode,
+            message: result.errorMessage,
+            error: result
+          });
+        }
+      });
+    };
+
+    this.removeContacts = function(params, callback) {
+      var data = {};
+
+      if (params) {
+        if (typeof params.id === "string") {
+          data.id = params.id;
+        } else {
+          fireEvent("error", {
+            code: 999,
+            message: "ID is required for Deleting Contact!",
+            error: undefined
+          });
+        }
+
+        data._token_ = token;
+        data._token_issuer_ = 1;
+      }
+
+      var requestParams = {
+        url: SERVICE_ADDRESSES.PLATFORM_ADDRESS + SERVICES_PATH.REMOVE_CONTACTS,
+        method: "POST",
+        data: data
+        // headers: {
+        //   "_token_": token,
+        //   "_token_issuer_": 1
+        // }
+      };
+
+      httpRequest(requestParams, function(result) {
+        if (!result.hasError) {
+          var responseData = JSON.parse(result.result.responseText);
+
+          var returnData = {
+            hasError: responseData.hasError,
+            errorMessage: responseData.message,
+            errorCode: responseData.errorCode
+          };
+
+          if (!responseData.hasError) {
+            returnData.result = responseData.result;
+          }
+
+          callback && callback(returnData);
+
+        } else {
+          fireEvent("error", {
+            code: result.errorCode,
+            message: result.errorMessage,
+            error: result
+          });
+        }
+      });
+    };
 
     this.generateUUID = Utility.generateUUID;
 

@@ -2,13 +2,13 @@ var Chat = require('./src/chat.js');
 
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
-  ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
+  ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  token: "f53f39a1893e4c4da18e59822290a552", // {**REQUIRED**} SSO Token JiJi
-  // token: "1fcecc269a8949d6b58312cab66a4926",  //{**REQUIRED**} SSO Token FiFi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a", //  {**REQUIRED**} SSO Token Felfeli
+  token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
+  // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
+  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
   // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -20,10 +20,7 @@ var params = {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
     onMessageSend: true // log sent messaged on console
-  },
-  chatLogging: true,
-  chatLogFile: "errors.log",
-  chatLogLevel: 'verbose'
+  }
 };
 
 var PID;
@@ -39,11 +36,64 @@ chatAgent.on("chatReady", function() {
   /**
    * GET THREADS
    * @param count
+   * @param offset
+   * @param threadIds
+   * @param name
    */
-  // getThreads(10);
+  // getThreads({
+  //   count: 50,
+  //   offset: 0,
+  //    threadIds: [312],
+  //    name: "jiji"
+  // });
+
+  /**
+   * ADD CONTACTS
+   * @param firstName
+   * @param lastName
+   * @param cellphoneNumber
+   * @param email
+   */
+  // chatAgent.addContacts({
+  //   firstName: "Sina",
+  //   lastName: "Rahimi",
+  //   cellphoneNumber: "09994447458",
+  //   email: "sinarahimi@gmail.com"
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * UPDATE CONTACTS
+   * @param id
+   * @param firstName
+   * @param lastName
+   * @param cellphoneNumber
+   * @param email
+   */
+  // chatAgent.updateContacts({
+  //   id: "642",
+  //     firstName: "Hamid",
+  //     lastName: "Amouzegar",
+  //     cellphoneNumber: "09965677868",
+  //     email: "hamidamouzegar77@gmail.com"
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * REMOVE CONTACTS
+   * @param id
+   */
+  // chatAgent.removeContacts({
+  //   id: "645865"
+  // }, function(result) {
+  //   console.log(result);
+  // });
 
   /**
    * GET THREAD PARTICIPANTS
+   * @param threadId
    */
   // getThreadParticipants(312);
 
@@ -53,7 +103,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(293, 5, 0);
+  // getHistory(293, 4, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -103,7 +153,7 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param newMessage
    */
-  // sendMessage(351, "This is a Sample Message at " + new Date());
+    // sendMessage(293, "This is a Sample Message at " + new Date());
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -120,14 +170,11 @@ chatAgent.on("chatReady", function() {
   // replyMessage(293, 2551, "This is a reply to message #413 at " + new Date());
 
   /**
-   * REPLY TO MESSAGE
+   * FORWARD MESSAGE
    * @param destination
-   * @param uniqueIds
-   * @param messagesId
+   * @param messageIds
    */
-  // forwardMessage(293, [
-  //   "f4647fdf-3db4-40c8-a038-bd87fdb084d0", "3d7b3b61-67d7-4a80-c63c-a4b4f9c3411a", "e51949d5-e2fd-4072-9f37-0fee797b9083"
-  // ], [2539, 2538, 2537]);
+  // forwardMessage(293, [2539, 2538, 2537]);
 });
 
 /**
@@ -159,7 +206,7 @@ chatAgent.on("editMessage", function(msg) {
 chatAgent.on("message", function(msg) {
   var params = {
     messageId: msg.id,
-    ownerID: msg.ownerId
+    ownerId: msg.ownerId
   };
 
   /**
@@ -194,23 +241,22 @@ chatAgent.on("threadRename", function(threadInfo) {
   console.log(threadInfo);
 });
 
+/**
+ * Listen to Last Seen Updated
+ */
+chatAgent.on("lastSeenUpdated", function(result) {
+  console.log("Some Messages have been seen!");
+  console.log(result);
+});
+
 function getUserInfo() {
   chatAgent.getUserInfo(function(userInfo) {
     console.log(userInfo);
   });
 }
 
-function getThreads(count) {
-  var getThreadsParams = {
-    count: 50,
-    offset: 0
-  };
-
-  if (typeof count == "number") {
-    getThreadsParams.count = count;
-  }
-
-  chatAgent.getThreads(getThreadsParams, function(threadsResult) {
+function getThreads(params) {
+  chatAgent.getThreads(params, function(threadsResult) {
     if (!threadsResult.hasError) {
       var threadsCount = threadsResult.result.contentCount;
       var threads = threadsResult.result.threads;
@@ -335,14 +381,11 @@ function replyMessage(threadId, messageId, message) {
   });
 }
 
-function forwardMessage(destination, uniqueIds, messagesId) {
-  forwardChatParams = {
+function forwardMessage(destination, messageIds) {
+  chatAgent.forwardMessage({
     subjectId: destination,
-    uniqueId: JSON.stringify(uniqueIds),
-    content: JSON.stringify(messagesId)
-  };
-
-  chatAgent.forwardMessage(forwardChatParams, {
+    content: JSON.stringify(messageIds)
+  }, {
     onSent: function(result) {
       console.log(result.uniqueId + " \t has been Sent! (FORWARD)");
     },

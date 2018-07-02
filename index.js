@@ -2,7 +2,7 @@ var Chat = require('./src/chat.js');
 
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
-  ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
+  ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
@@ -35,17 +35,67 @@ chatAgent.on("chatReady", function() {
 
   /**
    * GET THREADS
+   * @param count
+   * @param offset
+   * @param threadIds
+   * @param name
    */
   // getThreads({
   //   count: 50,
   //   offset: 0,
-  //   threadIds: [351, 376]
+  //    threadIds: [312],
+  //    name: "jiji"
+  // });
+
+  /**
+   * ADD CONTACTS
+   * @param firstName
+   * @param lastName
+   * @param cellphoneNumber
+   * @param email
+   */
+  // chatAgent.addContacts({
+  //   firstName: "Sina",
+  //   lastName: "Rahimi",
+  //   cellphoneNumber: "09994447458",
+  //   email: "sinarahimi@gmail.com"
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * UPDATE CONTACTS
+   * @param id
+   * @param firstName
+   * @param lastName
+   * @param cellphoneNumber
+   * @param email
+   */
+  // chatAgent.updateContacts({
+  //   id: "642",
+  //     firstName: "Hamid",
+  //     lastName: "Amouzegar",
+  //     cellphoneNumber: "09965677868",
+  //     email: "hamidamouzegar77@gmail.com"
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * REMOVE CONTACTS
+   * @param id
+   */
+  // chatAgent.removeContacts({
+  //   id: "645865"
+  // }, function(result) {
+  //   console.log(result);
   // });
 
   /**
    * GET THREAD PARTICIPANTS
+   * @param threadId
    */
-  // getThreadParticipants(293);
+  // getThreadParticipants(312);
 
   /**
    * GET THREAD HISTORY
@@ -120,7 +170,7 @@ chatAgent.on("chatReady", function() {
   // replyMessage(293, 2551, "This is a reply to message #413 at " + new Date());
 
   /**
-   * REPLY TO MESSAGE
+   * FORWARD MESSAGE
    * @param destination
    * @param messageIds
    */
@@ -189,6 +239,14 @@ chatAgent.on("threadInfoUpdated", function(threadInfo) {
 chatAgent.on("threadRename", function(threadInfo) {
   console.log("Some Thread has renamed!");
   console.log(threadInfo);
+});
+
+/**
+ * Listen to Last Seen Updated
+ */
+chatAgent.on("lastSeenUpdated", function(result) {
+  console.log("Some Messages have been seen!");
+  console.log(result);
 });
 
 function getUserInfo() {
@@ -324,12 +382,10 @@ function replyMessage(threadId, messageId, message) {
 }
 
 function forwardMessage(destination, messageIds) {
-  forwardChatParams = {
+  chatAgent.forwardMessage({
     subjectId: destination,
     content: JSON.stringify(messageIds)
-  };
-
-  chatAgent.forwardMessage(forwardChatParams, {
+  }, {
     onSent: function(result) {
       console.log(result.uniqueId + " \t has been Sent! (FORWARD)");
     },
