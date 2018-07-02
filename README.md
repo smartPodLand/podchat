@@ -2,6 +2,26 @@
 
 **Fanap's POD** Chat service
 
+# Changelog
+All notable changes to this project will be documented here.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+
+## [Unreleased]
+- Send File
+- Group Event Listeners
+- Contact Sync
+
+## [3.9.1] - 2018-07-02
+### Added
+- Contact Management (addContacts, updateContacts, removeContacts)
+- Search in Threads
+- Http Request Handler
+
+### Changed
+- Received Seen & Delivery Messages now have {messageId, participantId} in response content
+
+
 ## Code Example
 
 Create an Javascript file e.x `index.js` and put following code in it:
@@ -11,11 +31,17 @@ var Chat = require('podchat');
 
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
-  ssoHost: "172.16.110.76", // {**REQUIRED**} Socket Address
+  ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token
-  consoleLogging: {
+  wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
+  connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
+  connectionCheckTimeout: 10000, // Socket connection live time on server
+  connectionCheckTimeoutThreshold: 2000, // Socket Ping time threshold
+  messageTtl: 10000, // Message time to live
+  reconnectOnClose: true, // auto connect to socket after socket close
+  asyncLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
     onMessageSend: true // log sent messaged on console
@@ -43,22 +69,13 @@ chatAgent.on("error", function(error) {
  * Listen to Receive Message Emitter
  */
 chatAgent.on("message", function(msg) {
-  var params = {
-    messageId: msg.id,
-    owner: msg.ownerId
-  };
-
   /**
-   * Sending Message Delivery to Sender
+   * Sending Message Seen to Sender
    */
-  chatAgent.deliver(params);
-
-  /**
-   * Sending Message Seen to Sender after 5sec
-   */
-  setTimeout(function() {
-    chatAgent.seen(params);
-  }, 5000);
+    chatAgent.seen({
+      messageId: msg.id,
+      owner: msg.ownerId
+    });
 });
 
 
@@ -97,6 +114,14 @@ chatAgent.on("threadRename", function(threadInfo) {
   console.log(threadInfo);
 });
 
+
+/**
+ * Listen to Last Seen Updated
+ */
+chatAgent.on("lastSeenUpdated", function(result) {
+  console.log("Some Messages have been seen!");
+  console.log(result);
+});
 ```
 
 ### getUserInfo
@@ -135,7 +160,9 @@ chatAgent.createThread({
 ```javascript
 chatAgent.getThreads({
     count: 50,
-    offset: 0
+    offset: 0,
+    name: "A String to search in thread titles and return result",
+    threadIds: [] // Array of threadIds to get
   }, function(threadsResult) {
     var threads = threadsResult.result.threads;
     console.log(threads);
@@ -180,6 +207,44 @@ chatAgent.getContacts({
   }, function(contactsResult) {
   var contacts = contactsResult.result.contacts;
   console.log(contacts);
+});
+```
+
+### addContacts
+
+```javascript
+chatAgent.addContacts({
+  firstName: "Firstname",
+  lastName: "Lastname",
+  cellphoneNumber: "0999999999",
+  email: "mail@gmail.com"
+}, function(result) {
+  console.log(result);
+});
+```
+
+### updateContacts
+
+```javascript
+chatAgent.updateContacts({
+    id: 66, //contact's id
+    firstName: "Firstname", // new firstname
+    lastName: "Lastname",// new lastname
+    cellphoneNumber: "0999999999", // new cellphone number
+    email: "mail@gmail.com" //new email
+}, function(result) {
+  console.log(result);
+});
+```
+
+
+### removeContacts
+
+```javascript
+chatAgent.removeContacts({
+  id: 234 // contact's id
+}, function(result) {
+  console.log(result);
 });
 ```
 
@@ -253,12 +318,10 @@ chatAgent.replyMessage({
 ### forwardMessage
 
 ```javascript
-var uniqueIds = ["f4647fdf-3db4-40c8-a038-bd87fdb084d0", "3d7b3b61-67d7-4a80-c63c-a4b4f9c3411a", "e51949d5-e2fd-4072-9f37-0fee797b9083"],
-    messagesIds = [2539, 2538, 2537];
+var messagesIds = [2539, 2538, 2537];
 
 chatAgent.forwardMessage({
     subjectId: threadId,
-    uniqueId: JSON.stringify(uniqueIds),
     content: JSON.stringify(messagesIds)
   }, {
   onSent: function(result) {
@@ -331,7 +394,6 @@ You can send me your thoughts about making this repo great :)
 ## License
 
 Under MIT License.
-
 
 ## Acknowledgments
 
