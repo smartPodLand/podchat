@@ -5,15 +5,10 @@ var params = {
   ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
-  // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
-  // token: "e4f1d5da7b254d9381d0487387eabb0a",   {**REQUIRED**} SSO Token Felfeli
-  // token: "bebc31c4ead6458c90b607496dae25c6",   {**REQUIRED**} SSO Token Alexi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
-  connectionCheckTimeoutThreshold: 2000, // Socket Ping time threshold
   messageTtl: 10000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
@@ -28,10 +23,20 @@ var PID;
 var chatAgent = new Chat(params);
 
 chatAgent.on("chatReady", function() {
+
+  /*******************************************************
+   *                       U S E R                       *
+   *******************************************************/
+
   /**
    *  Get User Info
    */
   // getUserInfo();
+
+
+  /*******************************************************
+   *                    T H R E A D S                    *
+   *******************************************************/
 
   /**
    * GET THREADS
@@ -48,48 +53,17 @@ chatAgent.on("chatReady", function() {
   // });
 
   /**
-   * ADD CONTACTS
-   * @param firstName
-   * @param lastName
-   * @param cellphoneNumber
-   * @param email
+   * CREATE THREAD (Creates Group)
+   * @param invitees
+   * @param threadType
    */
-  // chatAgent.addContacts({
-  //   firstName: "Sina",
-  //   lastName: "Rahimi",
-  //   cellphoneNumber: "09994447458",
-  //   email: "sinarahimi@gmail.com"
-  // }, function(result) {
-  //   console.log(result);
-  // });
+  // createThread([568, 563], "NORMAL");
 
   /**
-   * UPDATE CONTACTS
-   * @param id
-   * @param firstName
-   * @param lastName
-   * @param cellphoneNumber
-   * @param email
+   * CREATE THREAD (Creates P2P Chat with a specific user)
+   * @param contactId
    */
-  // chatAgent.updateContacts({
-  //   id: "642",
-  //     firstName: "Hamid",
-  //     lastName: "Amouzegar",
-  //     cellphoneNumber: "09965677868",
-  //     email: "hamidamouzegar77@gmail.com"
-  // }, function(result) {
-  //   console.log(result);
-  // });
-
-  /**
-   * REMOVE CONTACTS
-   * @param id
-   */
-  // chatAgent.removeContacts({
-  //   id: "645865"
-  // }, function(result) {
-  //   console.log(result);
-  // });
+  // createThread(563);
 
   /**
    * GET THREAD PARTICIPANTS
@@ -116,58 +90,98 @@ chatAgent.on("chatReady", function() {
    * MUTE THREAD
    * @param threadId
    */
-  // muteThread(293);
+  // muteThread(392);
 
   /**
    * UNMUTE THREAD
    * @param threadId
    */
-  // unMuteThread(293);
-
-  /**
-   * GET CONTACTS
-   */
-  // getContacts();
-
-  /**
-   * CREATE THREAD (Creates Group)
-   * @param invitees
-   * @param threadType
-   */
-  // createThread([568, 563], "NORMAL");
-
-  /**
-   * CREATE THREAD (Creates P2P Chat with a specific user)
-   * @param contactId
-   */
-  // createThread(563);
+  // unMuteThread(392);
 
   /**
    * RENAME THREAD
    * @param threadId
    */
-  // renameThread(312, "New Thread Name");
+  // renameThread(392, "Thread Name Changed at " + new Date());
+
+
+  /*******************************************************
+   *                   C O N T A C T S                   *
+   *******************************************************/
+
+  /**
+   * GET CONTACTS
+   */
+  getContacts();
+
+  /**
+   * ADD CONTACTS
+   * @param firstName
+   * @param lastName
+   * @param cellphoneNumber
+   * @param email
+   */
+  // chatAgent.addContacts({
+  //   firstName: "Sina",
+  //   lastName: "Rahimi",
+  //   cellphoneNumber: "05954847458",
+  //   email: "sinarahimi1@gmail.com"
+  // }, function(result) {
+  //   console.log(result.result);
+  // });
+
+  /**
+   * UPDATE CONTACTS
+   * @param id
+   * @param firstName
+   * @param lastName
+   * @param cellphoneNumber
+   * @param email
+   */
+  // chatAgent.updateContacts({
+  //   id: "647",
+  //     firstName: "Hamid",
+  //     lastName: "Amouzegar",
+  //     cellphoneNumber: "09000677868",
+  //     email: "hamidam65000r77@gmail.com"
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * REMOVE CONTACTS
+   * @param id
+   */
+  // chatAgent.removeContacts({
+  //   id: "645865"
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /*******************************************************
+   *                   M E S S A G E S                   *
+   *******************************************************/
 
   /**
    * SEND MESSAGE IN THREAD
    * @param threadId
    * @param newMessage
    */
-    // sendMessage(293, "This is a Sample Message at " + new Date());
+  // sendMessage(293, "This is a Sample Message at " + new Date());
 
   /**
    * EDIT MESSAGE IN THREAD
    * @param messageId  325 editable: false
    * @param newMessage
    */
-  // editMessage(2551, "This message has been edited at " + new Date());
+  // editMessage(12397, "This message has been edited at " + new Date());
 
   /**
    * REPLY TO MESSAGE
    * @param threadId
    * @param messageId
    */
-  // replyMessage(293, 2551, "This is a reply to message #413 at " + new Date());
+  // replyMessage(293, 12397, "This is a reply to message #413 at " + new Date());
 
   /**
    * FORWARD MESSAGE
@@ -181,73 +195,70 @@ chatAgent.on("chatReady", function() {
 * Listen to Error Messages
 */
 chatAgent.on("error", function(error) {
-  console.log("Error: ");
-  console.log(error.code, error.message, error.error);
+  console.log("ERROR \t", error.code, error.message, error.error);
 });
 
 /**
 * Listen to Chat State Changes
 */
-chatAgent.on("chatState", function(chatState) {
-  // console.log("Current Chat state is", chatState);
+chatAgent.on("chatState", function(chatState) {});
+
+/**
+ * Listen to Thread Events
+ */
+chatAgent.on("threadEvents", function(event) {
+   var type = event.type;
+
+   switch (type) {
+     case "NEW_THREAD":
+       break;
+
+     case "THREAD_RENAME":
+       break;
+
+     case "THREAD_MUTE":
+       break;
+
+     case "THREAD_UNMUTE":
+       break;
+
+     case "THREAD_INFO_UPDATED":
+       break;
+
+     case "LAST_SEEN_UPDATED":
+       break;
+
+     default:
+       break;
+   }
+ });
+
+/**
+ * Listen to Message Events
+ */
+chatAgent.on("messageEvents", function(event) {
+  var type = event.type,
+    message = event.result.message;
+
+  switch (type) {
+    case "NEW_MESSAGE":
+      /**
+       * Sending Message Seen to Sender after 5 secs
+       */
+      setTimeout(function() {
+        chatAgent.seen({messageId: message.id, owner: message.ownerId});
+      }, 5000);
+
+      break;
+
+    default:
+      break;
+  }
 });
 
 /**
- * Listen to Edit Message Emitter
+ * Local Functions
  */
-chatAgent.on("editMessage", function(msg) {
-  console.log("Message with ID : " + msg.id + " inside Thread with ID : " + msg.threadId + " has been edited!");
-  console.log(msg);
-});
-
-/**
- * Listen to Receive Message Emitter
- */
-chatAgent.on("message", function(msg) {
-  var params = {
-    messageId: msg.id,
-    ownerId: msg.ownerId
-  };
-
-  /**
-   * Sending Message Seen to Sender after 5sec
-   */
-  setTimeout(function() {
-    chatAgent.seen(params);
-  }, 5000);
-});
-
-/**
- * Listen to New Thread Creation
- */
-chatAgent.on("newThread", function(threadInfo) {
-  console.log("New Thread Has Been Created with You Taking Part in it!");
-  console.log(threadInfo);
-});
-
-/**
- * Listen to Thread Info Update
- */
-chatAgent.on("threadInfoUpdated", function(threadInfo) {
-  console.log("Some Thread has changed!");
-  console.log(threadInfo);
-});
-
-/**
- * Listen to Thread Rename
- */
-chatAgent.on("threadRename", function(threadInfo) {
-  console.log("Some Thread has renamed!");
-  console.log(threadInfo);
-});
-
-/**
- * Listen to Last Seen Updated
- */
-chatAgent.on("lastSeenUpdated", function(result) {
-  console.log("Some Messages have been seen!");
-  console.log(result);
-});
 
 function getUserInfo() {
   chatAgent.getUserInfo(function(userInfo) {

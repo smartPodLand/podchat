@@ -3,24 +3,56 @@
 **Fanap's POD** Chat service
 
 # Changelog
+
 All notable changes to this project will be documented here.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
-- Send File
-- Group Event Listeners
-- Contact Sync
+
+-   Send File
+-   Contact Sync
+
+## [3.9.2] - 2018-07-03
+
+### Added
+
+-   2 main event listeners group (threadEvents, messageEvents)
+    - messageEvents has 2 types 
+      - NEW_MESSAGE
+      - EDIT_MESSAGE
+
+    - threadEvents has 6 types
+      - NEW_THREAD
+      - THREAD_RENAME
+      - THREAD_MUTE
+      - THREAD_UNMUTE
+      - THREAD_INFO_UPDATED
+      - LAST_SEEN_UPDATED
+
+### Removed
+
+-   Below event listeners are no longer available :
+    -   chatAgent.on("message", () => {});
+    -   chatAgent.on("editMessage", () => {});
+    -   chatAgent.on("newThread", () => {});
+    -   chatAgent.on("threadInfoUpdated", () => {});
+    -   chatAgent.on("threadRename", () => {});
+    -   chatAgent.on("lastSeenUpdated", () => {});
+    -   chatAgent.on("muteThread", () => {});
+    -   chatAgent.on("unMuteThread", () => {});
 
 ## [3.9.1] - 2018-07-02
+
 ### Added
-- Contact Management (addContacts, updateContacts, removeContacts)
-- Search in Threads
-- Http Request Handler
+
+-   Contact Management (addContacts, updateContacts, removeContacts)
+-   Search in Threads
+-   Http Request Handler
 
 ### Changed
-- Received Seen & Delivery Messages now have {messageId, participantId} in response content
 
+-   Received Seen & Delivery Messages now have {messageId, participantId} in response content
 
 ## Code Example
 
@@ -49,80 +81,106 @@ var params = {
 };
 
 var chatAgent = new Chat(params);
+```
 
+## Event Listeners
+
+Listen on these events to get updated data on your client
+
+### chatReady
+
+This is the main Event which fires when your SDK has connected to ASYNC server and gets ready to chat.
+**Write your code in chatReady's callback function**
+
+```javascript
 chatAgent.on("chatReady", function() {
   /**
    * Your code goes here
    */
 });
+```
 
+### error
 
+You can get all the Errors here
+
+```javascript
 /**
 * Listen to Error Messages
 */
 chatAgent.on("error", function(error) {
   console.log("Error: ", error.code, error.message);
 });
+```
 
+### messageEvents
 
+You'll get all the Message Events here
+
+```javascript
 /**
- * Listen to Receive Message Emitter
+ * Listen to Message Emitter
  */
-chatAgent.on("message", function(msg) {
-  /**
-   * Sending Message Seen to Sender
-   */
-    chatAgent.seen({
-      messageId: msg.id,
-      owner: msg.ownerId
-    });
-});
+chatAgent.on("messageEvents", function(event) {
+  var type = event.type,
+    message = event.result.message;
 
+  switch (type) {
+    case "NEW_MESSAGE":
+      /**
+       * Sending Message Seen to Sender after 5 secs
+       */
+      setTimeout(function() {
+        chatAgent.seen({messageId: message.id, owner: message.ownerId});
+      }, 5000);
 
-/**
- * Listen to Edit Message Emitter
- */
-chatAgent.on("editMessage", function(msg) {
-  console.log("Message with ID : " + msg.id + " inside Thread with ID : " + msg.threadId + " has been edited!");
-  console.log(msg);
-});
+      break;
 
+    case "EDIT_MESSAGE":
+      break;
 
-/**
- * Listen to New Thread Creation
- */
-chatAgent.on("newThread", function(threadInfo) {
-  console.log("New Thread Has Been Created with You Taking Part in it!");
-  console.log(threadInfo);
-});
-
-
-/**
- * Listen to Thread Info Update
- */
-chatAgent.on("threadInfoUpdated", function(threadInfo) {
-  console.log("Some Thread has changed!");
-  console.log(threadInfo);
-});
-
-
-/**
- * Listen to Thread Rename
- */
-chatAgent.on("threadRename", function(threadInfo) {
-  console.log("Some Thread has renamed!");
-  console.log(threadInfo);
-});
-
-
-/**
- * Listen to Last Seen Updated
- */
-chatAgent.on("lastSeenUpdated", function(result) {
-  console.log("Some Messages have been seen!");
-  console.log(result);
+    default:
+      break;
+  }
 });
 ```
+
+### threadEvents
+You'll get all the Events which are related to Threads in threadEvents listener
+
+```javascript
+/**
+ * Listen to Thread Events
+ */
+chatAgent.on("threadEvents", function(event) {
+  var type = event.type;
+
+  switch (type) {
+    case "NEW_THREAD":
+      break;
+
+    case "THREAD_RENAME":
+      break;
+
+    case "THREAD_MUTE":
+      break;
+
+    case "THREAD_UNMUTE":
+      break;
+
+    case "THREAD_INFO_UPDATED":
+      break;
+
+    case "LAST_SEEN_UPDATED":
+      break;
+
+    default:
+      break;
+  }
+});
+```
+
+## User Functions
 
 ### getUserInfo
 
@@ -133,6 +191,8 @@ chatAgent.getUserInfo(function(userInfo) {
   console.log(userInfo);
 });
 ```
+
+## Thread Functions
 
 ### createThread
 
@@ -198,6 +258,42 @@ chatAgent.getThreadParticipants({
 );
 ```
 
+### muteThread
+
+```javascript
+chatAgent.muteThread({
+    subjectId: threadId
+  }, function(result) {
+    console.log("Threaded has been successfully muted!");
+  }
+);
+```
+
+### unMuteThread
+
+```javascript
+chatAgent.unMuteThread({
+    subjectId: threadId
+  }, function(result) {
+    console.log("Threaded has been successfully unMuted!");
+  }
+);
+```
+
+### renameThread
+
+```javascript
+chatAgent.renameThread({
+    title: newName,
+    threadId: threadId
+  }, function(result) {
+    console.log("Threaded has been successfully Renamed!");
+  }
+);
+```
+
+## Contact Functions
+
 ### getContacts
 
 ```javascript
@@ -237,7 +333,6 @@ chatAgent.updateContacts({
 });
 ```
 
-
 ### removeContacts
 
 ```javascript
@@ -247,6 +342,8 @@ chatAgent.removeContacts({
   console.log(result);
 });
 ```
+
+## Message Functions
 
 ### sendMessage
 
@@ -334,40 +431,6 @@ chatAgent.forwardMessage({
     console.log(result.uniqueId + " \t has been Seen! (FORWARD)");
   }
 });
-```
-
-### muteThread
-
-```javascript
-chatAgent.muteThread({
-    subjectId: threadId
-  }, function(result) {
-    console.log("Threaded has been successfully muted!");
-  }
-);
-```
-
-### unMuteThread
-
-```javascript
-chatAgent.unMuteThread({
-    subjectId: threadId
-  }, function(result) {
-    console.log("Threaded has been successfully unMuted!");
-  }
-);
-```
-
-### renameThread
-
-```javascript
-chatAgent.renameThread({
-    title: newName,
-    threadId: threadId
-  }, function(result) {
-    console.log("Threaded has been successfully Renamed!");
-  }
-);
 ```
 
 ## Installation
