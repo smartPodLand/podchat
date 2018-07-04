@@ -97,7 +97,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(312, 4, 0);
+  getHistory(312, 5, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -122,7 +122,7 @@ chatAgent.on("chatReady", function() {
    * RENAME THREAD
    * @param threadId
    */
-  // renameThread(392, "Thread Name Changed at " + new Date());
+  // renameThread(312, "Thread Name Changed at " + new Date());
 
   /*******************************************************
    *                   C O N T A C T S                   *
@@ -230,6 +230,9 @@ chatAgent.on("threadEvents", function(event) {
   console.log(event);
 
   switch (type) {
+    case "THREAD_LAST_ACTIVITY_TIME":
+      break;
+
     case "THREAD_NEW":
       break;
 

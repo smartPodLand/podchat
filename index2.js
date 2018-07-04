@@ -230,6 +230,9 @@ chatAgent.on("threadEvents", function(event) {
   console.log(event);
 
   switch (type) {
+    case "THREAD_LAST_ACTIVITY_TIME":
+      break;
+
     case "THREAD_NEW":
       break;
 

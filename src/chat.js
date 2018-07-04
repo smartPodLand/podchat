@@ -712,8 +712,14 @@
                     thread: threads[0]
                   }
                 });
-              } else {
 
+                fireEvent("threadEvents", {
+                  type: "THREAD_LAST_ACTIVITY_TIME",
+                  result: {
+                    thread: threads[0]
+                  }
+                });
+              } else {
                 fireEvent("threadEvents", {
                   type: "THREAD_LEAVE_PARTICIPANT",
                   result: {
@@ -742,12 +748,18 @@
                   thread: threads[0]
                 }
               });
+
+              fireEvent("threadEvents", {
+                type: "THREAD_LAST_ACTIVITY_TIME",
+                result: {
+                  thread: threads[0]
+                }
+              });
             });
 
             break;
 
             // 13
-
             // 11
           case chatMessageVOTypes.ADD_PARTICIPANT:
             if (messagesCallbacks[uniqueId])
@@ -764,9 +776,15 @@
                   thread: threads[0]
                 }
               });
+
+              fireEvent("threadEvents", {
+                type: "THREAD_LAST_ACTIVITY_TIME",
+                result: {
+                  thread: threads[0]
+                }
+              });
             });
             break;
-
           case chatMessageVOTypes.GET_CONTACTS:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
@@ -811,6 +829,12 @@
                 }
               });
 
+              fireEvent("threadEvents", {
+                type: "THREAD_LAST_ACTIVITY_TIME",
+                result: {
+                  thread: threads[0]
+                }
+              });
             });
             break;
 
@@ -887,6 +911,13 @@
                 thread: formatDataToMakeConversation(messageContent)
               }
             });
+
+            fireEvent("threadEvents", {
+              type: "THREAD_LAST_ACTIVITY_TIME",
+              result: {
+                thread: formatDataToMakeConversation(messageContent)
+              }
+            });
             break;
 
             // 31
@@ -902,6 +933,13 @@
                   thread: threads[0],
                   messageId: messageContent.messageId,
                   senderId: messageContent.participantId
+                }
+              });
+
+              fireEvent("threadEvents", {
+                type: "THREAD_LAST_ACTIVITY_TIME",
+                result: {
+                  thread: threads[0]
                 }
               });
             });
@@ -1006,6 +1044,13 @@
                 thread: threads[0],
                 messageId: messageContent.id,
                 senderId: messageContent.participant.id
+              }
+            });
+
+            fireEvent("threadEvents", {
+              type: "THREAD_LAST_ACTIVITY_TIME",
+              result: {
+                thread: threads[0]
               }
             });
           });

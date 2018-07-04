@@ -14,12 +14,22 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
-##[3.9.6] - 2018-07-04
 
+##[3.9.7] - 2018-07-04
+
+### Added
+
+-   threadEvents has 1 new type (Whatever happens in a thread, thread's time attribute changes. You can sort your list by listening to this event)
+    -   THREAD_LAST_ACTIVITY_TIME
+
+
+<details><summary>[3.9.6] - 2018-07-04</summary>
 ### Added
 
 -   threadEvents has 1 new type (In case of someone remove you from an thread, you will get an event with this type containing the ThreadId you've been removed from)
     -   THREAD_REMOVED_FROM
+
+</details>
 
 <details><summary>[3.9.4] - 2018-07-04</summary>
 
@@ -218,6 +228,9 @@ chatAgent.on("threadEvents", function(event) {
   var type = event.type;
 
   switch (type) {
+    case "THREAD_LAST_ACTIVITY_TIME":
+      break;
+
     case "THREAD_NEW":
       break;
 
