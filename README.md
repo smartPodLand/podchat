@@ -14,25 +14,31 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
+##[3.9.8] - 2018-07-04
 
-##[3.9.7] - 2018-07-04
+### Added
 
+-   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /*Your Custom Data Here*/ }}
+
+### Changes
+
+-   THREAD_LAST_ACTIVITY_TIME fires on sending message at Sender's side too
+
+<details><summary>[3.9.7] - 2018-07-04</summary>
 ### Added
 
 -   threadEvents has 1 new type (Whatever happens in a thread, thread's time attribute changes. You can sort your list by listening to this event)
     -   THREAD_LAST_ACTIVITY_TIME
-
+</details>
 
 <details><summary>[3.9.6] - 2018-07-04</summary>
 ### Added
 
 -   threadEvents has 1 new type (In case of someone remove you from an thread, you will get an event with this type containing the ThreadId you've been removed from)
     -   THREAD_REMOVED_FROM
-
 </details>
 
 <details><summary>[3.9.4] - 2018-07-04</summary>
-
 ### Added
 
 -   You can Add Participants to an existing thread by addParticipants({threadId : Thread's ID, content : An Array of Contact IDs}, () => {});

@@ -97,7 +97,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  getHistory(312, 5, 0);
+  // getHistory(312, 5, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -185,8 +185,9 @@ chatAgent.on("chatReady", function() {
    * SEND MESSAGE IN THREAD
    * @param threadId
    * @param newMessage
+   * @param metaData
    */
-  // sendMessage(293, "This is a Sample Message at " + new Date());
+  // sendMessage(293, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -414,10 +415,11 @@ function getHistory(threadId, count, offset) {
   });
 }
 
-function sendMessage(threadId, message) {
+function sendMessage(threadId, message, metaData) {
   sendChatParams = {
     threadId: threadId,
-    content: message
+    content: message,
+    metaData: metaData
   };
 
   chatAgent.sendTextMessage(sendChatParams, {

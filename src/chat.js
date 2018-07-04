@@ -1032,12 +1032,12 @@
           }
         });
 
-        if (messageContent.participant.id !== userInfo.id) {
-          getThreads({
-            threadIds: [threadId]
-          }, function(threadsResult) {
-            var threads = threadsResult.result.threads;
+        getThreads({
+          threadIds: [threadId]
+        }, function(threadsResult) {
+          var threads = threadsResult.result.threads;
 
+          if (messageContent.participant.id !== userInfo.id) {
             fireEvent("threadEvents", {
               type: "THREAD_UNREAD_COUNT_UPDATED",
               result: {
@@ -1046,15 +1046,15 @@
                 senderId: messageContent.participant.id
               }
             });
+          }
 
-            fireEvent("threadEvents", {
-              type: "THREAD_LAST_ACTIVITY_TIME",
-              result: {
-                thread: threads[0]
-              }
-            });
+          fireEvent("threadEvents", {
+            type: "THREAD_LAST_ACTIVITY_TIME",
+            result: {
+              thread: threads[0]
+            }
           });
-        }
+        });
       },
 
       chatEditMessageHandler = function(threadId, messageContent) {
@@ -1934,13 +1934,22 @@
     };
 
     this.sendTextMessage = function(params, callbacks) {
+      var metaData = {
+        sdk : {},
+        user: {}
+      };
+
+      if(typeof params.metaData === "object") {
+        metaData.user = params.metaData;
+      }
+
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.MESSAGE,
         subjectId: params.threadId,
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
-        metaData: params.metaData,
+        metaData: JSON.stringify(metaData),
         pushMsgType: 4
       }, callbacks);
     };
