@@ -5,6 +5,7 @@ var params = {
   ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
+  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -18,9 +19,7 @@ var params = {
   }
 };
 
-var PID;
-
-var chatAgent = new Chat(params);
+var chatAgent = new Chat(params), PID;
 
 chatAgent.on("chatReady", function() {
 
@@ -32,7 +31,6 @@ chatAgent.on("chatReady", function() {
    *  Get User Info
    */
   // getUserInfo();
-
 
   /*******************************************************
    *                    T H R E A D S                    *
@@ -104,7 +102,6 @@ chatAgent.on("chatReady", function() {
    */
   // renameThread(392, "Thread Name Changed at " + new Date());
 
-
   /*******************************************************
    *                   C O N T A C T S                   *
    *******************************************************/
@@ -112,7 +109,7 @@ chatAgent.on("chatReady", function() {
   /**
    * GET CONTACTS
    */
-  getContacts();
+  // getContacts();
 
   /**
    * ADD CONTACTS
@@ -207,31 +204,32 @@ chatAgent.on("chatState", function(chatState) {});
  * Listen to Thread Events
  */
 chatAgent.on("threadEvents", function(event) {
-   var type = event.type;
+  var type = event.type;
+  console.log(event);
 
-   switch (type) {
-     case "NEW_THREAD":
-       break;
+  switch (type) {
+    case "THREAD_NEW":
+      break;
 
-     case "THREAD_RENAME":
-       break;
+    case "THREAD_RENAME":
+      break;
 
-     case "THREAD_MUTE":
-       break;
+    case "THREAD_MUTE":
+      break;
 
-     case "THREAD_UNMUTE":
-       break;
+    case "THREAD_UNMUTE":
+      break;
 
-     case "THREAD_INFO_UPDATED":
-       break;
+    case "THREAD_INFO_UPDATED":
+      break;
 
-     case "LAST_SEEN_UPDATED":
-       break;
+    case "THREAD_UNREAD_COUNT_UPDATED":
+      break;
 
-     default:
-       break;
-   }
- });
+    default:
+      break;
+  }
+});
 
 /**
  * Listen to Message Events
@@ -240,15 +238,26 @@ chatAgent.on("messageEvents", function(event) {
   var type = event.type,
     message = event.result.message;
 
+  console.log(event);
+
   switch (type) {
-    case "NEW_MESSAGE":
+    case "MESSAGE_NEW":
       /**
        * Sending Message Seen to Sender after 5 secs
        */
       setTimeout(function() {
-        chatAgent.seen({messageId: message.id, owner: message.ownerId});
+        chatAgent.seen({messageId: message.id, ownerId: message.ownerId});
       }, 5000);
 
+      break;
+
+    case "MESSAGE_EDIT":
+      break;
+
+    case "MESSAGE_DELIVERY":
+      break;
+
+    case "MESSAGE_SEEN":
       break;
 
     default:
@@ -308,13 +317,11 @@ function getContacts() {
 }
 
 function getSingleMessage(threadId, messageId) {
-  var getSingleMessageParams = {
+  chatAgent.getHistory({
     offset: 0,
     threadId: threadId,
     id: messageId
-  };
-
-  chatAgent.getHistory(getSingleMessageParams, function(historyResult) {
+  }, function(historyResult) {
     if (!historyResult.hasError) {
       console.log(historyResult.result.history);
     }

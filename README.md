@@ -6,29 +6,59 @@
 
 All notable changes to this project will be documented here.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-
 ## [Unreleased]
 
 -   Send File
 -   Contact Sync
+-   Search in Contacts & History
+-   Add Participants to Thread
+-   Remove Participants from Thread
+-   Leave Thread
+-   Block / Unblock an user
+-   Delete Messages / Threads
+
+## [3.9.3] - 2018-07-04
+
+### Added
+
+-   messageEvents now has 2 new types
+    - MESSAGE_SEEN
+    - MESSAGE_DELIVERY
+
+### Changed
+
+-   messageEvents types get **MESSAGE_** namespace and are as below:
+    - MESSAGE_NEW
+    - MESSAGE_EDIT
+    - MESSAGE_DELIVERY
+    - MESSAGE_SEEN
+
+-   threadEvents types start with **THREAD_**:
+    - THREAD_NEW
+    - THREAD_RENAME
+    - THREAD_MUTE
+    - THREAD_UNMUTE
+    - THREAD_INFO_UPDATED
+    - THREAD_UNREAD_COUNT_UPDATED
 
 ## [3.9.2] - 2018-07-03
 
 ### Added
 
 -   2 main event listeners group (threadEvents, messageEvents)
-    - messageEvents has 2 types 
-      - NEW_MESSAGE
-      - EDIT_MESSAGE
 
-    - threadEvents has 6 types
-      - NEW_THREAD
-      - THREAD_RENAME
-      - THREAD_MUTE
-      - THREAD_UNMUTE
-      - THREAD_INFO_UPDATED
-      - LAST_SEEN_UPDATED
+    -   messageEvents has 2 types
+
+        -   NEW_MESSAGE
+        -   EDIT_MESSAGE
+
+    -   threadEvents has 6 types
+        -   NEW_THREAD
+        -   THREAD_RENAME
+        -   THREAD_MUTE
+        -   THREAD_UNMUTE
+        -   THREAD_INFO_UPDATED
+        -   LAST_SEEN_UPDATED
 
 ### Removed
 
@@ -56,7 +86,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## Code Example
 
-Create an Javascript file e.x `index.js` and put following code in it:
+Create an Javascript file e.x `index.js` and put following code there:
 
 ```javascript
 var Chat = require('podchat');
@@ -125,27 +155,34 @@ chatAgent.on("messageEvents", function(event) {
   var type = event.type,
     message = event.result.message;
 
-  switch (type) {
-    case "NEW_MESSAGE":
-      /**
-       * Sending Message Seen to Sender after 5 secs
-       */
-      setTimeout(function() {
-        chatAgent.seen({messageId: message.id, owner: message.ownerId});
-      }, 5000);
+    switch (type) {
+      case "MESSAGE_NEW":
+        /**
+         * Sending Message Seen to Sender after 5 secs
+         */
+        setTimeout(function() {
+          chatAgent.seen({messageId: message.id, ownerId: message.ownerId});
+        }, 5000);
 
-      break;
+        break;
 
-    case "EDIT_MESSAGE":
-      break;
+      case "MESSAGE_EDIT":
+        break;
 
-    default:
-      break;
-  }
+      case "MESSAGE_DELIVERY":
+        break;
+
+      case "MESSAGE_SEEN":
+        break;
+
+      default:
+        break;
+    }
 });
 ```
 
 ### threadEvents
+
 You'll get all the Events which are related to Threads in threadEvents listener
 
 ```javascript
@@ -156,7 +193,7 @@ chatAgent.on("threadEvents", function(event) {
   var type = event.type;
 
   switch (type) {
-    case "NEW_THREAD":
+    case "THREAD_NEW":
       break;
 
     case "THREAD_RENAME":
@@ -171,7 +208,7 @@ chatAgent.on("threadEvents", function(event) {
     case "THREAD_INFO_UPDATED":
       break;
 
-    case "LAST_SEEN_UPDATED":
+    case "THREAD_UNREAD_COUNT_UPDATED":
       break;
 
     default:
@@ -244,7 +281,7 @@ chatAgent.getHistory({
 );
 ```
 
-###getThreadParticipants
+\###getThreadParticipants
 
 ```javascript
 chatAgent.getThreadParticipants({

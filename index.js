@@ -20,9 +20,7 @@ var params = {
   }
 };
 
-var PID;
-
-var chatAgent = new Chat(params);
+var chatAgent = new Chat(params), PID;
 
 chatAgent.on("chatReady", function() {
 
@@ -34,7 +32,6 @@ chatAgent.on("chatReady", function() {
    *  Get User Info
    */
   // getUserInfo();
-
 
   /*******************************************************
    *                    T H R E A D S                    *
@@ -105,7 +102,6 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    */
   // renameThread(392, "Thread Name Changed at " + new Date());
-
 
   /*******************************************************
    *                   C O N T A C T S                   *
@@ -210,9 +206,10 @@ chatAgent.on("chatState", function(chatState) {});
  */
 chatAgent.on("threadEvents", function(event) {
   var type = event.type;
+  console.log(event);
 
   switch (type) {
-    case "NEW_THREAD":
+    case "THREAD_NEW":
       break;
 
     case "THREAD_RENAME":
@@ -227,7 +224,7 @@ chatAgent.on("threadEvents", function(event) {
     case "THREAD_INFO_UPDATED":
       break;
 
-    case "LAST_SEEN_UPDATED":
+    case "THREAD_UNREAD_COUNT_UPDATED":
       break;
 
     default:
@@ -242,15 +239,26 @@ chatAgent.on("messageEvents", function(event) {
   var type = event.type,
     message = event.result.message;
 
+  console.log(event);
+
   switch (type) {
-    case "NEW_MESSAGE":
+    case "MESSAGE_NEW":
       /**
        * Sending Message Seen to Sender after 5 secs
        */
       setTimeout(function() {
-        chatAgent.seen({messageId: message.id, owner: message.ownerId});
+        chatAgent.seen({messageId: message.id, ownerId: message.ownerId});
       }, 5000);
 
+      break;
+
+    case "MESSAGE_EDIT":
+      break;
+
+    case "MESSAGE_DELIVERY":
+      break;
+
+    case "MESSAGE_SEEN":
       break;
 
     default:
@@ -310,13 +318,11 @@ function getContacts() {
 }
 
 function getSingleMessage(threadId, messageId) {
-  var getSingleMessageParams = {
+  chatAgent.getHistory({
     offset: 0,
     threadId: threadId,
     id: messageId
-  };
-
-  chatAgent.getHistory(getSingleMessageParams, function(historyResult) {
+  }, function(historyResult) {
     if (!historyResult.hasError) {
       console.log(historyResult.result.history);
     }
