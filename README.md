@@ -9,9 +9,8 @@ All notable changes to this project will be documented here.
 ## [Unreleased]
 
 -   Send File
--   Contact Sync
 -   Search in Contacts & History
--   Block / Unblock an user
+-   Block / Unblock user
 -   Delete Messages / Threads
 
 ## [3.9.8] - 2018-07-04
