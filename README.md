@@ -18,7 +18,7 @@ All notable changes to this project will be documented here.
 
 ### Added
 
--   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /*Your Custom Data Here*/ }}
+-   Add extra data on Message's metaData field and you will get your data back in ```metaData:{sdk: {}, user: { /*Your Custom Data Here*/ }}```
 
 ### Changes
 
@@ -333,8 +333,7 @@ chatAgent.getHistory({
   }
 );
 ```
-
-###getThreadParticipants
+### getThreadParticipants
 
 ```javascript
 chatAgent.getThreadParticipants({
@@ -348,7 +347,7 @@ chatAgent.getThreadParticipants({
 );
 ```
 
-###addParticipants
+### addParticipants
 
 ```javascript
 chatAgent.addParticipants({
@@ -359,7 +358,7 @@ chatAgent.addParticipants({
 });
 ```
 
-###removeParticipants
+### removeParticipants
 
 ```javascript
 chatAgent.removeParticipants({
@@ -371,7 +370,7 @@ chatAgent.removeParticipants({
 
 ```
 
-###leaveThread
+### leaveThread
 
 ```javascript
 chatAgent.leaveThread({
@@ -473,7 +472,8 @@ chatAgent.removeContacts({
 ```javascript
 chatAgent.send({
     threadId: threadId,
-    content: messageText
+    content: messageText,
+    metaData: metaData // JSON Object
   }, {
   onSent: function(result) {
     console.log("\nYour message has been Sent!\n");
