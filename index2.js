@@ -242,6 +242,9 @@ chatAgent.on("threadEvents", function(event) {
     case "THREAD_LEAVE_PARTICIPANT":
       break;
 
+    case "THREAD_REMOVED_FROM":
+      break;
+
     case "THREAD_RENAME":
       break;
 
@@ -358,7 +361,6 @@ function leaveThread(threadId) {
   }, function(result) {
     // console.log(result);
   });
-
 }
 
 function getContacts() {

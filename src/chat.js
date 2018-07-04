@@ -68,7 +68,7 @@
         GET_THREADS: 14,
         GET_HISTORY: 15,
         CHANGE_TYPE: 16,
-        LAST_SEEN_TYPE: 17,
+        REMOVED_FROM_THREAD: 17,
         REMOVE_PARTICIPANT: 18,
         MUTE_THREAD: 19,
         UNMUTE_THREAD: 20,
@@ -782,6 +782,16 @@
           case chatMessageVOTypes.GET_HISTORY:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+            break;
+
+            // 17
+          case chatMessageVOTypes.REMOVED_FROM_THREAD:
+            fireEvent("threadEvents", {
+              type: "THREAD_REMOVED_FROM",
+              result: {
+                thread: threadId
+              }
+            });
             break;
 
             // 18
