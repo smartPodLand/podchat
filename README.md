@@ -11,19 +11,15 @@ All notable changes to this project will be documented here.
 -   Send File
 -   Contact Sync
 -   Search in Contacts & History
--   Add Participants to Thread
--   Remove Participants from Thread
--   Leave Thread
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
-##[3.9.5] - 2018-07-04
+##[3.9.6] - 2018-07-04
 
 ### Added
 
 -   threadEvents has 1 new type (In case of someone remove you from an thread, you will get an event with this type containing the ThreadId you've been removed from)
     -   THREAD_REMOVED_FROM
-
 
 <details><summary>[3.9.4] - 2018-07-04</summary>
 
