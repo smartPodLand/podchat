@@ -14,7 +14,7 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
-##[3.9.8] - 2018-07-04
+## [3.9.8] - 2018-07-04
 
 ### Added
 
