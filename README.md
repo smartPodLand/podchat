@@ -22,7 +22,7 @@ All notable changes to this project will be documented here.
 
 ### Changes
 
--   THREAD_LAST_ACTIVITY_TIME fires on sending message at Sender's side too
+-   ```THREAD_LAST_ACTIVITY_TIME``` fires on sending message at Sender's side too
 
 <details><summary>[3.9.7] - 2018-07-04</summary>
 ### Added
