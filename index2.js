@@ -7,6 +7,7 @@ var params = {
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
+  // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -19,7 +20,8 @@ var params = {
   }
 };
 
-var chatAgent = new Chat(params), PID;
+var chatAgent = new Chat(params),
+  PID;
 
 chatAgent.on("chatReady", function() {
 
@@ -70,12 +72,32 @@ chatAgent.on("chatReady", function() {
   // getThreadParticipants(312);
 
   /**
+   * ADD PARTICIPANTS
+   * @param threadId
+   * @param contacts {Array}
+   */
+  // addParticipants(312, [562]);
+
+  /**
+   * REMOVE PARTICIPANTS
+   * @param threadId
+   * @param participants {Array}
+   */
+  // removeParticipants(312, [122]);
+
+  /**
+   * LEAVE THREAD
+   * @param threadId
+   */
+  // leaveThread(312);
+
+  /**
    * GET THREAD HISTORY
    * @param threadId
    * @param count
    * @param offset
    */
-  // getHistory(293, 4, 0);
+  // getHistory(312, 4, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -211,6 +233,15 @@ chatAgent.on("threadEvents", function(event) {
     case "THREAD_NEW":
       break;
 
+    case "THREAD_ADD_PARTICIPANTS":
+      break;
+
+    case "THREAD_REMOVE_PARTICIPANTS":
+      break;
+
+    case "THREAD_LEAVE_PARTICIPANT":
+      break;
+
     case "THREAD_RENAME":
       break;
 
@@ -299,6 +330,35 @@ function getThreadParticipants(threadId) {
       console.log(participants);
     }
   });
+}
+
+function addParticipants(threadId, contacts) {
+  chatAgent.addParticipants({
+    threadId: threadId,
+    contacts: contacts
+  }, function(result) {
+    // console.log(result);
+  });
+
+}
+
+function removeParticipants(threadId, participants) {
+  chatAgent.removeParticipants({
+    threadId: threadId,
+    participants: participants
+  }, function(result) {
+    // console.log(result);
+  });
+
+}
+
+function leaveThread(threadId) {
+  chatAgent.leaveThread({
+    threadId: threadId
+  }, function(result) {
+    // console.log(result);
+  });
+
 }
 
 function getContacts() {

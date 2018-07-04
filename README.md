@@ -17,31 +17,46 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
-## [3.9.3] - 2018-07-04
+## [3.9.4] - 2018-07-04
+
+### Added
+
+-   You can Add Participants to an existing thread by addParticipants({threadId : Thread's ID, content : An Array of Contact IDs}, () => {});
+-   To Remove participants from an thread use removeParticipants({threadId: Thread's ID, content: An Array of Participant IDs});
+-   If you want to Leave a thread use leaveThread({threadId: Thread's Id}, () => {});
+-   threadEvents now has 3 new types
+    -   THREAD_ADD_PARTICIPANTS
+    -   THREAD_REMOVE_PARTICIPANTS
+    -   THREAD_LEAVE_PARTICIPANT
+
+<details><summary>[3.9.3] - 2018-07-04</summary>
 
 ### Added
 
 -   messageEvents now has 2 new types
-    - MESSAGE_SEEN
-    - MESSAGE_DELIVERY
+    -   MESSAGE_SEEN
+    -   MESSAGE_DELIVERY
 
 ### Changed
 
--   messageEvents types get **MESSAGE_** namespace and are as below:
-    - MESSAGE_NEW
-    - MESSAGE_EDIT
-    - MESSAGE_DELIVERY
-    - MESSAGE_SEEN
+-   messageEvents types get **MESSAGE\_** namespace and are as below:
 
--   threadEvents types start with **THREAD_**:
-    - THREAD_NEW
-    - THREAD_RENAME
-    - THREAD_MUTE
-    - THREAD_UNMUTE
-    - THREAD_INFO_UPDATED
-    - THREAD_UNREAD_COUNT_UPDATED
+    -   MESSAGE_NEW
+    -   MESSAGE_EDIT
+    -   MESSAGE_DELIVERY
+    -   MESSAGE_SEEN
 
-## [3.9.2] - 2018-07-03
+-   threadEvents types start with **THREAD\_**:
+    -   THREAD_NEW
+    -   THREAD_RENAME
+    -   THREAD_MUTE
+    -   THREAD_UNMUTE
+    -   THREAD_INFO_UPDATED
+    -   THREAD_UNREAD_COUNT_UPDATED
+
+</details>
+
+<details><summary>[3.9.2] - 2018-07-03</summary>
 
 ### Added
 
@@ -72,7 +87,9 @@ All notable changes to this project will be documented here.
     -   chatAgent.on("muteThread", () => {});
     -   chatAgent.on("unMuteThread", () => {});
 
-## [3.9.1] - 2018-07-02
+</details>
+
+<details><summary>[3.9.1] - 2018-07-02</summary>
 
 ### Added
 
@@ -83,6 +100,8 @@ All notable changes to this project will be documented here.
 ### Changed
 
 -   Received Seen & Delivery Messages now have {messageId, participantId} in response content
+
+</details>
 
 ## Code Example
 
@@ -196,6 +215,15 @@ chatAgent.on("threadEvents", function(event) {
     case "THREAD_NEW":
       break;
 
+    case "THREAD_ADD_PARTICIPANTS":
+      break;
+
+    case "THREAD_REMOVE_PARTICIPANTS":
+      break;
+
+    case "THREAD_LEAVE_PARTICIPANT":
+      break;
+
     case "THREAD_RENAME":
       break;
 
@@ -281,7 +309,7 @@ chatAgent.getHistory({
 );
 ```
 
-\###getThreadParticipants
+###getThreadParticipants
 
 ```javascript
 chatAgent.getThreadParticipants({
@@ -293,6 +321,39 @@ chatAgent.getThreadParticipants({
     console.log(participants);
   }
 );
+```
+
+###addParticipants
+
+```javascript
+chatAgent.addParticipants({
+  threadId: threadId,
+  contacts: [contactId1, contactId2, ...]
+}, function(result) {
+  console.log(result);
+});
+```
+
+###removeParticipants
+
+```javascript
+chatAgent.removeParticipants({
+  threadId: threadId,
+  participants: [participantId1, participantId2, ...]
+}, function(result) {
+  console.log(result);
+});
+
+```
+
+###leaveThread
+
+```javascript
+chatAgent.leaveThread({
+  threadId: threadId
+}, function(result) {
+  console.log(result);
+});
 ```
 
 ### muteThread

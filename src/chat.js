@@ -696,6 +696,34 @@
             sendMessageCallbacksHandler(chatMessageVOTypes.SEEN, threadId, uniqueId);
             break;
 
+            // 9
+          case chatMessageVOTypes.LEAVE_THREAD:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+
+            getThreads({
+              threadIds: [threadId]
+            }, function(threadsResult) {
+              var threads = threadsResult.result.threads;
+              if (threads.length > 0) {
+                fireEvent("threadEvents", {
+                  type: "THREAD_LEAVE_PARTICIPANT",
+                  result: {
+                    thread: threads[0]
+                  }
+                });
+              } else {
+
+                fireEvent("threadEvents", {
+                  type: "THREAD_LEAVE_PARTICIPANT",
+                  result: {
+                    threadId: threadId
+                  }
+                });
+              }
+            });
+            break;
+
             // 10
           case chatMessageVOTypes.RENAME:
             if (messagesCallbacks[uniqueId])
@@ -719,6 +747,26 @@
             break;
 
             // 13
+
+            // 11
+          case chatMessageVOTypes.ADD_PARTICIPANT:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+
+            getThreads({
+              threadIds: [messageContent.id]
+            }, function(threadsResult) {
+              var threads = threadsResult.result.threads;
+
+              fireEvent("threadEvents", {
+                type: "THREAD_ADD_PARTICIPANTS",
+                result: {
+                  thread: threads[0]
+                }
+              });
+            });
+            break;
+
           case chatMessageVOTypes.GET_CONTACTS:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
@@ -734,6 +782,26 @@
           case chatMessageVOTypes.GET_HISTORY:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+            break;
+
+            // 18
+          case chatMessageVOTypes.REMOVE_PARTICIPANT:
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+
+            getThreads({
+              threadIds: [threadId]
+            }, function(threadsResult) {
+              var threads = threadsResult.result.threads;
+
+              fireEvent("threadEvents", {
+                type: "THREAD_REMOVE_PARTICIPANTS",
+                result: {
+                  thread: threads[0]
+                }
+              });
+
+            });
             break;
 
             // 19
@@ -1569,6 +1637,138 @@
                 contentCount: result.contentCount,
                 hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount && messageLength > 0),
                 nextOffset: sendMessageParams.content.offset += messageLength
+              };
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+        }
+      });
+    };
+
+    this.addParticipants = function(params, callback) {
+
+      /**
+       * + AddParticipantsRequest   {object}
+       *    - subjectId             {long}
+       *    + content               {list} List of CONTACT IDs
+       *       -id                  {long}
+       *    - uniqueId              {string}
+       */
+
+      var sendMessageParams = {
+        chatMessageVOType: chatMessageVOTypes.ADD_PARTICIPANT
+      };
+
+      if (params) {
+        if (typeof params.threadId == "number") {
+          sendMessageParams.subjectId = params.threadId;
+        }
+
+        if (Array.isArray(params.contacts)) {
+          sendMessageParams.content = params.contacts;
+        }
+      }
+
+      return sendMessage(sendMessageParams, {
+        onResult: function(result) {
+          var returnData = {
+            hasError: result.hasError,
+            errorMessage: result.errorMessage,
+            errorCode: result.errorCode
+          };
+
+          if (!returnData.hasError) {
+            var messageContent = result.result,
+              resultData = {
+                thread: createThread(messageContent)
+              };
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+        }
+      });
+    };
+
+    this.removeParticipants = function(params, callback) {
+
+      /**
+       * + RemoveParticipantsRequest    {object}
+       *    - subjectId                 {long}
+       *    + content                   {list} List of PARTICIPANT IDs from Thread's Participants object
+       *       -id                      {long}
+       *    - uniqueId                  {string}
+       */
+
+      var sendMessageParams = {
+        chatMessageVOType: chatMessageVOTypes.REMOVE_PARTICIPANT
+      };
+
+      if (params) {
+        if (typeof params.threadId == "number") {
+          sendMessageParams.subjectId = params.threadId;
+        }
+
+        if (Array.isArray(params.participants)) {
+          sendMessageParams.content = params.participants;
+        }
+      }
+
+      return sendMessage(sendMessageParams, {
+        onResult: function(result) {
+          var returnData = {
+            hasError: result.hasError,
+            errorMessage: result.errorMessage,
+            errorCode: result.errorCode
+          };
+
+          if (!returnData.hasError) {
+            var messageContent = result.result,
+              resultData = {
+                thread: createThread(messageContent)
+              };
+
+            returnData.result = resultData;
+          }
+
+          callback && callback(returnData);
+        }
+      });
+    };
+
+    this.leaveThread = function(params, callback) {
+
+      /**
+       * + LeaveThreadRequest    {object}
+       *    - subjectId          {long}
+       *    - uniqueId           {string}
+       */
+
+      var sendMessageParams = {
+        chatMessageVOType: chatMessageVOTypes.LEAVE_THREAD
+      };
+
+      if (params) {
+        if (typeof params.threadId == "number") {
+          sendMessageParams.subjectId = params.threadId;
+        }
+      }
+
+      return sendMessage(sendMessageParams, {
+        onResult: function(result) {
+          var returnData = {
+            hasError: result.hasError,
+            errorMessage: result.errorMessage,
+            errorCode: result.errorCode
+          };
+
+          if (!returnData.hasError) {
+            var messageContent = result.result,
+              resultData = {
+                thread: createThread(messageContent)
               };
 
             returnData.result = resultData;

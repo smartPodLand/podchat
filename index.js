@@ -20,7 +20,8 @@ var params = {
   }
 };
 
-var chatAgent = new Chat(params), PID;
+var chatAgent = new Chat(params),
+  PID;
 
 chatAgent.on("chatReady", function() {
 
@@ -71,12 +72,32 @@ chatAgent.on("chatReady", function() {
   // getThreadParticipants(312);
 
   /**
+   * ADD PARTICIPANTS
+   * @param threadId
+   * @param contacts {Array}
+   */
+  // addParticipants(312, [562]);
+
+  /**
+   * REMOVE PARTICIPANTS
+   * @param threadId
+   * @param participants {Array}
+   */
+  // removeParticipants(312, [122]);
+
+  /**
+   * LEAVE THREAD
+   * @param threadId
+   */
+  // leaveThread(312);
+
+  /**
    * GET THREAD HISTORY
    * @param threadId
    * @param count
    * @param offset
    */
-  // getHistory(293, 4, 0);
+  // getHistory(312, 4, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -212,6 +233,15 @@ chatAgent.on("threadEvents", function(event) {
     case "THREAD_NEW":
       break;
 
+    case "THREAD_ADD_PARTICIPANTS":
+      break;
+
+    case "THREAD_REMOVE_PARTICIPANTS":
+      break;
+
+    case "THREAD_LEAVE_PARTICIPANT":
+      break;
+
     case "THREAD_RENAME":
       break;
 
@@ -299,6 +329,34 @@ function getThreadParticipants(threadId) {
       var participants = participantsResult.result.participants;
       console.log(participants);
     }
+  });
+}
+
+function addParticipants(threadId, contacts) {
+  chatAgent.addParticipants({
+    threadId: threadId,
+    contacts: contacts
+  }, function(result) {
+    // console.log(result);
+  });
+
+}
+
+function removeParticipants(threadId, participants) {
+  chatAgent.removeParticipants({
+    threadId: threadId,
+    participants: participants
+  }, function(result) {
+    // console.log(result);
+  });
+
+}
+
+function leaveThread(threadId) {
+  chatAgent.leaveThread({
+    threadId: threadId
+  }, function(result) {
+    // console.log(result);
   });
 }
 
