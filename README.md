@@ -12,7 +12,7 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
-##[0.5.1] - 2018-07-08
+## [0.5.1] - 2018-07-08
 
 ### Added
 
@@ -355,7 +355,7 @@ chatAgent.getHistory({
 );
 ```
 
-\###getThreadParticipants
+### getThreadParticipants
 
 ```javascript
 chatAgent.getThreadParticipants({
@@ -369,7 +369,7 @@ chatAgent.getThreadParticipants({
 );
 ```
 
-\###addParticipants
+### addParticipants
 
 ```javascript
 chatAgent.addParticipants({
@@ -380,7 +380,7 @@ chatAgent.addParticipants({
 });
 ```
 
-\###removeParticipants
+### removeParticipants
 
 ```javascript
 chatAgent.removeParticipants({
@@ -391,7 +391,7 @@ chatAgent.removeParticipants({
 });
 ```
 
-\###leaveThread
+### leaveThread
 
 ```javascript
 chatAgent.leaveThread({
