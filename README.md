@@ -12,7 +12,7 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
-##[0.5.0] - 2018-07-08
+##[0.5.1] - 2018-07-08
 
 ### Added
 
@@ -24,6 +24,7 @@ All notable changes to this project will be documented here.
 
 ### Changes
 
+-   npm version rescaled to 0.5.1 (Release . Sprint . Feature/Patch/BugFix)
 -   MESSAGE_SEEN fires at Sender's side when he sends a SEEN type to server
 
 <details><summary>[3.9.8] - 2018-07-04</summary>
