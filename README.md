@@ -33,7 +33,7 @@ All notable changes to this project will be documented here.
 -   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /_Your Custom Data Here_/ }}
 
 
--   Changes
++   Changes
 
 
 -   THREAD_LAST_ACTIVITY_TIME fires on sending message at Sender's side too
@@ -75,7 +75,7 @@ All notable changes to this project will be documented here.
     -   MESSAGE_DELIVERY
 
 
--   Changed
++   Changed
 
 
 -   messageEvents types get **MESSAGE\_** namespace and are as below:
@@ -114,7 +114,7 @@ All notable changes to this project will be documented here.
         -   LAST_SEEN_UPDATED
 
 
--   Removed
++   Removed
 
 
 -   Below event listeners are no longer available :
@@ -131,7 +131,7 @@ All notable changes to this project will be documented here.
 
 <details><summary>[3.9.1] - 2018-07-02</summary>
 
--   Added
++   Added
 
 
 -   Contact Management (addContacts, updateContacts, removeContacts)
@@ -139,7 +139,7 @@ All notable changes to this project will be documented here.
 -   Http Request Handler
 
 
--   Changed
++   Changed
 
 
 -   Received Seen & Delivery Messages now have {messageId, participantId} in response content

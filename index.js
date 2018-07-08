@@ -6,7 +6,7 @@ var params = {
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552",   {**REQUIRED**} SSO Token JiJi
+  // token: "f53f39a1893e4c4da18e59822290a552",  // {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -45,12 +45,7 @@ chatAgent.on("chatReady", function() {
    * @param threadIds
    * @param name
    */
-  // getThreads({
-  //   count: 50,
-  //   offset: 0,
-  //    threadIds: [312],
-  //    name: "jiji"
-  // });
+  // getThreads({count: 50, offset: 0, threadIds: [293], name: "jiji"});
 
   /**
    * CREATE THREAD (Creates Group)
@@ -74,14 +69,14 @@ chatAgent.on("chatReady", function() {
   /**
    * ADD PARTICIPANTS
    * @param threadId
-   * @param contacts {Array}
+   * @param contacts {Array}  CONTACT ID
    */
   // addParticipants(312, [562]);
 
   /**
    * REMOVE PARTICIPANTS
    * @param threadId
-   * @param participants {Array}
+   * @param participants {Array}  USER ID
    */
   // removeParticipants(312, [122]);
 
@@ -141,10 +136,10 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.addContacts({
-  //   firstName: "Sina",
-  //   lastName: "Rahimi",
-  //   cellphoneNumber: "05954847458",
-  //   email: "sinarahimi1@gmail.com"
+  //   firstName: "Pooria",
+  //   lastName: "Pahlevani",
+  //   cellphoneNumber: "09256568745",
+  //   email: "poori@gmail.com"
   // }, function(result) {
   //   console.log(result.result);
   // });
@@ -158,11 +153,11 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.updateContacts({
-  //   id: "647",
+  //   id: "681",
   //     firstName: "Hamid",
   //     lastName: "Amouzegar",
-  //     cellphoneNumber: "09000677868",
-  //     email: "hamidam65000r77@gmail.com"
+  //     cellphoneNumber: "09004377868",
+  //     email: "hamidamfefw@gmail.com"
   // }, function(result) {
   //   console.log(result);
   // });
@@ -172,7 +167,7 @@ chatAgent.on("chatReady", function() {
    * @param id
    */
   // chatAgent.removeContacts({
-  //   id: "645865"
+  //   id: "681"
   // }, function(result) {
   //   console.log(result);
   // });
@@ -208,7 +203,7 @@ chatAgent.on("chatReady", function() {
    * @param destination
    * @param messageIds
    */
-  // forwardMessage(293, [2539, 2538, 2537]);
+  forwardMessage(293, [2539, 2538, 2537]);
 });
 
 /**
