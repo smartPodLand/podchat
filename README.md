@@ -8,37 +8,53 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
--   Send File
 -   Search in Contacts & History
--   Block / Unblock user
+-   Block / Unblock an user
 -   Delete Messages / Threads
 
-## [3.9.8] - 2018-07-04
+##[0.5.0] - 2018-07-08
 
 ### Added
 
--   Add extra data on Message's metaData field and you will get your data back in ```metaData:{sdk: {}, user: { /*Your Custom Data Here*/ }}```
+-   uploadImage
+-   uploadFile
+-   getImage
+-   getFile
+-   sendFileMessage
 
 ### Changes
 
--   ```THREAD_LAST_ACTIVITY_TIME``` fires on sending message at Sender's side too
+-   MESSAGE_SEEN fires at Sender's side when he sends a SEEN type to server
+
+<details><summary>[3.9.8] - 2018-07-04</summary>
++ Added
+
+-   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /_Your Custom Data Here_/ }}
+
+
+-   Changes
+
+
+-   THREAD_LAST_ACTIVITY_TIME fires on sending message at Sender's side too
+
+</details>
 
 <details><summary>[3.9.7] - 2018-07-04</summary>
-### Added
++ Added
 
 -   threadEvents has 1 new type (Whatever happens in a thread, thread's time attribute changes. You can sort your list by listening to this event)
-    -   THREAD_LAST_ACTIVITY_TIME
-</details>
+        \-   THREAD_LAST_ACTIVITY_TIME
+    </details>
 
 <details><summary>[3.9.6] - 2018-07-04</summary>
-### Added
++ Added
 
 -   threadEvents has 1 new type (In case of someone remove you from an thread, you will get an event with this type containing the ThreadId you've been removed from)
-    -   THREAD_REMOVED_FROM
-</details>
+        \-   THREAD_REMOVED_FROM
+    </details>
 
 <details><summary>[3.9.4] - 2018-07-04</summary>
-### Added
++ Added
 
 -   You can Add Participants to an existing thread by addParticipants({threadId : Thread's ID, content : An Array of Contact IDs}, () => {});
 -   To Remove participants from an thread use removeParticipants({threadId: Thread's ID, content: An Array of Participant IDs});
@@ -51,14 +67,15 @@ All notable changes to this project will be documented here.
 </details>
 
 <details><summary>[3.9.3] - 2018-07-04</summary>
-
-### Added
++ Added
 
 -   messageEvents now has 2 new types
     -   MESSAGE_SEEN
     -   MESSAGE_DELIVERY
 
-### Changed
+
+-   Changed
+
 
 -   messageEvents types get **MESSAGE\_** namespace and are as below:
 
@@ -78,8 +95,7 @@ All notable changes to this project will be documented here.
 </details>
 
 <details><summary>[3.9.2] - 2018-07-03</summary>
-
-### Added
++ Added
 
 -   2 main event listeners group (threadEvents, messageEvents)
 
@@ -96,7 +112,9 @@ All notable changes to this project will be documented here.
         -   THREAD_INFO_UPDATED
         -   LAST_SEEN_UPDATED
 
-### Removed
+
+-   Removed
+
 
 -   Below event listeners are no longer available :
     -   chatAgent.on("message", () => {});
@@ -112,13 +130,16 @@ All notable changes to this project will be documented here.
 
 <details><summary>[3.9.1] - 2018-07-02</summary>
 
-### Added
+-   Added
+
 
 -   Contact Management (addContacts, updateContacts, removeContacts)
 -   Search in Threads
 -   Http Request Handler
 
-### Changed
+
+-   Changed
+
 
 -   Received Seen & Delivery Messages now have {messageId, participantId} in response content
 
@@ -332,7 +353,8 @@ chatAgent.getHistory({
   }
 );
 ```
-### getThreadParticipants
+
+\###getThreadParticipants
 
 ```javascript
 chatAgent.getThreadParticipants({
@@ -346,7 +368,7 @@ chatAgent.getThreadParticipants({
 );
 ```
 
-### addParticipants
+\###addParticipants
 
 ```javascript
 chatAgent.addParticipants({
@@ -357,7 +379,7 @@ chatAgent.addParticipants({
 });
 ```
 
-### removeParticipants
+\###removeParticipants
 
 ```javascript
 chatAgent.removeParticipants({
@@ -366,10 +388,9 @@ chatAgent.removeParticipants({
 }, function(result) {
   console.log(result);
 });
-
 ```
 
-### leaveThread
+\###leaveThread
 
 ```javascript
 chatAgent.leaveThread({
@@ -471,8 +492,7 @@ chatAgent.removeContacts({
 ```javascript
 chatAgent.send({
     threadId: threadId,
-    content: messageText,
-    metaData: metaData // JSON Object
+    content: messageText
   }, {
   onSent: function(result) {
     console.log("\nYour message has been Sent!\n");
@@ -551,6 +571,145 @@ chatAgent.forwardMessage({
   },
   onSeen: function(result) {
     console.log(result.uniqueId + " \t has been Seen! (FORWARD)");
+  }
+});
+```
+
+## File functions
+
+### sendFileMessage
+
+```html
+<form>
+  <fieldset>
+    <legend>Send File Message</legend>
+    <input type="file" name="sendFileInput" id="sendFileInput">
+    <br>
+    <label for="sendFileDescription">Description: </label>
+    <input type="text" name="sendFileDescription" id="sendFileDescription">
+    <button type="button" name="button" id="sendFileMessage">Send</button>
+  </fieldset>
+</form>
+```
+
+```javascript
+document.getElementById("sendFileMessage").addEventListener("click", function() {
+  var fileInput = document.getElementById("sendFileInput"),
+    image = fileInput.files[0],
+    content = document.getElementById("sendFileDescription").value;
+
+  chatAgent.sendFileMessage({
+    threadId: 293,
+    file: image,
+    content: content,
+    metaData: {custom_name: "John Doe"}
+  }, {
+    onSent: function(result) {
+      console.log(result.uniqueId + " \t has been Sent!");
+    },
+    onDeliver: function(result) {
+      console.log(result.uniqueId + " \t has been Delivered!");
+    },
+    onSeen: function(result) {
+      console.log(result.uniqueId + " \t has been Seen!");
+    }
+  });
+});
+```
+
+### uploadFile
+
+```html
+<form>
+  <fieldset>
+    <legend>Upload File</legend>
+    <input type="file" name="file" id="fileInput" value="">
+    <button type="button" name="button" id="uploadFile">Upload File</button>
+    <br>
+    <div id="uploadedFile"></div>
+  </fieldset>
+</form>
+```
+
+```javascript
+document.getElementById("uploadFile").addEventListener("click", function() {
+  var fileInput = document.getElementById("fileInput"),
+    file = fileInput.files[0];
+
+  chatAgent.uploadFile({
+    file: file,
+    fileName: "Test Name"
+  }, function(result) {
+    if (!result.hasError) {
+      var file = result.result;
+      document.getElementById("uploadedFile").innerHTML = "<pre><br>Uploaded File Id: " + file.id + "<br>Uploaded File Name : " + file.name + "<br>Uploaded File HashCode : " + file.hashCode + "</pre>";
+    }
+  });
+});
+```
+
+### uploadImage
+
+```html
+<form>
+  <fieldset>
+    <legend>Upload Image</legend>
+    <input type="file" name="image" id="imageInput" value="">
+    <button type="button" name="button" id="uploadImage">Upload Image</button>
+    <br>
+    <img id="uploadedImage" />
+    <div id="uploadedImageData"></div>
+  </fieldset>
+</form>
+```
+
+```javascript
+document.getElementById("uploadImage").addEventListener("click", function() {
+  var imageInput = document.getElementById("imageInput"),
+    image = imageInput.files[0];
+
+  chatAgent.uploadImage({
+    image: image,
+    fileName: "Test Name",
+    xC: 0,
+    yC: 0,
+    hC: 800,
+    wC: 800
+  }, function(result) {
+    if (!result.hasError) {
+      var image = result.result;
+      document.getElementById("uploadedImage").src = "http://172.16.106.26:8080/hamsam/nzh/image?imageId=" + image.id + "&hashCode=" + image.hashCode;
+      document.getElementById("uploadedImageData").innerHTML = "<pre><br>Uploaded Image Id: " + image.id + "<br>Uploaded Image Name : " + image.name + "<br>Uploaded Image HashCode : " + image.hashCode + "</pre>";
+    }
+  });
+});
+```
+
+### getFile
+
+```javascript
+chatAgent.getFile({
+  fileId: fileId,
+  hashCode: hashCode,
+  downloadable: true
+}, function(result) {
+  if (!result.hasError) {
+    var file = result.result;
+  }
+});
+```
+
+### getImage
+
+```javascript
+chatAgent.getImage({
+  imageId: imageId,
+  hashCode: hashCode,
+  downloadable: true,
+  actual: true
+}, function(result) {
+  if (!result.hasError) {
+    var image = result.result;
   }
 });
 ```
