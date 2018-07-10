@@ -203,7 +203,7 @@ chatAgent.on("chatReady", function() {
    * @param destination
    * @param messageIds
    */
-  forwardMessage(293, [2539, 2538, 2537]);
+  // forwardMessage(293, [2539, 2538, 2537]);
 });
 
 /**

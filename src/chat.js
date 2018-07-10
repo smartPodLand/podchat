@@ -110,14 +110,28 @@
       },
       SERVICE_ADDRESSES = {
         SSO_ADDRESS: params.ssoHost || "http://172.16.110.76",
-        PLATFORM_ADDRESS: params.platformHost || "http://172.16.106.26:8080/hamsam"
+        PLATFORM_ADDRESS: params.platformHost || "http://172.16.106.26:8080/hamsam",
+        FILESERVER_ADDRESS: params.fileServer || "http://172.16.106.26:8080/hamsam"
       },
       SERVICES_PATH = {
         SSO_DEVICES: params.ssoGrantDevicesAddress || "/oauth2/grants/devices",
         ADD_CONTACTS: "/nzh/addContacts",
         UPDATE_CONTACTS: "/nzh/updateContacts",
-        REMOVE_CONTACTS: "/nzh/removeContacts"
+        REMOVE_CONTACTS: "/nzh/removeContacts",
+        UPLOAD_IMAGE: "/nzh/uploadImage",
+        GET_IMAGE: "/nzh/image/",
+        UPLOAD_FILE: "/nzh/uploadFile",
+        GET_FILE: "/nzh/file/"
       },
+      imageMimeTypes = [
+        "image/bmp",
+        "image/png",
+        "image/tiff",
+        "image/gif",
+        "image/x-icon",
+        "image/jpeg",
+        "image/webp"
+      ],
       CHAT_ERRORS = {
         6000: "No Active Device found for this Token!",
         6001: "Invalid Token!",
@@ -125,7 +139,10 @@
         6100: "Cant get UserInfo!",
         6101: "Getting User Info Retry Count exceeded 5 times; Connection Can Not Estabilish!",
         6200: "Network Error",
-        6201: "URL is not clarified!"
+        6201: "URL is not clarified!",
+        6300: "Error in uploading File!",
+        6301: "Not an image!",
+        6302: "No file has been selected!"
       },
       getUserInfoRetry = 5,
       getUserInfoRetryCount = 0,
@@ -1568,6 +1585,251 @@
         }
       },
 
+      /**
+       * Get Image.
+       *
+       * This functions gets an uploaded image from File Server.
+       *
+       * @since 3.9.9
+       * @access public
+       *
+       * @param {long}    imageId         ID of image
+       * @param {int}     width           Required width to get
+       * @param {int}     height          Required height to get
+       * @param {boolean} actual          Required height to get
+       * @param {boolean} downloadable    TRUE to be downloadable / FALSE to not
+       * @param {string}  hashCode        HashCode of uploaded file
+       *
+       * @return {object} Image Object
+       */
+      getImage = function(params, callback) {
+        getImageData = {};
+
+        if (params) {
+          if (typeof params.imageId == "number") {
+            getImageData.imageId = params.imageId;
+          }
+
+          if (typeof params.hashCode == "string") {
+            getImageData.hashCode = params.hashCode;
+          }
+
+          if (typeof params.width == "number") {
+            getImageData.width = params.width;
+          }
+
+          if (typeof params.height == "number") {
+            getImageData.height = params.height;
+          }
+
+          if (typeof params.actual == "number") {
+            getImageData.actual = params.actual;
+          }
+
+          if (typeof params.downloadable == "number") {
+            getImageData.downloadable = params.downloadable;
+          }
+        }
+
+        httpRequest({
+          url: SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_IMAGE,
+          method: "GET",
+          data: getImageData
+        }, function(result) {
+          if (!result.hasError) {
+            var queryString = "?";
+            for (var i in params) {
+              queryString += i + "=" + params[i] + "&";
+            }
+            queryString = queryString.slice(0, -1);
+            var image = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_IMAGE + queryString;
+            callback({hasError: result.hasError, result: image});
+          } else {
+            callback({hasError: true});
+          }
+        });
+      },
+
+      /**
+       * Get File.
+       *
+       * This functions gets an uploaded file from File Server.
+       *
+       * @since 3.9.9
+       * @access public
+       *
+       * @param {long}    fileId          ID of file
+       * @param {boolean} downloadable    TRUE to be downloadable / False to not
+       * @param {string}  hashCode        HashCode of uploaded file
+       *
+       * @return {object} File Object
+       */
+      getFile = function(params, callback) {
+        getFileData = {};
+
+        if (params) {
+          if (typeof params.fileId == "number") {
+            getFileData.fileId = params.fileId;
+          }
+
+          if (typeof params.hashCode == "string") {
+            getFileData.hashCode = params.hashCode;
+          }
+
+          if (typeof params.downloadable == "number") {
+            getFileData.downloadable = params.downloadable;
+          }
+        }
+
+        httpRequest({
+          url: SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_FILE,
+          method: "GET",
+          data: getFileData
+        }, function(result) {
+          if (!result.hasError) {
+            var queryString = "?";
+            for (var i in params) {
+              queryString += i + "=" + params[i] + "&";
+            }
+            queryString = queryString.slice(0, -1);
+            var file = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_FILE + queryString;
+            callback({hasError: result.hasError, result: file});
+          } else {
+            callback({hasError: true});
+          }
+        });
+      },
+
+      /**
+       * Upload File
+       *
+       * Upload files to File Server
+       *
+       * @since 3.9.9
+       * @access public
+       *
+       * @param {string}  fileName        A name for the file
+       * @param {file}    file            FILE: the file        (if its not an image file)
+       *
+       * @link http://docs.pod.land/v1.0.8.0/Developer/CustomPost/605/File
+       *
+       * @return {object} Uploaded File Object
+       */
+      uploadFile = function(params, callback) {
+        var uploadFileData = {};
+
+        if (params) {
+          if (typeof params.file == "object") {
+            uploadFileData.file = params.file;
+          }
+
+          if (typeof params.fileName == "string") {
+            uploadFileData.fileName = params.fileName;
+          } else {
+            uploadFileData.fileName = Utility.generateUUID();
+          }
+        }
+
+        httpRequest({
+          url: SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.UPLOAD_FILE,
+          method: "POST",
+          headers: {
+            "_token_": token,
+            "_token_issuer_": 1
+          },
+          data: uploadFileData
+        }, (result) => {
+          if (!result.hasError) {
+            try {
+              var response = JSON.parse(result.result.responseText);
+              callback({hasError: response.hasError, result: response.result});
+            } catch (e) {
+              callback({hasError: true, errorCode: 999, errorMessage: "Problem in Parsing result"});
+            }
+
+          } else {
+            callback({hasError: true, errorCode: result.errorCode, errorMessage: result.errorMessage});
+          }
+        });
+      },
+
+      /**
+       * Upload Image
+       *
+       * Upload images to Image Server
+       *
+       * @since 3.9.9
+       * @access public
+       *
+       * @param {string}  fileName        A name for the file
+       * @param {file}    image           FILE: the image file  (if its an image file)
+       * @param {float}   xC              Crop Start point x    (if its an image file)
+       * @param {float}   yC              Crop Start point Y    (if its an image file)
+       * @param {float}   hC              Crop size Height      (if its an image file)
+       * @param {float}   wC              Crop size Weight      (if its an image file)
+       *
+       * @link http://docs.pod.land/v1.0.8.0/Developer/CustomPost/215/UploadImage
+       *
+       * @return {object} Uploaded Image Object
+       */
+      uploadImage = function(params, callback) {
+        if (imageMimeTypes.indexOf(params.image.type) > 0) {
+          uploadImageData = {};
+
+          if (params) {
+            if (typeof params.image == "object") {
+              uploadImageData.image = params.image;
+
+            }
+
+            if (typeof params.fileName == "string") {
+              uploadImageData.fileName = params.fileName;
+            } else {
+              uploadImageData.fileName = Utility.generateUUID();
+            }
+
+            if (typeof params.xC == "number") {
+              uploadImageData.xC = params.xC;
+            }
+
+            if (typeof params.yC == "number") {
+              uploadImageData.yC = params.yC;
+            }
+
+            if (typeof params.hC == "number") {
+              uploadImageData.hC = params.hC;
+            }
+
+            if (typeof params.wC == "number") {
+              uploadImageData.wC = params.wC;
+            }
+          }
+
+          httpRequest({
+            url: SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.UPLOAD_IMAGE,
+            method: "POST",
+            headers: {
+              "_token_": token,
+              "_token_issuer_": 1
+            },
+            data: uploadImageData
+          }, (result) => {
+            if (!result.hasError) {
+              try {
+                var response = JSON.parse(result.result.responseText);
+                callback({hasError: response.hasError, result: response.result});
+              } catch (e) {
+                callback({hasError: true, errorCode: 6300, errorMessage: CHAT_ERRORS[6300]});
+              }
+            } else {
+              callback({hasError: true, errorCode: result.errorCode, errorMessage: result.errorMessage});
+            }
+          });
+        } else {
+          callback({hasError: true, errorCode: 6301, errorMessage: CHAT_ERRORS[6301]});
+        }
+      },
+
       fireEvent = function(eventName, param) {
         for (var id in eventCallbacks[eventName]) {
           eventCallbacks[eventName][id](param);
@@ -1935,11 +2197,11 @@
 
     this.sendTextMessage = function(params, callbacks) {
       var metaData = {
-        sdk : {},
+        sdk: {},
         user: {}
       };
 
-      if(typeof params.metaData === "object") {
+      if (typeof params.metaData === "object") {
         metaData.user = params.metaData;
       }
 
@@ -1952,6 +2214,121 @@
         metaData: JSON.stringify(metaData),
         pushMsgType: 4
       }, callbacks);
+    };
+
+    this.getImage = getImage;
+
+    this.getFile = getFile;
+
+    this.uploadFile = uploadFile;
+
+    this.uploadImage = uploadImage;
+
+    this.sendFileMessage = function(params, callbacks) {
+      var metaData = {
+          sdk: {},
+          user: {}
+        },
+        fileUploadParams = {};
+
+      if (params) {
+        if (typeof params.file == "object") {
+          /**
+           * File is a valid Image
+           * Should upload to image server
+           */
+          if (imageMimeTypes.indexOf(params.file.type) > 0) {
+            fileUploadParams.image = params.file;
+
+            if (typeof params.xC == "string") {
+              fileUploadParams.xC = params.xC;
+            }
+
+            if (typeof params.yC == "string") {
+              fileUploadParams.yC = params.yC;
+            }
+
+            if (typeof params.hC == "string") {
+              fileUploadParams.hC = params.hC;
+            }
+
+            if (typeof params.wC == "string") {
+              fileUploadParams.wC = params.wC;
+            }
+          } else {
+            fileUploadParams.file = params.file;
+          }
+
+          metaData.sdk["file"] = {};
+          metaData.sdk["file"]["originalName"] = params.file.name;
+          metaData.sdk["file"]["size"] = params.file.size;
+          metaData.sdk["file"]["mimeType"] = params.file.type;
+
+          if (typeof params.fileName == "string") {
+            fileUploadParams.fileName = params.fileName;
+          }
+
+          if (typeof params.metaData === "object") {
+            metaData.user = params.metaData;
+          }
+
+          if (imageMimeTypes.indexOf(params.file.type) > 0) {
+            uploadImage(fileUploadParams, function(result) {
+              if (!result.hasError) {
+                metaData.sdk["file"]["actualHeight"] = result.result.actualHeight;
+                metaData.sdk["file"]["actualWidth"] = result.result.actualWidth;
+                metaData.sdk["file"]["height"] = result.result.height;
+                metaData.sdk["file"]["width"] = result.result.width;
+                metaData.sdk["file"]["name"] = result.result.name;
+                metaData.sdk["file"]["hashCode"] = result.result.hashCode;
+                metaData.sdk["file"]["id"] = result.result.id;
+                metaData.sdk["file"]["link"] = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_IMAGE + "?imageId=" + result.result.id + "&hashCode=" + result.result.hashCode;
+
+                return sendMessage({
+                  chatMessageVOType: chatMessageVOTypes.MESSAGE,
+                  subjectId: params.threadId,
+                  repliedTo: params.repliedTo,
+                  content: params.content,
+                  subjectId: params.threadId,
+                  repliedTo: params.repliedTo,
+                  content: params.content,
+                  metaData: JSON.stringify(metaData),
+                  uniqueId: params.uniqueId,
+                  pushMsgType: 4
+                }, callbacks);
+              }
+            });
+          } else {
+            uploadFile(fileUploadParams, function(result) {
+              if (!result.hasError) {
+                metaData.sdk["file"]["name"] = result.result.name;
+                metaData.sdk["file"]["hashCode"] = result.result.hashCode;
+                metaData.sdk["file"]["id"] = result.result.id;
+                metaData.sdk["file"]["link"] = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_FILE + "?fileId=" + result.result.id + "&hashCode=" + result.result.hashCode;
+
+                return sendMessage({
+                  chatMessageVOType: chatMessageVOTypes.MESSAGE,
+                  subjectId: params.threadId,
+                  repliedTo: params.repliedTo,
+                  content: params.content,
+                  subjectId: params.threadId,
+                  repliedTo: params.repliedTo,
+                  content: params.content,
+                  metaData: JSON.stringify(metaData),
+                  uniqueId: params.uniqueId,
+                  pushMsgType: 4
+                }, callbacks);
+              }
+            });
+          }
+
+        } else {
+          fireEvent("error", {
+            code: 6302,
+            message: CHAT_ERRORS[6302]
+          });
+        }
+      }
     };
 
     this.editMessage = function(params, callback) {
