@@ -20,12 +20,6 @@ All notable changes to this project will be documented here.
 -   Upload functionality for node base usages
 -   Unit Tests (``npm test``)
 
-### Changes
-
--   npm version rescaled to 0.5.1 (Release . Sprint . Feature/Patch/BugFix)
--   MESSAGE_SEEN fires at Sender's side when he sends a SEEN type to server
-
-
 <details><summary>[0.5.1] - 2018-07-08</summary>
 
 + Added
