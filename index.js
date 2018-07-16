@@ -6,7 +6,7 @@ var params = {
   ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552",  // {**REQUIRED**} SSO Token JiJi
+  // token: "f53f39a1893e4c4da18e59822290a552",   {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -24,7 +24,6 @@ var chatAgent = new Chat(params),
   PID;
 
 chatAgent.on("chatReady", function() {
-
   /*******************************************************
    *                       U S E R                       *
    *******************************************************/
@@ -64,14 +63,14 @@ chatAgent.on("chatReady", function() {
    * GET THREAD PARTICIPANTS
    * @param threadId
    */
-  // getThreadParticipants(312);
+  // getThreadParticipants(438);
 
   /**
    * ADD PARTICIPANTS
    * @param threadId
    * @param contacts {Array}  CONTACT ID
    */
-  // addParticipants(312, [562]);
+  // addParticipants(474, [563]);
 
   /**
    * REMOVE PARTICIPANTS
@@ -126,7 +125,7 @@ chatAgent.on("chatReady", function() {
   /**
    * GET CONTACTS
    */
-  // getContacts();
+  // getContacts({name: "alexi"});
 
   /**
    * ADD CONTACTS
@@ -185,6 +184,15 @@ chatAgent.on("chatReady", function() {
   // sendMessage(293, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
 
   /**
+   * SEND FILE MESSAGE IN THREAD
+   * @param threadId
+   * @param file
+   * @param caption
+   * @param metaData
+   */
+  sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
+
+  /**
    * EDIT MESSAGE IN THREAD
    * @param messageId  325 editable: false
    * @param newMessage
@@ -204,6 +212,42 @@ chatAgent.on("chatReady", function() {
    * @param messageIds
    */
   // forwardMessage(293, [2539, 2538, 2537]);
+
+  /*******************************************************
+   *               F I L E   U P L O A D S               *
+   *******************************************************/
+
+  /**
+    * UPLOAD IMAGE
+    * @param  {string}  image     Image path
+    * @param  {int}     xC        Crop start x coordinates
+    * @param  {int}     yC        Crop start y coordinates
+    * @param  {int}     hC        Crop height
+    * @param  {int}     wC        Crop width
+    */
+  // uploadImage(__dirname + "/test/test.jpg", 0, 0, 400, 400);
+
+  /**
+    * GET IMAGE
+    * @param  {int}     imageId     Image ID
+    * @param  {string}  hashCode    Hash Code
+    */
+  // getImage(2531, '1649d4e932a-0.8852815409984853');
+
+  /**
+    * UPLOAD FILE
+    * @param  {string}  file     File path
+    */
+  // uploadFile(__dirname + "/test/test.txt");
+
+  /**
+    * GET FILE
+    * @param  {int}     fileId          Image ID
+    * @param  {string}  hashCode        Hash Code
+    * @param  {boolean} downloadable    Downloadable link or not?
+    */
+  // getFile(344, '196CHI61NUROW8S1', true);
+
 });
 
 /**
@@ -339,7 +383,7 @@ function addParticipants(threadId, contacts) {
     threadId: threadId,
     contacts: contacts
   }, function(result) {
-    // console.log(result);
+    console.log(result);
   });
 
 }
@@ -362,12 +406,15 @@ function leaveThread(threadId) {
   });
 }
 
-function getContacts() {
+function getContacts(params) {
   var getContactsParams = {
     count: 50,
     offset: 0
   };
 
+  if (typeof params.name === "string") {
+    getContactsParams.name = params.name;
+  }
   chatAgent.getContacts(getContactsParams, function(contactsResult) {
     if (!contactsResult.hasError) {
       var contactsCount = contactsResult.result.contentCount;
@@ -418,6 +465,25 @@ function sendMessage(threadId, message, metaData) {
   };
 
   chatAgent.sendTextMessage(sendChatParams, {
+    onSent: function(result) {
+      console.log(result.uniqueId + " \t has been Sent!");
+    },
+    onDeliver: function(result) {
+      console.log(result.uniqueId + " \t has been Delivered!");
+    },
+    onSeen: function(result) {
+      console.log(result.uniqueId + " \t has been Seen!");
+    }
+  });
+}
+
+function sendFileMessage(threadId, file, caption, metaData) {
+  chatAgent.sendFileMessage({
+    threadId: threadId,
+    file: file,
+    content: caption,
+    metaData: metaData
+  }, {
     onSent: function(result) {
       console.log(result.uniqueId + " \t has been Sent!");
     },
@@ -550,4 +616,53 @@ function formatDataToMakeInvitee(messageContent) {
   };
 
   return inviteeData;
+}
+
+function uploadImage(image, xC, yC, hC, wC) {
+  chatAgent.uploadImage({
+    image: image,
+    xC: xC,
+    yC: yC,
+    hC: hC,
+    wC: wC
+  }, function(result) {
+    if (!result.hasError) {
+      var image = result.result;
+      console.log("Image has been Successfully Uploaded => \n\n", image);
+    }
+  });
+}
+
+function getImage(imageId, hashCode) {
+  chatAgent.getImage({
+    imageId: imageId,
+    hashCode: hashCode
+  }, function(result) {
+    if (!result.hasError) {
+      console.log("Image has been successfully received => \n", result.result);
+    }
+  });
+}
+
+function uploadFile(file) {
+  chatAgent.uploadFile({
+    file: file
+  }, function(result) {
+    if (!result.hasError) {
+      var file = result.result;
+      console.log("File has been Successfully Uploaded => \n", file);
+    }
+  });
+}
+
+function getFile(fileId, hashCode, downloadable) {
+  chatAgent.getFile({
+    fileId: fileId,
+    hashCode: hashCode,
+    downloadable: downloadable
+  }, function(result) {
+    if (!result.hasError) {
+      console.log("File has been successfully received => \n", result.result);
+    }
+  });
 }

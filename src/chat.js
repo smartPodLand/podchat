@@ -16,6 +16,8 @@
         ChatUtility = require('./utility/utility.js'),
         http = require('http'),
         Request = require('request'),
+        FS = require('fs'),
+        Mime = require('mime'),
         FormData = require('form-data');
     } else {
       Async = POD.Async;
@@ -131,6 +133,17 @@
         "image/x-icon",
         "image/jpeg",
         "image/webp"
+      ],
+      imageExtentions = [
+        "bmp",
+        "png",
+        "tiff",
+        "tiff2",
+        "gif",
+        "ico",
+        "jpg",
+        "jpeg",
+        "webp"
       ],
       CHAT_ERRORS = {
         6000: "No Active Device found for this Token!",
@@ -299,48 +312,91 @@
         }
 
         if (isNode && Request) {
-          var requestMethod = (params.method === "GET")
-            ? Request.get
-            : Request.post;
+          var headers = params.headers;
 
-          // if (typeof data === "object") {
-          //   var formData = new FormData;
-          //   for (var i = 0; i < data.length; i++) {
-          //     for (var key in data[i]) {
-          //       formData.append(key, data[i][key]);
-          //     }
-          //   }
-          //
-          //   data = formData;
-          // }
-
-          requestMethod({
-            url: url,
-            formData: data,
-            headers: params.headers
-          }, function(error, response, body) {
-            if (!error) {
-              if (response.statusCode == 200) {
-                callback && callback({
-                  hasError: false,
-                  result: {
-                    responseText: body
-                  }
-                });
+          if (params.method == "POST" && data) {
+            var formData = {};
+            for (var i in data) {
+              if (i == "image" || i == "file") {
+                formData[i] = FS.createReadStream(data[i]);
               } else {
-                callback && callback({hasError: true, errorCode: response.statusCode, errorMessage: body});
+                formData[i] = data[i];
               }
-            } else {
-              callback && callback({
-                hasError: true,
-                errorCode: 6200,
-                errorMessage: CHAT_ERRORS[6200] + " (Request Error)",
-                errorEvent: error
-              });
             }
-          });
 
-          return;
+            data = formData;
+
+            Request.post({
+              url: url,
+              formData: data,
+              headers: headers
+            }, function(error, response, body) {
+              if (!error) {
+                if (response.statusCode == 200) {
+                  callback && callback({
+                    hasError: false,
+                    result: {
+                      responseText: body
+                    }
+                  });
+                } else {
+                  callback && callback({hasError: true, errorCode: response.statusCode, errorMessage: body});
+                }
+              } else {
+                callback && callback({
+                  hasError: true,
+                  errorCode: 6200,
+                  errorMessage: CHAT_ERRORS[6200] + " (Request Error)",
+                  errorEvent: error
+                });
+              }
+            });
+          } else if (params.method == "GET") {
+            if (typeof data === "object") {
+              var keys = Object.keys(data);
+
+              if (keys.length > 0) {
+                url += "?";
+
+                for (var i = 0; i < keys.length; i++) {
+                  var key = keys[i];
+                  url += key + "=" + data[key];
+                  if (i < keys.length - 1) {
+                    url += "&";
+                  }
+                }
+              }
+            } else if (typeof data === "string") {
+              url += "?" + data;
+            }
+
+            Request.get({
+              url: url,
+              headers: headers
+            }, function(error, response, body) {
+              if (!error) {
+                if (response.statusCode == 200) {
+                  callback && callback({
+                    hasError: false,
+                    result: {
+                      responseText: body
+                    }
+                  });
+                } else {
+                  callback && callback({hasError: true, errorCode: response.statusCode, errorMessage: body});
+                }
+              } else {
+                callback && callback({
+                  hasError: true,
+                  errorCode: 6200,
+                  errorMessage: CHAT_ERRORS[6200] + " (Request Error)",
+                  errorEvent: error
+                });
+              }
+            });
+          }
+
+          // return;
         } else {
           var request = new XMLHttpRequest(),
             settings = params.settings;
@@ -388,7 +444,7 @@
 
             if (method === "POST" && data) {
               if (typeof data === "object") {
-                var formData = new FormData;
+                var formData = new FormData();
                 for (var key in data) {
                   formData.append(key, data[key]);
                 }
@@ -511,6 +567,10 @@
 
         if (params.metaData) {
           messageVO.metadata = params.metaData;
+        }
+
+        if (params.systemMetadata) {
+          messageVO.systemMetadata = params.systemMetadata;
         }
 
         var uniqueId;
@@ -650,6 +710,10 @@
           case chatMessageVOTypes.CREATE_THREAD:
             messageContent.uniqueId = uniqueId;
             createThread(messageContent, true);
+
+            if (messagesCallbacks[uniqueId])
+              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+
             break;
 
             // 2
@@ -776,7 +840,6 @@
 
             break;
 
-            // 13
             // 11
           case chatMessageVOTypes.ADD_PARTICIPANT:
             if (messagesCallbacks[uniqueId])
@@ -802,6 +865,8 @@
               });
             });
             break;
+
+            //13
           case chatMessageVOTypes.GET_CONTACTS:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
@@ -1515,6 +1580,7 @@
           replyInfo: undefined,
           forwardInfo: undefined,
           metaData: pushMessageVO.metadata,
+          systemMetadata: pushMessageVO.systemMetadata,
           time: pushMessageVO.time
         };
 
@@ -1668,7 +1734,7 @@
         getFileData = {};
 
         if (params) {
-          if (typeof params.fileId == "number") {
+          if (typeof params.fileId != "undefined") {
             getFileData.fileId = params.fileId;
           }
 
@@ -1676,7 +1742,7 @@
             getFileData.hashCode = params.hashCode;
           }
 
-          if (typeof params.downloadable == "number") {
+          if (typeof params.downloadable == "boolean") {
             getFileData.downloadable = params.downloadable;
           }
         }
@@ -1719,7 +1785,7 @@
         var uploadFileData = {};
 
         if (params) {
-          if (typeof params.file == "object") {
+          if (typeof params.file !== "undefined") {
             uploadFileData.file = params.file;
           }
 
@@ -1773,13 +1839,12 @@
        * @return {object} Uploaded Image Object
        */
       uploadImage = function(params, callback) {
-        if (imageMimeTypes.indexOf(params.image.type) > 0) {
+        if (imageMimeTypes.indexOf(params.image.type) > 0 || imageExtentions.indexOf(params.image.split('.').pop()) > 0) {
           uploadImageData = {};
 
           if (params) {
-            if (typeof params.image == "object") {
+            if (typeof params.image !== "undefined") {
               uploadImageData.image = params.image;
-
             }
 
             if (typeof params.fileName == "string") {
@@ -1852,6 +1917,10 @@
       return peerId;
     };
 
+    this.getCurrentUser = function() {
+      return userInfo;
+    }
+
     this.getUserInfo = getUserInfo;
 
     this.getContacts = function(params, callback) {
@@ -1866,6 +1935,10 @@
 
         if (typeof params.offset === "number") {
           offset = params.offset;
+        }
+
+        if (typeof params.name === "string") {
+          content.name = params.name;
         }
       }
 
@@ -2196,14 +2269,7 @@
     };
 
     this.sendTextMessage = function(params, callbacks) {
-      var metaData = {
-        sdk: {},
-        user: {}
-      };
-
-      if (typeof params.metaData === "object") {
-        metaData.user = params.metaData;
-      }
+      var metaData = {};
 
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.MESSAGE,
@@ -2211,6 +2277,7 @@
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
+        systemMetadata: JSON.stringify(params.metaData),
         metaData: JSON.stringify(metaData),
         pushMsgType: 4
       }, callbacks);
@@ -2225,19 +2292,16 @@
     this.uploadImage = uploadImage;
 
     this.sendFileMessage = function(params, callbacks) {
-      var metaData = {
-          sdk: {},
-          user: {}
-        },
+      var metaData = {},
         fileUploadParams = {};
 
       if (params) {
-        if (typeof params.file == "object") {
+        if (typeof params.file != "undefined") {
           /**
            * File is a valid Image
            * Should upload to image server
            */
-          if (imageMimeTypes.indexOf(params.file.type) > 0) {
+          if (imageMimeTypes.indexOf(params.file.type) > 0 || imageExtentions.indexOf(params.file.split('.').pop()) > 0) {
             fileUploadParams.image = params.file;
 
             if (typeof params.xC == "string") {
@@ -2259,30 +2323,33 @@
             fileUploadParams.file = params.file;
           }
 
-          metaData.sdk["file"] = {};
-          metaData.sdk["file"]["originalName"] = params.file.name;
-          metaData.sdk["file"]["size"] = params.file.size;
-          metaData.sdk["file"]["mimeType"] = params.file.type;
+          metaData["file"] = {};
+
+          if (isNode) {
+            metaData["file"]["originalName"] = params.file.split('/').pop();
+            metaData["file"]["size"] = Mime.getType(params.file);
+            metaData["file"]["mimeType"] = FS.statSync(params.file).size;
+          } else {
+            metaData["file"]["originalName"] = params.file.name;
+            metaData["file"]["size"] = params.file.size;
+            metaData["file"]["mimeType"] = params.file.type;
+          }
 
           if (typeof params.fileName == "string") {
             fileUploadParams.fileName = params.fileName;
           }
 
-          if (typeof params.metaData === "object") {
-            metaData.user = params.metaData;
-          }
-
-          if (imageMimeTypes.indexOf(params.file.type) > 0) {
+          if (imageMimeTypes.indexOf(params.file.type) > 0 || imageExtentions.indexOf(params.file.split('.').pop()) > 0) {
             uploadImage(fileUploadParams, function(result) {
               if (!result.hasError) {
-                metaData.sdk["file"]["actualHeight"] = result.result.actualHeight;
-                metaData.sdk["file"]["actualWidth"] = result.result.actualWidth;
-                metaData.sdk["file"]["height"] = result.result.height;
-                metaData.sdk["file"]["width"] = result.result.width;
-                metaData.sdk["file"]["name"] = result.result.name;
-                metaData.sdk["file"]["hashCode"] = result.result.hashCode;
-                metaData.sdk["file"]["id"] = result.result.id;
-                metaData.sdk["file"]["link"] = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_IMAGE + "?imageId=" + result.result.id + "&hashCode=" + result.result.hashCode;
+                metaData["file"]["actualHeight"] = result.result.actualHeight;
+                metaData["file"]["actualWidth"] = result.result.actualWidth;
+                metaData["file"]["height"] = result.result.height;
+                metaData["file"]["width"] = result.result.width;
+                metaData["file"]["name"] = result.result.name;
+                metaData["file"]["hashCode"] = result.result.hashCode;
+                metaData["file"]["id"] = result.result.id;
+                metaData["file"]["link"] = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_IMAGE + "?imageId=" + result.result.id + "&hashCode=" + result.result.hashCode;
 
                 return sendMessage({
                   chatMessageVOType: chatMessageVOTypes.MESSAGE,
@@ -2293,6 +2360,7 @@
                   repliedTo: params.repliedTo,
                   content: params.content,
                   metaData: JSON.stringify(metaData),
+                  systemMetadata: JSON.stringify(params.metaData),
                   uniqueId: params.uniqueId,
                   pushMsgType: 4
                 }, callbacks);
@@ -2301,10 +2369,10 @@
           } else {
             uploadFile(fileUploadParams, function(result) {
               if (!result.hasError) {
-                metaData.sdk["file"]["name"] = result.result.name;
-                metaData.sdk["file"]["hashCode"] = result.result.hashCode;
-                metaData.sdk["file"]["id"] = result.result.id;
-                metaData.sdk["file"]["link"] = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_FILE + "?fileId=" + result.result.id + "&hashCode=" + result.result.hashCode;
+                metaData["file"]["name"] = result.result.name;
+                metaData["file"]["hashCode"] = result.result.hashCode;
+                metaData["file"]["id"] = result.result.id;
+                metaData["file"]["link"] = SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_FILE + "?fileId=" + result.result.id + "&hashCode=" + result.result.hashCode;
 
                 return sendMessage({
                   chatMessageVOType: chatMessageVOTypes.MESSAGE,
@@ -2315,6 +2383,7 @@
                   repliedTo: params.repliedTo,
                   content: params.content,
                   metaData: JSON.stringify(metaData),
+                  systemMetadata: JSON.stringify(params.metaData),
                   uniqueId: params.uniqueId,
                   pushMsgType: 4
                 }, callbacks);
@@ -2549,8 +2618,8 @@
       var data = {};
 
       if (params) {
-        if (typeof params.id === "string") {
-          data.id = params.id;
+        if (parseInt(params.id) > 0) {
+          data.id = parseInt(params.id);
         } else {
           fireEvent("error", {
             code: 999,
@@ -2653,8 +2722,8 @@
       var data = {};
 
       if (params) {
-        if (typeof params.id === "string") {
-          data.id = params.id;
+        if (parseInt(params.id) > 0) {
+          data.id = parseInt(params.id);
         } else {
           fireEvent("error", {
             code: 999,
@@ -2701,6 +2770,14 @@
     };
 
     this.generateUUID = Utility.generateUUID;
+
+    this.logout = function() {
+      asyncClient.logout();
+    };
+
+    this.reconnect = function() {
+      asyncClient.reconnectSocket();
+    }
 
     init();
   }

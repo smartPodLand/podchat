@@ -12,9 +12,23 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Delete Messages / Threads
 
-## [0.5.1] - 2018-07-08
+
+## [0.6.0] - 2018-07-16
 
 ### Added
+
+-   Upload functionality for node base usages
+-   Unit Tests (``npm test``)
+
+### Changes
+
+-   npm version rescaled to 0.5.1 (Release . Sprint . Feature/Patch/BugFix)
+-   MESSAGE_SEEN fires at Sender's side when he sends a SEEN type to server
+
+
+<details><summary>[0.5.1] - 2018-07-08</summary>
+
++ Added
 
 -   uploadImage
 -   uploadFile
@@ -22,10 +36,12 @@ All notable changes to this project will be documented here.
 -   getFile
 -   sendFileMessage
 
-### Changes
++ Changes
 
 -   npm version rescaled to 0.5.1 (Release . Sprint . Feature/Patch/BugFix)
 -   MESSAGE_SEEN fires at Sender's side when he sends a SEEN type to server
+</details>
+
 
 <details><summary>[3.9.8] - 2018-07-04</summary>
 + Added
