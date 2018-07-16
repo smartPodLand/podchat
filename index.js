@@ -190,7 +190,7 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
+  // sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
 
   /**
    * EDIT MESSAGE IN THREAD
