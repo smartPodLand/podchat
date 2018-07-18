@@ -44,7 +44,7 @@ chatAgent.on("chatReady", function() {
    * @param threadIds
    * @param name
    */
-  getThreads({count: 50, offset: 0, threadIds: [293], name: "jiji"});
+  // getThreads({count: 50, offset: 0, threadIds: [293], name: "jiji"});
 
   /**
    * CREATE THREAD (Creates Group)
