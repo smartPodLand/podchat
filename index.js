@@ -261,7 +261,6 @@ chatAgent.on("error", function(error) {
 * Listen to Chat State Changes
 */
 chatAgent.on("chatState", function(chatState) {
-  console.log(chatState);
 });
 
 /**
