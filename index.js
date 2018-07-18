@@ -44,7 +44,7 @@ chatAgent.on("chatReady", function() {
    * @param threadIds
    * @param name
    */
-  // getThreads({count: 50, offset: 0, threadIds: [293], name: "jiji"});
+  getThreads({count: 50, offset: 0, threadIds: [293], name: "jiji"});
 
   /**
    * CREATE THREAD (Creates Group)
@@ -91,7 +91,7 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(312, 5, 0);
+  // getHistory(293, 5, 0);
 
   /**
    * GET SINGLE MESSAGE
@@ -197,7 +197,7 @@ chatAgent.on("chatReady", function() {
    * @param messageId  325 editable: false
    * @param newMessage
    */
-  // editMessage(12397, "This message has been edited at " + new Date());
+  // editMessage(13613, "This message has been edited at " + new Date());
 
   /**
    * REPLY TO MESSAGE
@@ -260,7 +260,9 @@ chatAgent.on("error", function(error) {
 /**
 * Listen to Chat State Changes
 */
-chatAgent.on("chatState", function(chatState) {});
+chatAgent.on("chatState", function(chatState) {
+  console.log(chatState);
+});
 
 /**
  * Listen to Thread Events

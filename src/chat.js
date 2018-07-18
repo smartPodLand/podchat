@@ -1470,9 +1470,9 @@
          *    - partner                       {long}
          *    - image                         {string}
          *    - unreadCount                   {long}
-         *    - lastMessageId                 {long}
+         *    - lastSeenMessageId             {long}
          *    - lastMessageVO                 {object : ChatMessageVO}
-         *    - partnerLastMessageId          {long}
+         *    - partnerLastSeenMessageId      {long}
          *    - partnerLastDeliveredMessageId {long}
          *    - type                          {int}
          *    - metadata                      {string}
@@ -1494,9 +1494,9 @@
           partner: messageContent.partner,
           image: messageContent.image,
           unreadCount: messageContent.unreadCount,
-          lastMessageId: messageContent.lastMessageId,
+          lastSeenMessageId: messageContent.lastSeenMessageId,
           lastMessageVO: undefined,
-          partnerLastMessageId: messageContent.partnerLastMessageId,
+          partnerLastSeenMessageId: messageContent.partnerLastSeenMessageId,
           partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
           type: messageContent.type,
           metadata: messageContent.metadata,
