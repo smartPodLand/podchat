@@ -116,7 +116,7 @@
         FILESERVER_ADDRESS: params.fileServer || "http://172.16.106.26:8080/hamsam"
       },
       SERVICES_PATH = {
-        SSO_DEVICES: params.ssoGrantDevicesAddress || "/oauth2/grants/devices",
+        SSO_DEVICES: "/oauth2/grants/devices",
         ADD_CONTACTS: "/nzh/addContacts",
         UPDATE_CONTACTS: "/nzh/updateContacts",
         REMOVE_CONTACTS: "/nzh/removeContacts",
@@ -166,15 +166,20 @@
         3: "CLOSED"
       },
       chatState = false,
-      httpRequestTimeout = params.httpRequestTimeout || 20000;
+      httpRequestTimeout = params.httpRequestTimeout || 20000,
+      actualTimingLog = params.asyncLogging.actualTiming || false;
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
      *******************************************************/
 
     var init = function() {
+        var getDeviceIdWithTokenTime = new Date().getTime();
         getDeviceIdWithToken(function(retrievedDeviceId) {
+          console.log("\x1b[90m    ☰ Get Device ID \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - getDeviceIdWithTokenTime);
           deviceId = retrievedDeviceId;
+
+          var asyncGetReadtTime = new Date().getTime();
 
           asyncClient = new Async({
             socketAddress: params.socketAddress,
@@ -190,10 +195,20 @@
           });
 
           asyncClient.on("asyncReady", function() {
+            if (actualTimingLog) {
+              console.log("\x1b[90m    ☰ Async Connection \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - asyncGetReadtTime);
+            }
+
             peerId = asyncClient.getPeerId();
 
             if (!userInfo) {
+              var getUserInfoTime = new Date().getTime();
+
               getUserInfo(function(userInfoResult) {
+                if (actualTimingLog) {
+                  console.log("\x1b[90m    ☰ Get User Info \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - getUserInfoTime);
+                }
+
                 if (!userInfoResult.hasError) {
                   userInfo = userInfoResult.result.user;
                   chatState = true;
@@ -649,8 +664,7 @@
 
         var data = {
           type: (typeof params.pushMsgType == "number") ?
-            params.pushMsgType :
-            3,
+            params.pushMsgType : 3,
           content: {
             peerName: serverName,
             priority: msgPriority,
@@ -717,8 +731,7 @@
         var threadId = params.subjectId,
           type = params.type,
           messageContent = (typeof params.content === 'string') ?
-          JSON.parse(params.content) :
-          {},
+          JSON.parse(params.content) : {},
           contentCount = params.contentCount,
           uniqueId = params.uniqueId;
 

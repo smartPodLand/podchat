@@ -6,19 +6,24 @@ var assert = require('assert'),
   path = require('path');
 
 var TOKENS = {
-    TOKEN_1: "7cba09ff83554fc98726430c30afcfc6", // Zizi
-    TOKEN_2: "f53f39a1893e4c4da18e59822290a552" // Jiji
+    TOKEN_1: "a904075d5389493385e72b6e91aa6788", // Masoud
+    TOKEN_2: "b516110d39ce47de85688b8084ffc8db" // Pooria
   },
+  P2P_THREAD = 1,
+  GROUP_THREAD = 3,
+  timingLog = true,
   params1 = {
-    socketAddress: "ws://172.16.106.26:8003/ws",
-    ssoHost: "http://172.16.110.76",
-    ssoGrantDevicesAddress: "/oauth2/grants/devices",
+    socketAddress: "wss://chat-sandbox.pod.land/ws",
+    ssoHost: "https://accounts.pod.land",
+    platformHost: "https://sandbox.pod.land:8043/srv/basic-platform",
+    fileServer: "http://sandbox.fanapium.com:8080",
     serverName: "chat-server",
     token: TOKENS.TOKEN_1,
     asyncLogging: {
       // onFunction: true,
       // onMessageReceive: true,
-      // onMessageSend: true
+      // onMessageSend: true,
+      actualTiming: timingLog
     }
   },
   params2 = Object.assign({}, params1);
@@ -29,6 +34,7 @@ params2.token = TOKENS.TOKEN_2;
  * CONNECTING AND GETTING READY
  */
 describe("Connecting and getting ready", function(done) {
+  this.timeout(30000);
   var chatAgent;
 
   beforeEach(() => {
@@ -41,7 +47,6 @@ describe("Connecting and getting ready", function(done) {
 
   it("Should connect to server and get ready", function(done) {
     chatAgent.on("chatReady", function() {
-      chatAgent.logout();
       done();
     });
   });
@@ -51,6 +56,7 @@ describe("Connecting and getting ready", function(done) {
  * GETTING CURRENT USER'S INFO
  */
 describe("Get current user's info", function(done) {
+  this.timeout(30000);
   var chatAgent;
 
   beforeEach(() => {
@@ -75,7 +81,7 @@ describe("Get current user's info", function(done) {
  * CONTACTS FUNCTIONALITY
  */
 describe("Working with contacts", function(done) {
-  this.timeout(10000);
+  this.timeout(30000);
 
   var chatAgent,
     newContactId;
@@ -90,12 +96,15 @@ describe("Working with contacts", function(done) {
 
   it("Should GET contacts list", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Get Contacts List \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -103,6 +112,7 @@ describe("Working with contacts", function(done) {
 
   it("Should ADD a new contact", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.addContacts({
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
@@ -111,7 +121,9 @@ describe("Working with contacts", function(done) {
       }, function(result) {
         if (!result.hasError) {
           newContactId = result.result.contacts[0].id;
+          if (timingLog) console.log("\x1b[33m    ★ Add New Contact \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -119,6 +131,7 @@ describe("Working with contacts", function(done) {
 
   it("Should UPDATE an existing contact", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.updateContacts({
         id: newContactId,
         firstName: faker.name.firstName(),
@@ -127,7 +140,9 @@ describe("Working with contacts", function(done) {
         email: faker.internet.email()
       }, function(result) {
         if (!result.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Update a Contact \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -135,11 +150,14 @@ describe("Working with contacts", function(done) {
 
   it("Should REMOVE an existing contact", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.removeContacts({
         id: newContactId
       }, function(result) {
         if (!result.hasError && result.result) {
+          if (timingLog) console.log("\x1b[33m    ★ Remove a Contact \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -151,7 +169,7 @@ describe("Working with contacts", function(done) {
  * THREADS FUNCTIONALITY
  */
 describe("Working with threads", function(done) {
-  this.timeout(15000);
+  this.timeout(60000);
 
   var chatAgent,
     p2pThreadId,
@@ -168,12 +186,15 @@ describe("Working with threads", function(done) {
 
   it("Should GET Threads list", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.getThreads({
         count: 50,
         offset: 0
       }, function(threadsResult) {
         if (!threadsResult.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Get Threads List \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -181,11 +202,14 @@ describe("Working with threads", function(done) {
 
   it("Should GET a single thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.getThreads({
-        threadIds: [293]
+        threadIds: [P2P_THREAD]
       }, function(threadsResult) {
         if (!threadsResult.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Get Single Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -193,12 +217,15 @@ describe("Working with threads", function(done) {
 
   it("Should SEARCH in Thread names and return result", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.getThreads({
         count: 50,
         name: 'thread'
       }, function(threadsResult) {
         if (!threadsResult.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Search in Threads \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -206,27 +233,33 @@ describe("Working with threads", function(done) {
 
   it("Should CREATE a P2P thread with a contact (TYPE = NORMAL)", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+          if (timingLog) console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
               var p2pContactId = contactsResult.result.contacts[i].id;
 
+              if (timingLog) console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
+              var time3 = new Date().getTime();
+
               chatAgent.createThread({
                 type: "NORMAL",
-                invitees: [
-                  {
-                    id: p2pContactId,
-                    idType: "TO_BE_USER_CONTACT_ID"
-                  }
-                ]
+                invitees: [{
+                  id: p2pContactId,
+                  idType: "TO_BE_USER_CONTACT_ID"
+                }]
               }, function(createThreadResult) {
                 if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
                   p2pThreadId = createThreadResult.result.thread.id;
+                  if (timingLog) console.log("\x1b[33m    ★ Create P2P Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time3);
                   done();
+                  console.log("\n");
                 }
               });
               break;
@@ -239,22 +272,31 @@ describe("Working with threads", function(done) {
 
   it("Should CREATE a Group thread with a contact (TYPE = NORMAL)", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+          if (timingLog) console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           var groupInvitees = [];
 
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
-              groupInvitees.push({id: contactsResult.result.contacts[i].id, idType: "TO_BE_USER_CONTACT_ID"});
+              groupInvitees.push({
+                id: contactsResult.result.contacts[i].id,
+                idType: "TO_BE_USER_CONTACT_ID"
+              });
 
               if (groupInvitees.length > 2) {
                 break;
               }
             }
           }
+
+          if (timingLog) console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
+          var time3 = new Date().getTime();
 
           chatAgent.createThread({
             title: faker.lorem.word(),
@@ -263,7 +305,9 @@ describe("Working with threads", function(done) {
           }, function(createThreadResult) {
             if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
               groupThreadId = createThreadResult.result.thread.id;
+              if (timingLog) console.log("\x1b[33m    ★ Create Group Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time3);
               done();
+              console.log("\n");
             }
           });
         }
@@ -273,13 +317,16 @@ describe("Working with threads", function(done) {
 
   it("Should GET Thread participants", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.getThreadParticipants({
         count: 50,
         offset: 0,
-        threadId: groupThreadId
+        threadId: GROUP_THREAD
       }, function(participantsResult) {
         if (!participantsResult.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Get Participants \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -287,16 +334,22 @@ describe("Working with threads", function(done) {
 
   it("Should ADD A PARTICIPANT to newly created group Thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+          if (timingLog) console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           var groupInvitees = [];
 
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
-              groupInvitees.push({id: contactsResult.result.contacts[i].id, idType: "TO_BE_USER_CONTACT_ID"});
+              groupInvitees.push({
+                id: contactsResult.result.contacts[i].id,
+                idType: "TO_BE_USER_CONTACT_ID"
+              });
 
               if (groupInvitees.length > 2) {
                 break;
@@ -306,12 +359,17 @@ describe("Working with threads", function(done) {
 
           var lastInvitee = groupInvitees.pop();
 
+          if (timingLog) console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
+          var time3 = new Date().getTime();
+
           chatAgent.createThread({
             title: faker.lorem.word(),
             type: "NORMAL",
             invitees: groupInvitees
           }, function(createThreadResult) {
             if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
+              if (timingLog) console.log("\x1b[90m    ☰ Create New Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time3);
+              var time4 = new Date().getTime();
               var newGroupThreadId = createThreadResult.result.thread.id;
 
               chatAgent.addParticipants({
@@ -319,7 +377,9 @@ describe("Working with threads", function(done) {
                 contacts: [lastInvitee.id]
               }, function(result) {
                 if (!result.hasError) {
+                  if (timingLog) console.log("\x1b[33m    ★ Add Participant \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
                   done();
+                  console.log("\n");
                 }
               });
             }
@@ -331,16 +391,24 @@ describe("Working with threads", function(done) {
 
   it("Should REMOVE A PARTICIPANT from newly created group Thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+
+          if (timingLog) console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
+
           var groupInvitees = [];
 
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
-              groupInvitees.push({id: contactsResult.result.contacts[i].id, idType: "TO_BE_USER_CONTACT_ID"});
+              groupInvitees.push({
+                id: contactsResult.result.contacts[i].id,
+                idType: "TO_BE_USER_CONTACT_ID"
+              });
 
               if (groupInvitees.length > 2) {
                 break;
@@ -348,12 +416,19 @@ describe("Working with threads", function(done) {
             }
           }
 
+          if (timingLog) console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
+          var time3 = new Date().getTime();
+
           chatAgent.createThread({
             title: faker.lorem.word(),
             type: "NORMAL",
             invitees: groupInvitees
           }, function(createThreadResult) {
             if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
+
+              if (timingLog) console.log("\x1b[90m    ☰ Create Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time3);
+              var time4 = new Date().getTime();
+
               var newGroupThreadId = createThreadResult.result.thread.id;
 
               chatAgent.getThreadParticipants({
@@ -362,13 +437,19 @@ describe("Working with threads", function(done) {
                 threadId: newGroupThreadId
               }, function(participantsResult) {
                 if (!participantsResult.hasError) {
+
+                  if (timingLog) console.log("\x1b[90m    ☰ Get Thread Participants \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time4);
+                  var time5 = new Date().getTime();
+
                   var userId = participantsResult.result.participants[0];
                   chatAgent.removeParticipants({
                     threadId: newGroupThreadId,
                     participants: [userId.id]
                   }, function(result) {
                     if (!result.hasError) {
+                      if (timingLog) console.log("\x1b[33m    ★ Remove Participant \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time5);
                       done();
+                      console.log("\n");
                     }
                   });
                 }
@@ -382,16 +463,24 @@ describe("Working with threads", function(done) {
 
   it("Should LEAVE a newly created group Thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
+
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+          if (timingLog) console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
+
           var groupInvitees = [];
 
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
-              groupInvitees.push({id: contactsResult.result.contacts[i].id, idType: "TO_BE_USER_CONTACT_ID"});
+              groupInvitees.push({
+                id: contactsResult.result.contacts[i].id,
+                idType: "TO_BE_USER_CONTACT_ID"
+              });
 
               if (groupInvitees.length > 2) {
                 break;
@@ -399,18 +488,28 @@ describe("Working with threads", function(done) {
             }
           }
 
+          if (timingLog) console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
+          var time3 = new Date().getTime();
+
           chatAgent.createThread({
             title: faker.lorem.word(),
             type: "NORMAL",
             invitees: groupInvitees
           }, function(createThreadResult) {
             if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
+
+              if (timingLog) console.log("\x1b[90m    ☰ Create Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time3);
+              var time4 = new Date().getTime();
+
               var newGroupThreadId = createThreadResult.result.thread.id;
+
               chatAgent.leaveThread({
                 threadId: newGroupThreadId
               }, function(result) {
                 if (!result.hasError) {
+                  if (timingLog) console.log("\x1b[33m    ★ Leave Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
                   done();
+                  console.log("\n");
                 }
               });
             }
@@ -422,18 +521,25 @@ describe("Working with threads", function(done) {
 
   it("Should GET HISTORY of lastest active thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent.getThreads({
         count: 1,
         offset: 0
       }, function(threadsResult) {
         if (!threadsResult.hasError) {
+
+          if (timingLog) console.log("\x1b[90m    ☰ Get Threads List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
+
           var threadId = threadsResult.result.threads[0].id;
 
           chatAgent.getHistory({
             threadId: threadId
           }, function(historyResult) {
             if (!historyResult.hasError) {
+              if (timingLog) console.log("\x1b[33m    ★ Get History \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time1);
               done();
+              console.log("\n");
             }
           });
         }
@@ -443,16 +549,22 @@ describe("Working with threads", function(done) {
 
   it("Should MUTE a thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+          if (timingLog) console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           var groupInvitees = [];
 
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
-              groupInvitees.push({id: contactsResult.result.contacts[i].id, idType: "TO_BE_USER_CONTACT_ID"});
+              groupInvitees.push({
+                id: contactsResult.result.contacts[i].id,
+                idType: "TO_BE_USER_CONTACT_ID"
+              });
 
               if (groupInvitees.length > 2) {
                 break;
@@ -460,18 +572,26 @@ describe("Working with threads", function(done) {
             }
           }
 
+          if (timingLog) console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
+          var time3 = new Date().getTime();
+
           chatAgent.createThread({
             title: faker.lorem.word(),
             type: "NORMAL",
             invitees: groupInvitees
           }, function(createThreadResult) {
             if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
+              if (timingLog) console.log("\x1b[90m    ☰ Create Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time3);
+              var time4 = new Date().getTime();
+
               muteThreadId = createThreadResult.result.thread.id;
               chatAgent.muteThread({
                 subjectId: muteThreadId
               }, function(result) {
                 if (!result.hasError) {
+                  if (timingLog) console.log("\x1b[33m    ★ Mute Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
                   done();
+                  console.log("\n");
                 }
               });
             }
@@ -483,11 +603,14 @@ describe("Working with threads", function(done) {
 
   it("Should UNMUTE a muted thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent.unMuteThread({
         subjectId: muteThreadId
       }, function(result) {
         if (!result.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ UnMute Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -495,16 +618,22 @@ describe("Working with threads", function(done) {
 
   it("Should RENAME a newly created thread", function(done) {
     chatAgent.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent.getContacts({
         count: 50,
         offset: 0
       }, function(contactsResult) {
         if (!contactsResult.hasError) {
+          if (timingLog) console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           var groupInvitees = [];
 
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
-              groupInvitees.push({id: contactsResult.result.contacts[i].id, idType: "TO_BE_USER_CONTACT_ID"});
+              groupInvitees.push({
+                id: contactsResult.result.contacts[i].id,
+                idType: "TO_BE_USER_CONTACT_ID"
+              });
 
               if (groupInvitees.length > 2) {
                 break;
@@ -512,19 +641,27 @@ describe("Working with threads", function(done) {
             }
           }
 
+          if (timingLog) console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
+          var time3 = new Date().getTime();
+
           chatAgent.createThread({
             title: faker.lorem.word(),
             type: "NORMAL",
             invitees: groupInvitees
           }, function(createThreadResult) {
             if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
+              if (timingLog) console.log("\x1b[90m    ☰ Create Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time3);
+              var time4 = new Date().getTime();
+
               var newGroupThreadId = createThreadResult.result.thread.id;
 
               chatAgent.renameThread({
                 title: faker.lorem.sentence(),
                 threadId: newGroupThreadId
               }, function(renameThreadResult) {
+                if (timingLog) console.log("\x1b[33m    ★ Rename Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
                 done();
+                console.log("\n");
               });
             }
           });
@@ -539,7 +676,7 @@ describe("Working with threads", function(done) {
  * MESSAGING FUNCTIONS
  */
 describe("Messaging Functionality", function(done) {
-  this.timeout(10000);
+  this.timeout(30000);
 
   var chatAgent1,
     chatAgent2;
@@ -554,17 +691,21 @@ describe("Messaging Functionality", function(done) {
     chatAgent2.logout();
   });
 
-  it("Should SEND a text message to a newly created P2P thread", function(done) {
+  it("Should SEND a text message to a P2P thread", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
+
       chatAgent1.sendTextMessage({
-        threadId: 293,
+        threadId: P2P_THREAD,
         content: faker.lorem.paragraph(),
         metaData: {
           custom_name: "John Doe"
         }
       }, {
         onSent: function(result) {
+          if (timingLog) console.log("\x1b[33m    ★ Send File Message \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         },
         onDeliver: function(result) {
           console.log(result.uniqueId + " \t has been Delivered!");
@@ -578,8 +719,9 @@ describe("Messaging Functionality", function(done) {
 
   it("Should SEND a FILE message to a newly created P2P thread", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent1.sendTextMessage({
-        threadId: 293,
+        threadId: P2P_THREAD,
         content: faker.lorem.paragraph(),
         file: __dirname + "/test.jpg",
         metaData: {
@@ -587,7 +729,9 @@ describe("Messaging Functionality", function(done) {
         }
       }, {
         onSent: function(result) {
+          if (timingLog) console.log("\x1b[33m    ★ Send Message \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         },
         onDeliver: function(result) {
           console.log(result.uniqueId + " \t has been Delivered!");
@@ -601,13 +745,16 @@ describe("Messaging Functionality", function(done) {
 
   it("Should RECEIVE a DELIVERY message for a newly message sent to a P2P thread", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent1.sendTextMessage({
-        threadId: 293,
+        threadId: P2P_THREAD,
         content: faker.lorem.paragraph()
       }, {
         onSent: function(result) {},
         onDeliver: function(result) {
+          if (timingLog) console.log("\x1b[33m    ★ Receiving Delivery \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         },
         onSeen: function(result) {}
       });
@@ -616,14 +763,17 @@ describe("Messaging Functionality", function(done) {
 
   it("Should RECEIVE a SEEN message for a newly message sent to a P2P thread", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent1.sendTextMessage({
-        threadId: 293,
+        threadId: P2P_THREAD,
         content: faker.lorem.paragraph()
       }, {
         onSent: function(result) {},
         onDeliver: function(result) {},
         onSeen: function(result) {
+          if (timingLog) console.log("\x1b[33m    ★ Receiving Seen Acknowledge \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -634,7 +784,10 @@ describe("Messaging Functionality", function(done) {
           message = event.result.message;
 
         if (type == "MESSAGE_NEW") {
-          chatAgent2.seen({messageId: message.id, ownerId: message.ownerId});
+          chatAgent2.seen({
+            messageId: message.id,
+            ownerId: message.ownerId
+          });
         }
       });
     });
@@ -645,18 +798,23 @@ describe("Messaging Functionality", function(done) {
     var sentMessageID;
 
     chatAgent1.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent1.sendTextMessage({
-        threadId: 293,
+        threadId: P2P_THREAD,
         content: faker.lorem.paragraph()
       }, {
         onSent: function(result) {},
         onDeliver: function(result) {
+          if (timingLog) console.log("\x1b[90m    ☰ Send a Message to P2P Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           chatAgent1.editMessage({
             messageId: sentMessageID,
             content: faker.lorem.paragraph()
           }, function(result) {
             if (!result.hasError) {
+              if (timingLog) console.log("\x1b[33m    ★ Edit Message \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time2);
               done();
+              console.log("\n");
             }
           });
         },
@@ -682,21 +840,27 @@ describe("Messaging Functionality", function(done) {
       sentMessageUID;
 
     chatAgent1.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent1.sendTextMessage({
-        threadId: 293,
+        threadId: P2P_THREAD,
         content: faker.lorem.paragraph()
       }, {
         onSent: function(result) {},
         onDeliver: function(result) {},
         onSeen: function(result) {
+          if (timingLog) console.log("\x1b[90m    ☰ Send a Message to P2P Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           chatAgent2.replyMessage({
-            threadId: 293,
+            threadId: P2P_THREAD,
             repliedTo: sentMessageID,
             content: faker.lorem.paragraph()
           }, {
             onSent: function(result) {},
             onDeliver: function(result) {
+
+              if (timingLog) console.log("\x1b[33m    ★ Reply Message Delivered \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time2);
               done();
+              console.log("\n");
             },
             onSeen: function(result) {}
           });
@@ -711,7 +875,10 @@ describe("Messaging Functionality", function(done) {
 
         if (type == "MESSAGE_NEW") {
           sentMessageID = message.id;
-          chatAgent2.seen({messageId: message.id, ownerId: message.ownerId});
+          chatAgent2.seen({
+            messageId: message.id,
+            ownerId: message.ownerId
+          });
         }
       });
     });
@@ -723,20 +890,25 @@ describe("Messaging Functionality", function(done) {
       sentMessageUID;
 
     chatAgent1.on("chatReady", function() {
+      var time1 = new Date().getTime();
       chatAgent1.sendTextMessage({
-        threadId: 293,
+        threadId: P2P_THREAD,
         content: faker.lorem.paragraph()
       }, {
         onSent: function(result) {},
         onDeliver: function(result) {},
         onSeen: function(result) {
+          if (timingLog) console.log("\x1b[90m    ☰ Send a Message to P2P Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
+          var time2 = new Date().getTime();
           chatAgent2.forwardMessage({
-            subjectId: 312,
+            subjectId: GROUP_THREAD,
             content: JSON.stringify([sentMessageID])
           }, {
             onSent: function(result) {},
             onDeliver: function(result) {
+              if (timingLog) console.log("\x1b[33m    ★ Forward Message Delivered \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time2);
               done();
+              console.log("\n");
             },
             onSeen: function(result) {}
           });
@@ -751,7 +923,10 @@ describe("Messaging Functionality", function(done) {
 
         if (type == "MESSAGE_NEW") {
           sentMessageID = message.id;
-          chatAgent2.seen({messageId: message.id, ownerId: message.ownerId});
+          chatAgent2.seen({
+            messageId: message.id,
+            ownerId: message.ownerId
+          });
         }
       });
     });
@@ -764,10 +939,9 @@ describe("Messaging Functionality", function(done) {
  * FILE FUNCTIONS
  */
 describe("Uploading & Getting File Functionality", function(done) {
-  this.timeout(10000);
+  this.timeout(30000);
 
   var chatAgent1,
-    chatAgent2,
     imageId,
     imageHashCode,
     fileId,
@@ -775,16 +949,15 @@ describe("Uploading & Getting File Functionality", function(done) {
 
   beforeEach(() => {
     chatAgent1 = new Chat(params1);
-    chatAgent2 = new Chat(params2);
   });
 
   afterEach(() => {
     chatAgent1.logout();
-    chatAgent2.logout();
   });
 
   it("Should UPLOAD an image file to image server", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent1.uploadImage({
         image: __dirname + "/test.jpg",
         xC: 0,
@@ -795,7 +968,9 @@ describe("Uploading & Getting File Functionality", function(done) {
         if (!result.hasError) {
           imageId = result.result.id;
           imageHashCode = result.result.hashCode;
+          if (timingLog) console.log("\x1b[33m    ★ Image Upload \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -803,13 +978,16 @@ describe("Uploading & Getting File Functionality", function(done) {
 
   it("Should UPLOAD an file to file server", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent1.uploadFile({
         file: __dirname + "/test.txt"
       }, function(result) {
         if (!result.hasError) {
           fileId = result.result.id;
           fileHashCode = result.result.hashCode;
+          if (timingLog) console.log("\x1b[33m    ★ File Upload \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -817,12 +995,15 @@ describe("Uploading & Getting File Functionality", function(done) {
 
   it("Should GET an uploaded image from image server", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent1.getImage({
         imageId: imageId,
         hashCode: imageHashCode
       }, function(result) {
         if (!result.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Get Image \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
@@ -830,12 +1011,15 @@ describe("Uploading & Getting File Functionality", function(done) {
 
   it("Should GET an uploaded file from file server", function(done) {
     chatAgent1.on("chatReady", function() {
+      var time = new Date().getTime();
       chatAgent1.getFile({
         fileId: fileId,
         hashCode: fileHashCode
       }, function(result) {
         if (!result.hasError) {
+          if (timingLog) console.log("\x1b[33m    ★ Get File \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
+          console.log("\n");
         }
       });
     });
