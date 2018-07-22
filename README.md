@@ -12,7 +12,7 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Load Tests
 
-## [0.6.8] - 2018-07-22
+## [0.7.0] - 2018-07-22
 
 ### Added
 
