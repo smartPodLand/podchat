@@ -10,19 +10,28 @@ All notable changes to this project will be documented here.
 
 -   Search in Contacts & History
 -   Block / Unblock an user
--   Delete Messages / Threads
+-   Load Tests
 
-
-## [0.6.0] - 2018-07-16
+## [0.6.8] - 2018-07-22
 
 ### Added
 
+-   Delete Message
+-   Benchmark Tests
+
+<details><summary>[0.6.0] - 2018-07-16</summary>
+
+-   Added
+
+
 -   Upload functionality for node base usages
--   Unit Tests (``npm test``)
+-   Unit Tests (`npm test`)
+    </details>
 
 <details><summary>[0.5.1] - 2018-07-08</summary>
 
-+ Added
+-   Added
+
 
 -   uploadImage
 -   uploadFile
@@ -30,20 +39,21 @@ All notable changes to this project will be documented here.
 -   getFile
 -   sendFileMessage
 
-+ Changes
+
+-   Changes
+
 
 -   npm version rescaled to 0.5.1 (Release . Sprint . Feature/Patch/BugFix)
 -   MESSAGE_SEEN fires at Sender's side when he sends a SEEN type to server
-</details>
-
+    </details>
 
 <details><summary>[3.9.8] - 2018-07-04</summary>
 + Added
 
--   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /_Your Custom Data Here_/ }}
+-   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /__Your Custom Data Here__/ }}
 
 
-+   Changes
+-   Changes
 
 
 -   THREAD_LAST_ACTIVITY_TIME fires on sending message at Sender's side too
@@ -85,7 +95,7 @@ All notable changes to this project will be documented here.
     -   MESSAGE_DELIVERY
 
 
-+   Changed
+-   Changed
 
 
 -   messageEvents types get **MESSAGE\_** namespace and are as below:
@@ -124,7 +134,7 @@ All notable changes to this project will be documented here.
         -   LAST_SEEN_UPDATED
 
 
-+   Removed
+-   Removed
 
 
 -   Below event listeners are no longer available :
@@ -141,7 +151,7 @@ All notable changes to this project will be documented here.
 
 <details><summary>[3.9.1] - 2018-07-02</summary>
 
-+   Added
+-   Added
 
 
 -   Contact Management (addContacts, updateContacts, removeContacts)
@@ -149,7 +159,7 @@ All notable changes to this project will be documented here.
 -   Http Request Handler
 
 
-+   Changed
+-   Changed
 
 
 -   Received Seen & Delivery Messages now have {messageId, participantId} in response content
@@ -166,7 +176,8 @@ var Chat = require('podchat');
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
-  ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
+  platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
+  fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
@@ -540,6 +551,23 @@ chatAgent.editMessage({
     console.log(result);
   }
 });
+```
+
+### deleteMessage
+
+To delete message for all, you should set `deleteForAll` parameter as `TRUE`.
+```javascript
+/**
+ * DELETE MESSAGE IN THREAD
+ * @param {int}      messageId
+ * @param {boolean}  deleteForAll
+ */
+chatAgent.editMessage({
+    messageId: messageId,
+    deleteForAll: false
+  }, function(result) {
+    console.log(result);
+  });
 ```
 
 ### replyMessage

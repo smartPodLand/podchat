@@ -6,7 +6,7 @@ var params = {
   platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
   fileServer: "http://sandbox.fanapium.com:8080", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "3eb31b55c21d4d8a8a420ffb79cfdc34", // {**REQUIRED**} SSO Token
+  token: "8106d5d15ea64d779e4fa8843e823286", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -25,118 +25,118 @@ var chatAgent = new Chat(params),
 
 chatAgent.on("chatReady", function() {
   /*******************************************************
-   *                       U S E R                       *
-   *******************************************************/
+     *                       U S E R                       *
+     *******************************************************/
 
   /**
-   *  Get User Info
-   */
+     *  Get User Info
+     */
   // getUserInfo();
 
   /*******************************************************
-   *                    T H R E A D S                    *
-   *******************************************************/
+     *                    T H R E A D S                    *
+     *******************************************************/
 
   /**
-   * GET THREADS
-   * @param count
-   * @param offset
-   * @param threadIds
-   * @param name
-   */
+     * GET THREADS
+     * @param count
+     * @param offset
+     * @param threadIds
+     * @param name
+     */
   // getThreads({
   //   count: 50,
   //   offset: 0
   // });
 
   /**
-   * CREATE THREAD (Creates Group)
-   * @param invitees
-   * @param threadType
-   */
+     * CREATE THREAD (Creates Group)
+     * @param invitees
+     * @param threadType
+     */
   // createThread([581, 582], "NORMAL");
 
   /**
-   * CREATE THREAD (Creates P2P Chat with a specific user)
-   * @param contactId
-   */
+     * CREATE THREAD (Creates P2P Chat with a specific user)
+     * @param contactId
+     */
   // createThread(563);
 
   /**
-   * GET THREAD PARTICIPANTS
-   * @param threadId
-   */
+     * GET THREAD PARTICIPANTS
+     * @param threadId
+     */
   // getThreadParticipants(3);
 
   /**
-   * ADD PARTICIPANTS
-   * @param threadId
-   * @param contacts {Array}  CONTACT ID
-   */
+     * ADD PARTICIPANTS
+     * @param threadId
+     * @param contacts {Array}  CONTACT ID
+     */
   // addParticipants(3, [583]);
 
   /**
-   * REMOVE PARTICIPANTS
-   * @param threadId
-   * @param participants {Array}  USER ID
-   */
+     * REMOVE PARTICIPANTS
+     * @param threadId
+     * @param participants {Array}  USER ID
+     */
   // removeParticipants(3, [4]);
 
   /**
-   * LEAVE THREAD
-   * @param threadId
-   */
+     * LEAVE THREAD
+     * @param threadId
+     */
   // leaveThread(3);
 
   /**
-   * GET THREAD HISTORY
-   * @param threadId
-   * @param count
-   * @param offset
-   */
+     * GET THREAD HISTORY
+     * @param threadId
+     * @param count
+     * @param offset
+     */
   // getHistory(3, 5, 0);
 
   /**
-   * GET SINGLE MESSAGE
-   * @param threadId
-   * @param messageId
-   */
-  // getSingleMessage(3, 2);
+     * GET SINGLE MESSAGE
+     * @param threadId
+     * @param messageId
+     */
+  // getSingleMessage(293, 13698);
 
   /**
-   * MUTE THREAD
-   * @param threadId
-   */
+     * MUTE THREAD
+     * @param threadId
+     */
   // muteThread(3);
 
   /**
-   * UNMUTE THREAD
-   * @param threadId
-   */
+     * UNMUTE THREAD
+     * @param threadId
+     */
   // unMuteThread(3);
 
   /**
-   * RENAME THREAD
-   * @param threadId
-   */
+     * RENAME THREAD
+     * @param threadId
+     */
   // renameThread(3, "دوستان");
 
   /*******************************************************
-   *                   C O N T A C T S                   *
-   *******************************************************/
+     *                   C O N T A C T S                   *
+     *******************************************************/
 
   /**
-   * GET CONTACTS
-   */
+     * GET CONTACTS
+     */
   // getContacts();
 
   /**
-   * ADD CONTACTS
-   * @param firstName
-   * @param lastName
-   * @param cellphoneNumber
-   * @param email
-   */
+     * ADD CONTACTS
+     * @param firstName
+     * @param lastName
+     * @param cellphoneNumber
+     * @param email
+     */
   // chatAgent.addContacts({
   //   firstName: "Hamed",
   //   lastName: "Mehr Ara",
@@ -147,13 +147,13 @@ chatAgent.on("chatReady", function() {
   // });
 
   /**
-   * UPDATE CONTACTS
-   * @param id
-   * @param firstName
-   * @param lastName
-   * @param cellphoneNumber
-   * @param email
-   */
+     * UPDATE CONTACTS
+     * @param id
+     * @param firstName
+     * @param lastName
+     * @param cellphoneNumber
+     * @param email
+     */
   // chatAgent.updateContacts({
   //   id: "581",
   //     firstName: "پوریا",
@@ -165,9 +165,9 @@ chatAgent.on("chatReady", function() {
   // });
 
   /**
-   * REMOVE CONTACTS
-   * @param id
-   */
+     * REMOVE CONTACTS
+     * @param id
+     */
   // chatAgent.removeContacts({
   //   id: "681"
   // }, function(result) {
@@ -175,99 +175,106 @@ chatAgent.on("chatReady", function() {
   // });
 
   /*******************************************************
-   *                   M E S S A G E S                   *
-   *******************************************************/
+     *                   M E S S A G E S                   *
+     *******************************************************/
 
   /**
-   * SEND MESSAGE IN THREAD
-   * @param threadId
-   * @param newMessage
-   * @param metaData
-   */
-  // sendMessage(1, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
+     * SEND MESSAGE IN THREAD
+     * @param threadId
+     * @param newMessage
+     * @param metaData
+     */
+  // sendMessage(293, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
 
   /**
-   * SEND FILE MESSAGE IN THREAD
-   * @param threadId
-   * @param file
-   * @param caption
-   * @param metaData
-   */
+     * SEND FILE MESSAGE IN THREAD
+     * @param threadId
+     * @param file
+     * @param caption
+     * @param metaData
+     */
   // sendFileMessage(3, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
 
   /**
-   * EDIT MESSAGE IN THREAD
-   * @param messageId  325 editable: false
-   * @param newMessage
-   */
+     * EDIT MESSAGE IN THREAD
+     * @param messageId  325 editable: false
+     * @param newMessage
+     */
   // editMessage(1, "This message has been edited at " + new Date());
 
   /**
-   * REPLY TO MESSAGE
-   * @param threadId
-   * @param messageId
-   */
+     * DELETE MESSAGE IN THREAD
+     * @param {int}      messageId
+     * @param {boolean}  deleteForAll
+     */
+  // deleteMessage(13704, true);
+
+  /**
+     * REPLY TO MESSAGE
+     * @param threadId
+     * @param messageId
+     */
   // replyMessage(1, 1, "This is a reply to message #1 at " + new Date());
 
   /**
-   * FORWARD MESSAGE
-   * @param destination
-   * @param messageIds
-   */
+     * FORWARD MESSAGE
+     * @param destination
+     * @param messageIds
+     */
   // forwardMessage(3, [1, 10]);
 
   /*******************************************************
-   *               F I L E   U P L O A D S               *
-   *******************************************************/
+     *               F I L E   U P L O A D S               *
+     *******************************************************/
 
   /**
-   * UPLOAD IMAGE
-   * @param  {string}  image     Image path
-   * @param  {int}     xC        Crop start x coordinates
-   * @param  {int}     yC        Crop start y coordinates
-   * @param  {int}     hC        Crop height
-   * @param  {int}     wC        Crop width
-   */
+     * UPLOAD IMAGE
+     * @param  {string}  image     Image path
+     * @param  {int}     xC        Crop start x coordinates
+     * @param  {int}     yC        Crop start y coordinates
+     * @param  {int}     hC        Crop height
+     * @param  {int}     wC        Crop width
+     */
   // uploadImage(__dirname + "/test/test.jpg", 0, 0, 400, 400);
 
   /**
-   * GET IMAGE
-   * @param  {int}     imageId     Image ID
-   * @param  {string}  hashCode    Hash Code
-   */
+     * GET IMAGE
+     * @param  {int}     imageId     Image ID
+     * @param  {string}  hashCode    Hash Code
+     */
   // getImage(2531, '1649d4e932a-0.8852815409984853');
 
   /**
-   * UPLOAD FILE
-   * @param  {string}  file     File path
-   */
+     * UPLOAD FILE
+     * @param  {string}  file     File path
+     */
   // uploadFile(__dirname + "/test/test.txt");
 
   /**
-   * GET FILE
-   * @param  {int}     fileId          Image ID
-   * @param  {string}  hashCode        Hash Code
-   * @param  {boolean} downloadable    Downloadable link or not?
-   */
+     * GET FILE
+     * @param  {int}     fileId          Image ID
+     * @param  {string}  hashCode        Hash Code
+     * @param  {boolean} downloadable    Downloadable link or not?
+     */
   // getFile(344, '196CHI61NUROW8S1', true);
 
 });
 
 /**
- * Listen to Error Messages
- */
+   * Listen to Error Messages
+   */
 chatAgent.on("error", function(error) {
   console.log("ERROR \t", error.code, error.message, error.error);
 });
 
 /**
- * Listen to Chat State Changes
- */
+   * Listen to Chat State Changes
+   */
 chatAgent.on("chatState", function(chatState) {});
 
 /**
- * Listen to Thread Events
- */
+   * Listen to Thread Events
+   */
 chatAgent.on("threadEvents", function(event) {
   var type = event.type;
   console.log(event);
@@ -312,8 +319,8 @@ chatAgent.on("threadEvents", function(event) {
 });
 
 /**
- * Listen to Message Events
- */
+   * Listen to Message Events
+   */
 chatAgent.on("messageEvents", function(event) {
   var type = event.type,
     message = event.result.message;
@@ -323,13 +330,10 @@ chatAgent.on("messageEvents", function(event) {
   switch (type) {
     case "MESSAGE_NEW":
       /**
-       * Sending Message Seen to Sender after 5 secs
-       */
+         * Sending Message Seen to Sender after 5 secs
+         */
       setTimeout(function() {
-        chatAgent.seen({
-          messageId: message.id,
-          ownerId: message.ownerId
-        });
+        chatAgent.seen({messageId: message.id, ownerId: message.ownerId});
       }, 5000);
 
       break;
@@ -349,8 +353,8 @@ chatAgent.on("messageEvents", function(event) {
 });
 
 /**
- * Local Functions
- */
+   * Local Functions
+   */
 
 function getUserInfo() {
   chatAgent.getUserInfo(function(userInfo) {
@@ -515,6 +519,19 @@ function editMessage(messageId, newMessage) {
   });
 }
 
+function deleteMessage(messageId, deleteForAll) {
+  if (typeof deleteForAll == "undefined") {
+    deleteForAll = false;
+  }
+
+  chatAgent.deleteMessage({
+    messageId: messageId,
+    deleteForAll: deleteForAll
+  }, function(result) {
+    console.log(result);
+  });
+}
+
 function replyMessage(threadId, messageId, message) {
   replyChatParams = {
     threadId: threadId,
@@ -567,17 +584,13 @@ function createThread(invitees, threadType) {
 
   if (Array.isArray(invitees)) {
     for (var i = 0; i < invitees.length; i++) {
-      invitee = formatDataToMakeInvitee({
-        id: invitees[i]
-      });
+      invitee = formatDataToMakeInvitee({id: invitees[i]});
       if (invitee) {
         createThreadParams.invitees.push(invitee);
       }
     }
   } else {
-    invitee = formatDataToMakeInvitee({
-      id: invitees
-    });
+    invitee = formatDataToMakeInvitee({id: invitees});
     if (invitee) {
       createThreadParams.invitees.push(invitee);
     }
