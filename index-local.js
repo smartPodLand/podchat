@@ -6,8 +6,8 @@ var params = {
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552",   {**REQUIRED**} SSO Token JiJi
+  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -47,7 +47,7 @@ chatAgent.on("chatReady", function() {
    * @param name
    */
   // getThreads({
-  //   count: 50,
+  //   count: 2,
   //   offset: 0
   // });
 
@@ -62,13 +62,13 @@ chatAgent.on("chatReady", function() {
    * CREATE THREAD (Creates P2P Chat with a specific user)
    * @param contactId
    */
-  // createThread(563);
+  // createThread(572);
 
   /**
    * GET THREAD PARTICIPANTS
    * @param threadId
    */
-  // getThreadParticipants(3);
+  // getThreadParticipants(293);
 
   /**
    * ADD PARTICIPANTS
@@ -139,14 +139,14 @@ chatAgent.on("chatReady", function() {
    * @param cellphoneNumber
    * @param email
    */
-  // chatAgent.addContacts({
-  //   firstName: "Hamed",
-  //   lastName: "Mehr Ara",
-  //   cellphoneNumber: "09122660304",
-  //   email: "hamed.mehr.ar6a@gmail.com"
-  // }, function(result) {
-  //   console.log(result.result);
-  // });
+  chatAgent.addContacts({
+    firstName: "Hamed",
+    lastName: "Mehr Ara",
+    cellphoneNumber: "09122660304",
+    email: "hamed.mehr.ar6a@gmail.com"
+  }, function(result) {
+    console.log(result.result);
+  });
 
   /**
    * UPDATE CONTACTS
@@ -186,7 +186,7 @@ chatAgent.on("chatReady", function() {
    * @param newMessage
    * @param metaData
    */
-  // sendMessage(293, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
+  // sendMessage(572, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
 
   /**
    * SEND FILE MESSAGE IN THREAD
@@ -286,6 +286,7 @@ chatAgent.on("threadEvents", function(event) {
       break;
 
     case "THREAD_NEW":
+
       break;
 
     case "THREAD_ADD_PARTICIPANTS":

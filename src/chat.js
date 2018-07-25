@@ -176,7 +176,11 @@
     var init = function() {
         var getDeviceIdWithTokenTime = new Date().getTime();
         getDeviceIdWithToken(function(retrievedDeviceId) {
-          console.log("\x1b[90m    ☰ Get Device ID \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - getDeviceIdWithTokenTime);
+
+          if (actualTimingLog) {
+            Utility.chatStepLogger("Get Device ID ", new Date().getTime() - getDeviceIdWithTokenTime);
+          }
+
           deviceId = retrievedDeviceId;
 
           var asyncGetReadtTime = new Date().getTime();
@@ -196,7 +200,7 @@
 
           asyncClient.on("asyncReady", function() {
             if (actualTimingLog) {
-              console.log("\x1b[90m    ☰ Async Connection \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - asyncGetReadtTime);
+              Utility.chatStepLogger("Async Connection ", new Date().getTime() - asyncGetReadtTime);
             }
 
             peerId = asyncClient.getPeerId();
@@ -206,7 +210,7 @@
 
               getUserInfo(function(userInfoResult) {
                 if (actualTimingLog) {
-                  console.log("\x1b[90m    ☰ Get User Info \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - getUserInfoTime);
+                  Utility.chatStepLogger("Get User Info ", new Date().getTime() - getUserInfoTime);
                 }
 
                 if (!userInfoResult.hasError) {
@@ -328,6 +332,7 @@
 
         if (isNode && Request) {
           var headers = params.headers;
+          // headers['Content-Type'] = 'multipart/form-data';
 
           if (params.method == "POST" && data) {
             var formData = {};
@@ -544,16 +549,17 @@
 
       sendMessage = function(params, callbacks) {
         /**
-         * + ChatMessage    {object}
-         *    - token       {string}
-         *    - tokenIssuer {string}
-         *    - type        {int}
-         *    - subjectId   {long}
-         *    - uniqueId    {string}
-         *    - content     {string}
-         *    - time        {long}
-         *    - medadata    {string}
-         *    - repliedTo   {long}
+         * + ChatMessage        {object}
+         *    - token           {string}
+         *    - tokenIssuer     {string}
+         *    - type            {int}
+         *    - subjectId       {long}
+         *    - uniqueId        {string}
+         *    - content         {string}
+         *    - time            {long}
+         *    - medadata        {string}
+         *    - systemMedadata  {string}
+         *    - repliedTo       {long}
          */
 
         var messageVO = {
@@ -608,6 +614,51 @@
               threadCallbacks[threadId] = {};
             }
 
+            // threadCallbacks = [
+            //   threadId1 : {
+            //     uniqueId1 : {
+            //       onSent: function(){},
+            //       onDeliver: function(){},
+            //       onSeen: function(){}
+            //     },
+            //     uniqueId2: {
+            //
+            //     },
+            //     .
+            //     .
+            //     .
+            //     .
+            //   },
+            //   threadId2 : {},
+            //   threadId3 : {
+            //     uniqueId: {
+            //       uniqueId: uniqueId,
+            //       onSent: false,
+            //       onSeen: false,
+            //       onDeliver: false
+            //     }
+            //   }
+            //   .
+            //   .
+            //   .
+            //   .
+            // ];
+            //
+            // sendMessageCallbacks = [
+            //   uniqueId1 : {
+            //     onSent: function(){},
+            //     onDeliver: function(){},
+            //     onSeen: function(){}
+            //   },
+            //   uniqueId2: {
+            //
+            //   },
+            //   .
+            //   .
+            //   .
+            //   .
+            // ];
+
             threadCallbacks[threadId][uniqueId] = {};
 
             sendMessageCallbacks[uniqueId] = {};
@@ -643,8 +694,8 @@
          *    + content        {string}
          *       -peerName     {string}    Name of receiver Peer
          *       -receivers[]  {long}      Array of receiver peer ids (if you use this, peerName will be ignored)
-         *       -priority     {int}       priority of message 1-10, lower has more priority
-         *       -messageId    {long}      id of message on your side, not required
+         *       -priority     {int}       Priority of message 1-10, lower has more priority
+         *       -messageId    {long}      Id of message on your side, not required
          *       -ttl          {long}      Time to live for message in milliseconds
          *       -content      {string}    Chat Message goes here after stringifying
          *    - trackId        {long}      Tracker id of message that you receive from DIRANA previously (if you are replying a sync message)
@@ -1858,7 +1909,24 @@
        * @return {object} Uploaded Image Object
        */
       uploadImage = function(params, callback) {
-        if (imageMimeTypes.indexOf(params.image.type) > 0 || imageExtentions.indexOf(params.image.split('.').pop()) > 0) {
+        var fileName,
+          fileType,
+          fileSize,
+          fileExtension;
+
+        if (isNode) {
+          fileName = params.image.split('/').pop();
+          fileType = Mime.getType(params.image);
+          fileSize = FS.statSync(params.image).size;
+          fileExtension = params.image.split('.').pop();
+        } else {
+          fileName = params.image.name;
+          fileType = params.image.type;
+          fileSize = params.image.size;
+          fileExtension = params.image.name.split('.').pop();
+        }
+
+        if (imageMimeTypes.indexOf(fileType) > 0 || imageExtentions.indexOf(fileExtension) > 0) {
           uploadImageData = {};
 
           if (params) {
@@ -2316,11 +2384,29 @@
 
       if (params) {
         if (typeof params.file != "undefined") {
+
+          var fileName,
+            fileType,
+            fileSize,
+            fileExtension;
+
+          if (isNode) {
+            fileName = params.file.split('/').pop();
+            fileType = Mime.getType(params.file);
+            fileSize = FS.statSync(params.file).size;
+            fileExtension = params.file.split('.').pop();
+          } else {
+            fileName = params.file.name;
+            fileType = params.file.type;
+            fileSize = params.file.size;
+            fileExtension = params.file.name.split('.').pop();
+          }
+
           /**
            * File is a valid Image
            * Should upload to image server
            */
-          if (imageMimeTypes.indexOf(params.file.type) > 0 || imageExtentions.indexOf(params.file.split('.').pop()) > 0) {
+          if (imageMimeTypes.indexOf(fileType) > 0 || imageExtentions.indexOf(fileExtension) > 0) {
             fileUploadParams.image = params.file;
 
             if (typeof params.xC == "string") {
@@ -2344,21 +2430,15 @@
 
           metaData["file"] = {};
 
-          if (isNode) {
-            metaData["file"]["originalName"] = params.file.split('/').pop();
-            metaData["file"]["size"] = Mime.getType(params.file);
-            metaData["file"]["mimeType"] = FS.statSync(params.file).size;
-          } else {
-            metaData["file"]["originalName"] = params.file.name;
-            metaData["file"]["size"] = params.file.size;
-            metaData["file"]["mimeType"] = params.file.type;
-          }
+          metaData["file"]["originalName"] = fileName;
+          metaData["file"]["mimeType"] = fileType;
+          metaData["file"]["size"] = fileSize;
 
           if (typeof params.fileName == "string") {
             fileUploadParams.fileName = params.fileName;
           }
 
-          if (imageMimeTypes.indexOf(params.file.type) > 0 || imageExtentions.indexOf(params.file.split('.').pop()) > 0) {
+          if (imageMimeTypes.indexOf(fileType) > 0 || imageExtentions.indexOf(fileExtension) > 0) {
             uploadImage(fileUploadParams, function(result) {
               if (!result.hasError) {
                 metaData["file"]["actualHeight"] = result.result.actualHeight;

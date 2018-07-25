@@ -6,26 +6,26 @@ var assert = require('assert'),
   path = require('path');
 
 var TOKENS = {
-    TOKEN_1: "7cba09ff83554fc98726430c30afcfc6", // Masoud
-    TOKEN_2: "f53f39a1893e4c4da18e59822290a552" // Pooria
+    TOKEN_1: "51fcb12ad48742eba23a849111f7c581", // Masoud
+    TOKEN_2: "e25d528d00b745048837441333965deb" // Pooria
   },
-  P2P_THREAD = 293,//1,
-  GROUP_THREAD = 312,//3,
+  P2P_THREAD = 1,//293,
+  GROUP_THREAD = 3,//312,
   timingLog = true,
   params1 = {
     // Sandbox
-    // socketAddress: "wss://chat-sandbox.pod.land/ws",
-    // ssoHost: "https://accounts.pod.land",
-    // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform",
-    // fileServer: "http://sandbox.fanapium.com:8080",
-    // serverName: "chat-server",
+    socketAddress: "wss://chat-sandbox.pod.land/ws",
+    ssoHost: "https://accounts.pod.land",
+    platformHost: "https://sandbox.pod.land:8043/srv/basic-platform",
+    fileServer: "http://sandbox.fanapium.com:8080",
+    serverName: "chat-server",
 
     // Local Developement
-    socketAddress: "ws://172.16.106.26:8003/ws",
-    ssoHost: "http://172.16.110.76",
-    platformHost: "http://172.16.106.26:8080/hamsam",
-    fileServer: "http://172.16.106.26:8080/hamsam",
-    serverName: "chat-server",
+    // socketAddress: "ws://172.16.106.26:8003/ws",
+    // ssoHost: "http://172.16.110.76",
+    // platformHost: "http://172.16.106.26:8080/hamsam",
+    // fileServer: "http://172.16.106.26:8080/hamsam",
+    // serverName: "chat-server",
 
     token: TOKENS.TOKEN_1,
     asyncLogging: {

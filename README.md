@@ -555,7 +555,7 @@ chatAgent.editMessage({
 
 ### deleteMessage
 
-To delete message for all, you should set `deleteForAll` parameter as `TRUE`.
+In order to delete a message for all, set `deleteForAll` parameter as `TRUE`.
 ```javascript
 /**
  * DELETE MESSAGE IN THREAD
@@ -563,11 +563,11 @@ To delete message for all, you should set `deleteForAll` parameter as `TRUE`.
  * @param {boolean}  deleteForAll
  */
 chatAgent.editMessage({
-    messageId: messageId,
-    deleteForAll: false
-  }, function(result) {
-    console.log(result);
-  });
+  messageId: messageId,
+  deleteForAll: false
+}, function(result) {
+  console.log(result);
+});
 ```
 
 ### replyMessage

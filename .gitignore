@@ -59,6 +59,4 @@ typings/
 .env
 
 # test index files
-# index.js
-index2.js
-index.html
+index-local2.js

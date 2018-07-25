@@ -6,7 +6,7 @@ var params = {
   platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
   fileServer: "http://sandbox.fanapium.com:8080", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "8106d5d15ea64d779e4fa8843e823286", // {**REQUIRED**} SSO Token
+  token: "bfbe0e8795f34a0fa6c24a67293592e8", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -101,7 +101,7 @@ chatAgent.on("chatReady", function() {
      * @param threadId
      * @param messageId
      */
-  // getSingleMessage(293, 13698);
+  // getSingleMessage(1, 166);
 
   /**
      * MUTE THREAD
@@ -184,7 +184,7 @@ chatAgent.on("chatReady", function() {
      * @param newMessage
      * @param metaData
      */
-  // sendMessage(293, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
+  // sendMessage(1, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
 
   /**
      * SEND FILE MESSAGE IN THREAD
@@ -207,7 +207,7 @@ chatAgent.on("chatReady", function() {
      * @param {int}      messageId
      * @param {boolean}  deleteForAll
      */
-  // deleteMessage(13704, true);
+  // deleteMessage(167, false);
 
   /**
      * REPLY TO MESSAGE
