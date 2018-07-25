@@ -24,7 +24,7 @@ var params = {
 
 var chatAgent = new Chat(params),
   PID;
-
+  
 chatAgent.on("chatReady", function() {
   /*******************************************************
    *                       U S E R                       *
