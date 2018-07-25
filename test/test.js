@@ -6,8 +6,8 @@ var assert = require('assert'),
   path = require('path');
 
 var TOKENS = {
-    TOKEN_1: "a904075d5389493385e72b6e91aa6788", // Masoud
-    TOKEN_2: "b516110d39ce47de85688b8084ffc8db" // Pooria
+    TOKEN_1: "99367a5140064980938b14945b139053", // Masoud
+    TOKEN_2: "34e4be0447294605b6b30b1a2bd13bd4" // Pooria
   },
   P2P_THREAD = 1,
   GROUP_THREAD = 3,
@@ -976,7 +976,7 @@ describe("Uploading & Getting File Functionality", function(done) {
     });
   });
 
-  it("Should UPLOAD an file to file server", function(done) {
+  it("Should UPLOAD a file to file server", function(done) {
     chatAgent1.on("chatReady", function() {
       var time = new Date().getTime();
       chatAgent1.uploadFile({
