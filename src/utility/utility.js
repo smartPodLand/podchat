@@ -73,6 +73,19 @@
       return returnData;
     };
 
+    /**
+     * Prints Custom Message in console
+     * @param {string} title Title of message to be logged in terminal
+     * @param {string} message Message to be logged in terminal
+     * @return
+     */
+    this.chatStepLogger = function(title, message) {
+      if (typeof navigator == "undefined") {
+        console.log("\x1b[90m    ☰ %s \x1b[0m \x1b[90m(%sms)\x1b[0m", title, message);
+      } else {
+        console.log("%c   " + title + " (" + message + "ms)", 'border-left: solid #666 10px; color: #666;');
+      }
+    }
   }
 
   if (typeof module !== 'undefined' && typeof module.exports != "undefined") {

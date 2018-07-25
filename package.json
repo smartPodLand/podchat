@@ -1,6 +1,10 @@
 {
   "name": "podchat",
+<<<<<<< HEAD
   "version": "0.6.7",
+=======
+  "version": "0.7.0",
+>>>>>>> 67c8ea3a6c64b8435a095dfe79acc7a7b321afc4
   "description": "Javascript SDK to use POD's Chat Service",
   "main": "./src/chat.js",
   "scripts": {
@@ -29,7 +33,7 @@
     "faker": "^4.1.0",
     "form-data": "^2.3.2",
     "mime": "^2.3.1",
-    "podasync": "^2.3.11",
+    "podasync": "^2.3.14",
     "request": "^2.87.0"
   },
   "devDependencies": {

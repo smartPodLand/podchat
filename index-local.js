@@ -3,10 +3,11 @@ var Chat = require('./src/chat.js');
 var params = {
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
-  ssoGrantDevicesAddress: "/oauth2/grants/devices", // {**REQUIRED**} Socket Address
+  platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
+  fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552",   {**REQUIRED**} SSO Token JiJi
+  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -45,46 +46,49 @@ chatAgent.on("chatReady", function() {
    * @param threadIds
    * @param name
    */
-  // getThreads({count: 50, offset: 0, threadIds: [293], name: "jiji"});
+  // getThreads({
+  //   count: 2,
+  //   offset: 0
+  // });
 
   /**
    * CREATE THREAD (Creates Group)
    * @param invitees
    * @param threadType
    */
-  // createThread([568, 563], "NORMAL");
+  // createThread([581, 582], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
    * @param contactId
    */
-  // createThread(563);
+  // createThread(572);
 
   /**
    * GET THREAD PARTICIPANTS
    * @param threadId
    */
-  // getThreadParticipants(438);
+  // getThreadParticipants(293);
 
   /**
    * ADD PARTICIPANTS
    * @param threadId
    * @param contacts {Array}  CONTACT ID
    */
-  // addParticipants(474, [563]);
+  // addParticipants(3, [583]);
 
   /**
    * REMOVE PARTICIPANTS
    * @param threadId
    * @param participants {Array}  USER ID
    */
-  // removeParticipants(312, [122]);
+  // removeParticipants(3, [4]);
 
   /**
    * LEAVE THREAD
    * @param threadId
    */
-  // leaveThread(312);
+  // leaveThread(3);
 
   /**
    * GET THREAD HISTORY
@@ -92,32 +96,32 @@ chatAgent.on("chatReady", function() {
    * @param count
    * @param offset
    */
-  // getHistory(293, 5, 0);
+  // getHistory(3, 5, 0);
 
   /**
    * GET SINGLE MESSAGE
    * @param threadId
    * @param messageId
    */
-  // getSingleMessage(293, 2551);
+  // getSingleMessage(293, 13698);
 
   /**
    * MUTE THREAD
    * @param threadId
    */
-  // muteThread(392);
+  // muteThread(3);
 
   /**
    * UNMUTE THREAD
    * @param threadId
    */
-  // unMuteThread(392);
+  // unMuteThread(3);
 
   /**
    * RENAME THREAD
    * @param threadId
    */
-  // renameThread(312, "Thread Name Changed at " + new Date());
+  // renameThread(3, "دوستان");
 
   /*******************************************************
    *                   C O N T A C T S                   *
@@ -126,7 +130,7 @@ chatAgent.on("chatReady", function() {
   /**
    * GET CONTACTS
    */
-  // getContacts({name: "alexi"});
+  // getContacts();
 
   /**
    * ADD CONTACTS
@@ -135,14 +139,14 @@ chatAgent.on("chatReady", function() {
    * @param cellphoneNumber
    * @param email
    */
-  // chatAgent.addContacts({
-  //   firstName: "Pooria",
-  //   lastName: "Pahlevani",
-  //   cellphoneNumber: "09256568745",
-  //   email: "poori@gmail.com"
-  // }, function(result) {
-  //   console.log(result.result);
-  // });
+  chatAgent.addContacts({
+    firstName: "Hamed",
+    lastName: "Mehr Ara",
+    cellphoneNumber: "09122660304",
+    email: "hamed.mehr.ar6a@gmail.com"
+  }, function(result) {
+    console.log(result.result);
+  });
 
   /**
    * UPDATE CONTACTS
@@ -153,11 +157,11 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.updateContacts({
-  //   id: "681",
-  //     firstName: "Hamid",
-  //     lastName: "Amouzegar",
-  //     cellphoneNumber: "09004377868",
-  //     email: "hamidamfefw@gmail.com"
+  //   id: "581",
+  //     firstName: "پوریا",
+  //     lastName: "پهلوانی",
+  //     cellphoneNumber: "09387181964",
+  //     email: "pr.pahlevani@fanap.ir"
   // }, function(result) {
   //   console.log(result);
   // });
@@ -182,7 +186,7 @@ chatAgent.on("chatReady", function() {
    * @param newMessage
    * @param metaData
    */
-  // sendMessage(293, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
+  // sendMessage(572, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
 
   /**
    * SEND FILE MESSAGE IN THREAD
@@ -191,78 +195,84 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
+  // sendFileMessage(3, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
 
   /**
    * EDIT MESSAGE IN THREAD
    * @param messageId  325 editable: false
    * @param newMessage
    */
-  // editMessage(13613, "This message has been edited at " + new Date());
+  // editMessage(1, "This message has been edited at " + new Date());
+
+  /**
+   * DELETE MESSAGE IN THREAD
+   * @param {int}      messageId
+   * @param {boolean}  deleteForAll
+   */
+  // deleteMessage(13704, true);
 
   /**
    * REPLY TO MESSAGE
    * @param threadId
    * @param messageId
    */
-  // replyMessage(293, 12397, "This is a reply to message #413 at " + new Date());
+  // replyMessage(1, 1, "This is a reply to message #1 at " + new Date());
 
   /**
    * FORWARD MESSAGE
    * @param destination
    * @param messageIds
    */
-  // forwardMessage(293, [2539, 2538, 2537]);
+  // forwardMessage(3, [1, 10]);
 
   /*******************************************************
    *               F I L E   U P L O A D S               *
    *******************************************************/
 
   /**
-    * UPLOAD IMAGE
-    * @param  {string}  image     Image path
-    * @param  {int}     xC        Crop start x coordinates
-    * @param  {int}     yC        Crop start y coordinates
-    * @param  {int}     hC        Crop height
-    * @param  {int}     wC        Crop width
-    */
+   * UPLOAD IMAGE
+   * @param  {string}  image     Image path
+   * @param  {int}     xC        Crop start x coordinates
+   * @param  {int}     yC        Crop start y coordinates
+   * @param  {int}     hC        Crop height
+   * @param  {int}     wC        Crop width
+   */
   // uploadImage(__dirname + "/test/test.jpg", 0, 0, 400, 400);
 
   /**
-    * GET IMAGE
-    * @param  {int}     imageId     Image ID
-    * @param  {string}  hashCode    Hash Code
-    */
+   * GET IMAGE
+   * @param  {int}     imageId     Image ID
+   * @param  {string}  hashCode    Hash Code
+   */
   // getImage(2531, '1649d4e932a-0.8852815409984853');
 
   /**
-    * UPLOAD FILE
-    * @param  {string}  file     File path
-    */
+   * UPLOAD FILE
+   * @param  {string}  file     File path
+   */
   // uploadFile(__dirname + "/test/test.txt");
 
   /**
-    * GET FILE
-    * @param  {int}     fileId          Image ID
-    * @param  {string}  hashCode        Hash Code
-    * @param  {boolean} downloadable    Downloadable link or not?
-    */
+   * GET FILE
+   * @param  {int}     fileId          Image ID
+   * @param  {string}  hashCode        Hash Code
+   * @param  {boolean} downloadable    Downloadable link or not?
+   */
   // getFile(344, '196CHI61NUROW8S1', true);
 
 });
 
 /**
-* Listen to Error Messages
-*/
+ * Listen to Error Messages
+ */
 chatAgent.on("error", function(error) {
   console.log("ERROR \t", error.code, error.message, error.error);
 });
 
 /**
-* Listen to Chat State Changes
-*/
-chatAgent.on("chatState", function(chatState) {
-});
+ * Listen to Chat State Changes
+ */
+chatAgent.on("chatState", function(chatState) {});
 
 /**
  * Listen to Thread Events
@@ -276,6 +286,7 @@ chatAgent.on("threadEvents", function(event) {
       break;
 
     case "THREAD_NEW":
+
       break;
 
     case "THREAD_ADD_PARTICIPANTS":
@@ -414,8 +425,10 @@ function getContacts(params) {
     offset: 0
   };
 
-  if (typeof params.name === "string") {
-    getContactsParams.name = params.name;
+  if (params) {
+    if (typeof params.name === "string") {
+      getContactsParams.name = params.name;
+    }
   }
   chatAgent.getContacts(getContactsParams, function(contactsResult) {
     if (!contactsResult.hasError) {
@@ -505,6 +518,19 @@ function editMessage(messageId, newMessage) {
   };
 
   chatAgent.editMessage(editChatParams, function(result) {
+    console.log(result);
+  });
+}
+
+function deleteMessage(messageId, deleteForAll) {
+  if (typeof deleteForAll == "undefined") {
+    deleteForAll = false;
+  }
+
+  chatAgent.deleteMessage({
+    messageId: messageId,
+    deleteForAll: deleteForAll
+  }, function(result) {
     console.log(result);
   });
 }
