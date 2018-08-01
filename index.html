@@ -20,8 +20,8 @@
       platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
       fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
       serverName: "chat-server", // {**REQUIRED**} Server to to register on
-      // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-      token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
+      token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+      // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
       // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
       wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
       connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -30,8 +30,8 @@
       reconnectOnClose: true, // auto connect to socket after socket close
       asyncLogging: {
         onFunction: true, // log main actions on console
-        // onMessageReceive: true, // log received messages on console
-        // onMessageSend: true, // log sent messaged on console
+        onMessageReceive: true, // log received messages on console
+        onMessageSend: true, // log sent messaged on console
         actualTiming: true // log actual functions running time
       }
     };
@@ -156,15 +156,14 @@
        * @param cellphoneNumber
        * @param email
        */
-       console.log("Add a contact");
-      chatAgent.addContacts({
-        firstName: "Sina",
-        lastName: "Rahimi",
-        cellphoneNumber: "05953847458",
-        email: "sinarah3imi1@gmail.com"
-      }, function(result) {
-        console.log(result.result);
-      });
+      // chatAgent.addContacts({
+      //   firstName: "Sina",
+      //   lastName: "Rahimi",
+      //   cellphoneNumber: "05953847458",
+      //   email: "sinarah3imi1@gmail.com"
+      // }, function(result) {
+      //   console.log(result.result);
+      // });
 
       /**
        * UPDATE CONTACTS
@@ -175,11 +174,11 @@
        * @param email
        */
       // chatAgent.updateContacts({
-      //   id: "647",
+      //   id: "981",
       //     firstName: "Hamid",
       //     lastName: "Amouzegar",
-      //     cellphoneNumber: "09000677868",
-      //     email: "hamidam65000r77@gmail.com"
+      //     cellphoneNumber: "09000077868",
+      //     email: "hamidam43000r77@gmail.com"
       // }, function(result) {
       //   console.log(result);
       // });

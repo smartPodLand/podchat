@@ -6,8 +6,8 @@ var params = {
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
+  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
@@ -24,7 +24,7 @@ var params = {
 
 var chatAgent = new Chat(params),
   PID;
-  
+
 chatAgent.on("chatReady", function() {
   /*******************************************************
    *                       U S E R                       *
@@ -139,14 +139,14 @@ chatAgent.on("chatReady", function() {
    * @param cellphoneNumber
    * @param email
    */
-  chatAgent.addContacts({
-    firstName: "Hamed",
-    lastName: "Mehr Ara",
-    cellphoneNumber: "09122660304",
-    email: "hamed.mehr.ar6a@gmail.com"
-  }, function(result) {
-    console.log(result.result);
-  });
+  // chatAgent.addContacts({
+  //   firstName: "Hamed",
+  //   lastName: "Mehr Ara",
+  //   cellphoneNumber: "09122660304",
+  //   email: "hamed.mehr.ar6a@gmail.com"
+  // }, function(result) {
+  //   console.log(result.result);
+  // });
 
   /**
    * UPDATE CONTACTS
@@ -186,7 +186,11 @@ chatAgent.on("chatReady", function() {
    * @param newMessage
    * @param metaData
    */
-  // sendMessage(572, "This is a Sample Message at " + new Date(), {custom_date: new Date(), custom_code: "235fg43gw", custom_name: "John Doe"});
+  // sendMessage(572, "This is a Sample Message at " + new Date(), {
+  //   custom_date: new Date(),
+  //   custom_code: "235fg43gw",
+  //   custom_name: "John Doe"
+  // });
 
   /**
    * SEND FILE MESSAGE IN THREAD
@@ -266,7 +270,7 @@ chatAgent.on("chatReady", function() {
  * Listen to Error Messages
  */
 chatAgent.on("error", function(error) {
-  console.log("ERROR \t", error.code, error.message, error.error);
+  console.log("ERROR \n", error.code, error.message, error.error);
 });
 
 /**
@@ -336,7 +340,10 @@ chatAgent.on("messageEvents", function(event) {
        * Sending Message Seen to Sender after 5 secs
        */
       setTimeout(function() {
-        chatAgent.seen({messageId: message.id, ownerId: message.ownerId});
+        chatAgent.seen({
+          messageId: message.id,
+          ownerId: message.ownerId
+        });
       }, 5000);
 
       break;
@@ -587,13 +594,17 @@ function createThread(invitees, threadType) {
 
   if (Array.isArray(invitees)) {
     for (var i = 0; i < invitees.length; i++) {
-      invitee = formatDataToMakeInvitee({id: invitees[i]});
+      invitee = formatDataToMakeInvitee({
+        id: invitees[i]
+      });
       if (invitee) {
         createThreadParams.invitees.push(invitee);
       }
     }
   } else {
-    invitee = formatDataToMakeInvitee({id: invitees});
+    invitee = formatDataToMakeInvitee({
+      id: invitees
+    });
     if (invitee) {
       createThreadParams.invitees.push(invitee);
     }

@@ -12,12 +12,21 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Load Tests
 
-## [0.7.0] - 2018-07-22
+## [0.7.6] - 2018-08-01
+
 
 ### Added
 
+-   `setToken()` Function
+-   `firstMessageId` and `lastMessageId` attributes in `getHistory()`
+
+
+<details><summary>[0.7.0] - 2018-07-22</summary>
+-   Added
+
 -   Delete Message
 -   Benchmark Tests
+</details>
 
 <details><summary>[0.6.0] - 2018-07-16</summary>
 
