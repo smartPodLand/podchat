@@ -14,7 +14,6 @@ All notable changes to this project will be documented here.
 
 ## [0.7.6] - 2018-08-01
 
-
 ### Added
 
 -   `setToken()` Function

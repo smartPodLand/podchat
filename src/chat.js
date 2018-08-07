@@ -104,9 +104,11 @@
       msgTTL = params.msgTTL || 10000,
       serverName = params.serverName || "",
       chatPingMessageInterval = 20000,
-      lastReceivedMessageTime,
       lastSentMessageTime,
       lastSentMessageTimeoutId,
+      lastReceivedMessageTime,
+      lastReceivedMessageTimeoutId,
+      JSTimeLatency = 100,
       config = {
         getHistoryCount: 100
       },
@@ -256,6 +258,18 @@
           });
 
           asyncClient.on("message", function(params, ack) {
+
+            lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
+
+            lastReceivedMessageTime = new Date();
+
+            lastReceivedMessageTimeoutId = setTimeout(function() {
+              var currentDate = new Date();
+              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout - JSTimeLatency) {
+                asyncClient.reconnectSocket();
+              }
+            }, chatPingMessageInterval * 1.5);
+
             pushMessageHandler(params);
             ack && ack();
           });
