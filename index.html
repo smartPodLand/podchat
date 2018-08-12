@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
+  <!-- <meta charset="utf-8"> -->
   <title>podChat</title>
 
   <script type="text/javascript" src="src/utility/utility.js"></script>
@@ -15,18 +15,18 @@
     var Chat = POD.Chat;
 
     var params = {
-      socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
-      ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
-      platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
-      fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
+      socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+      ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+      platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+      fileServer: "http://sandbox.fanapium.com:8080", // {**REQUIRED**} File Server Address
       serverName: "chat-server", // {**REQUIRED**} Server to to register on
-      token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+      token: "1cbe190c8a154f1bbae883e8fccacc37", // {**REQUIRED**} SSO Token ZiZi
       // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
       // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
       wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
       connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
       connectionCheckTimeout: 10000, // Socket connection live time on server
-      messageTtl: 10000, // Message time to live
+      messageTtl: 86400000, // Message time to live
       reconnectOnClose: true, // auto connect to socket after socket close
       asyncLogging: {
         onFunction: true, // log main actions on console
@@ -770,6 +770,36 @@
       <div id="getFileResult"></div>
     </fieldset>
   </form>
+
+
+    <br>
+    <hr><br>
+
+    <form method="POST" action="https://sandbox.pod.land:8043/srv/basic-platform/nzh/updateContacts">
+      <fieldset>
+        <legend>Update Contact</legend>
+        <label for="id">id : </label>
+        <input type="text" name="id" id="id" value="">
+        <br>
+        <label for="firstName">firstName : </label>
+        <input type="text" name="firstName" id="firstName" value="">
+        <br>
+        <label for="lastName">lastName : </label>
+        <input type="text" name="lastName" id="lastName" value="">
+        <br>
+        <label for="cellphoneNumber">cellphoneNumber : </label>
+        <input type="text" name="cellphoneNumber" id="cellphoneNumber" value="">
+        <br>
+        <label for="email">email : </label>
+        <input type="text" name="email" id="email" value="">
+        <br>
+
+        <input type="hidden" name="_token_"  value="1cbe190c8a154f1bbae883e8fccacc37">
+        <input type="hidden" name="_token_issuer_"  value="1">
+        <input type="hidden" name="uniqueId"  value="ew5b34fdg34">
+        <button type="submit">Update Contact</button>
+      </fieldset>
+    </form>
 </body>
 
 </html>

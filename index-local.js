@@ -6,13 +6,13 @@ var params = {
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  token: "7cba09ff83554fc98726430c30afcfc6", // "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
   // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
-  messageTtl: 10000, // Message time to live
+  messageTtl: 86400000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
@@ -140,10 +140,10 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.addContacts({
-  //   firstName: "Hamed",
-  //   lastName: "Mehr Ara",
-  //   cellphoneNumber: "09122660304",
-  //   email: "hamed.mehr.ar6a@gmail.com"
+  //   firstName: "حامد",
+  //   lastName: "مهرآرا",
+  //   cellphoneNumber: "09188660304",
+  //   email: "hamed.m88r6a@gmail.com"
   // }, function(result) {
   //   console.log(result.result);
   // });
@@ -157,13 +157,13 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.updateContacts({
-  //   id: "581",
-  //     firstName: "پوریا",
-  //     lastName: "پهلوانی",
-  //     cellphoneNumber: "09387181964",
-  //     email: "pr.pahlevani@fanap.ir"
+  //   id: "1021",
+  //     firstName: "پور2یا",
+  //     lastName: "22پهلوانی34",
+  //     cellphoneNumber: "09384224964",
+  //     email: "pr.pah2244ani@fanap.ir"
   // }, function(result) {
-  //   console.log(result);
+  //   console.log(result.result.contacts);
   // });
 
   /**
@@ -270,7 +270,8 @@ chatAgent.on("chatReady", function() {
  * Listen to Error Messages
  */
 chatAgent.on("error", function(error) {
-  console.log("ERROR \n", error.code, error.message, error.error);
+  console.log("Error ", error);
+  // console.log("Error ", error.error);
 });
 
 /**

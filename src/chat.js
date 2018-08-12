@@ -16,6 +16,7 @@
         ChatUtility = require('./utility/utility.js'),
         http = require('http'),
         Request = require('request'),
+        QueryString = require('querystring'),
         FS = require('fs'),
         Mime = require('mime'),
         FormData = require('form-data');
@@ -85,6 +86,9 @@
         DELETE_MESSAGE: 29,
         THREAD_INFO_UPDATED: 30,
         LAST_SEEN_UPDATED: 31,
+        GET_MESSAGE_DELEVERY_PARTICIPANTS: 32,
+        GET_MESSAGE_SEEN_PARTICIPANTS: 33,
+        LOGOUT: 100,
         ERROR: 999
       },
       inviteeVOidTypes = {
@@ -168,6 +172,8 @@
         3: "CLOSED"
       },
       chatState = false,
+      connectionCheckTimeout = params.connectionCheckTimeout,
+      connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold,
       httpRequestTimeout = params.httpRequestTimeout || 20000,
       actualTimingLog = params.asyncLogging.actualTiming || false;
 
@@ -185,7 +191,7 @@
 
           deviceId = retrievedDeviceId;
 
-          var asyncGetReadtTime = new Date().getTime();
+          var asyncGetReadyTime = new Date().getTime();
 
           asyncClient = new Async({
             socketAddress: params.socketAddress,
@@ -193,8 +199,8 @@
             deviceId: retrievedDeviceId,
             wsConnectionWaitTime: params.wsConnectionWaitTime,
             connectionRetryInterval: params.connectionRetryInterval,
-            connectionCheckTimeout: params.connectionCheckTimeout,
-            connectionCheckTimeoutThreshold: params.connectionCheckTimeoutThreshold,
+            connectionCheckTimeout: connectionCheckTimeout,
+            connectionCheckTimeoutThreshold: connectionCheckTimeoutThreshold,
             messageTtl: params.messageTtl,
             reconnectOnClose: params.reconnectOnClose,
             asyncLogging: params.asyncLogging
@@ -202,7 +208,7 @@
 
           asyncClient.on("asyncReady", function() {
             if (actualTimingLog) {
-              Utility.chatStepLogger("Async Connection ", new Date().getTime() - asyncGetReadtTime);
+              Utility.chatStepLogger("Async Connection ", new Date().getTime() - asyncGetReadyTime);
             }
 
             peerId = asyncClient.getPeerId();
@@ -218,6 +224,7 @@
                 if (!userInfoResult.hasError) {
                   userInfo = userInfoResult.result.user;
                   chatState = true;
+                  ping();
                   fireEvent("chatReady");
                 }
               });
@@ -225,14 +232,12 @@
           });
 
           asyncClient.on("stateChange", function(state) {
-            fireEvent("chatState", state);//asyncStateTypes[state.socketState]);
+            fireEvent("chatState", state);
 
             switch (state.socketState) {
               case 1: // CONNECTED
                 chatState = true;
-                ping();
                 break;
-
               case 0: // CONNECTING
               case 2: // CLOSING
               case 3: // CLOSED
@@ -350,64 +355,89 @@
 
         if (isNode && Request) {
           var headers = params.headers;
-          // headers['Content-Type'] = 'multipart/form-data';
 
           if (params.method == "POST" && data) {
+            var doesContainFiles = false;
             var formData = {};
             for (var i in data) {
               if (i == "image" || i == "file") {
                 formData[i] = FS.createReadStream(data[i]);
+                doesContainFiles = true;
               } else {
                 formData[i] = data[i];
               }
             }
 
-            data = formData;
-
-            Request.post({
-              url: url,
-              formData: data,
-              headers: headers
-            }, function(error, response, body) {
-              if (!error) {
-                if (response.statusCode == 200) {
-                  callback && callback({
-                    hasError: false,
-                    result: {
-                      responseText: body
-                    }
-                  });
+            if (doesContainFiles) {
+              headers['Content-Type'] = 'multipart/form-data';
+              data = formData;
+              Request.post({
+                url: url,
+                formData: data,
+                headers: headers
+              }, function(error, response, body) {
+                if (!error) {
+                  if (response.statusCode == 200) {
+                    callback && callback({
+                      hasError: false,
+                      result: {
+                        responseText: body
+                      }
+                    });
+                  } else {
+                    callback && callback({
+                      hasError: true,
+                      errorCode: response.statusCode,
+                      errorMessage: body
+                    });
+                  }
                 } else {
                   callback && callback({
                     hasError: true,
-                    errorCode: response.statusCode,
-                    errorMessage: body
+                    errorCode: 6200,
+                    errorMessage: CHAT_ERRORS[6200] + " (Request Error)",
+                    errorEvent: error
                   });
                 }
-              } else {
-                callback && callback({
-                  hasError: true,
-                  errorCode: 6200,
-                  errorMessage: CHAT_ERRORS[6200] + " (Request Error)",
-                  errorEvent: error
-                });
-              }
-            });
+              });
+            } else {
+              headers['Content-Type'] = 'application/x-www-form-urlencoded';
+              data = QueryString.stringify(formData);
+              Request.post({
+                url: url,
+                body: data,
+                headers: headers
+              }, function(error, response, body) {
+                if (!error) {
+                  if (response.statusCode == 200) {
+                    callback && callback({
+                      hasError: false,
+                      result: {
+                        responseText: body
+                      }
+                    });
+                  } else {
+                    callback && callback({
+                      hasError: true,
+                      errorCode: response.statusCode,
+                      errorMessage: body
+                    });
+                  }
+                } else {
+                  callback && callback({
+                    hasError: true,
+                    errorCode: 6200,
+                    errorMessage: CHAT_ERRORS[6200] + " (Request Error)",
+                    errorEvent: error
+                  });
+                }
+              });
+            }
+
           } else if (params.method == "GET") {
             if (typeof data === "object") {
-              var keys = Object.keys(data);
-
-              if (keys.length > 0) {
-                url += "?";
-
-                for (var i = 0; i < keys.length; i++) {
-                  var key = keys[i];
-                  url += key + "=" + data[key];
-                  if (i < keys.length - 1) {
-                    url += "&";
-                  }
-                }
-              }
+              data = QueryString.stringify(data);
+              url += "?" + data;
             } else if (typeof data === "string") {
               url += "?" + data;
             }
@@ -442,7 +472,7 @@
             });
           }
 
-          // return;
+          return;
         } else {
           var request = new XMLHttpRequest(),
             settings = params.settings;
@@ -756,7 +786,7 @@
         lastSentMessageTime = new Date();
         lastSentMessageTimeoutId = setTimeout(function() {
           var currentTime = new Date();
-          if (currentTime - lastSentMessageTime > chatPingMessageInterval - 100) {
+          if (currentTime - lastSentMessageTime > chatPingMessageInterval - 100 && chatState) {
             ping();
           }
         }, chatPingMessageInterval);
@@ -767,12 +797,21 @@
       },
 
       ping = function() {
-        if (chatState && peerId !== undefined) {
+        if (chatState && peerId !== undefined && userInfo !== undefined) {
           sendMessage({
             chatMessageVOType: chatMessageVOTypes.PING,
             pushMsgType: 4
           });
+        } else {
+          lastSentMessageTimeoutId && clearTimeout(lastSentMessageTimeoutId);
         }
+      },
+
+      clearCache = function() {
+        sendMessage({
+          chatMessageVOType: chatMessageVOTypes.LOGOUT,
+          pushMsgType: 4
+        });
       },
 
       pushMessageHandler = function(params) {
@@ -876,7 +915,6 @@
 
             // 6
           case chatMessageVOTypes.PING:
-
             break;
 
             // 9
@@ -1133,6 +1171,12 @@
           case chatMessageVOTypes.ERROR:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(true, messageContent.message, messageContent.code, messageContent, 0));
+
+            if (messageContent.code == 21) {
+              chatState = false;
+              asyncClient.logout();
+              clearCache();
+            }
 
             fireEvent("error", {
               code: messageContent.code,
@@ -2908,7 +2952,7 @@
 
       var requestParams = {
         url: SERVICE_ADDRESSES.PLATFORM_ADDRESS + SERVICES_PATH.UPDATE_CONTACTS,
-        method: "POST",
+        method: "GET",
         data: data,
         headers: {
           "_token_": token,
@@ -3013,6 +3057,8 @@
     this.logout = function() {
       asyncClient.logout();
     };
+
+    this.clearCache = clearCache;
 
     this.reconnect = function() {
       asyncClient.reconnectSocket();

@@ -6,11 +6,11 @@ var params = {
   platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
   fileServer: "http://sandbox.fanapium.com:8080", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "4f8de1e8caae438eb394328f891a597c", // {**REQUIRED**} SSO Token
+  token: "e519c8cd89d44198b3ab2ab017b6bda7", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
-  messageTtl: 10000, // Message time to live
+  messageTtl: 86400000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
@@ -24,6 +24,7 @@ var chatAgent = new Chat(params),
   PID;
 
 chatAgent.on("chatReady", function() {
+
   /*******************************************************
    *                       U S E R                       *
    *******************************************************/
@@ -54,7 +55,7 @@ chatAgent.on("chatReady", function() {
    * @param invitees
    * @param threadType
    */
-  // createThread([581, 582], "NORMAL");
+  // createThread([716], "CHANNEL_GROUP");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
@@ -138,10 +139,10 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.addContacts({
-  //   firstName: "Hamed",
-  //   lastName: "Mehr Ara",
-  //   cellphoneNumber: "09122900304",
-  //   email: "hamed.mehr.ara@gmail.com"
+  //   firstName: "حامد",
+  //   lastName: "مهرآرا",
+  //   cellphoneNumber: "09188770304",
+  //   email: "hamed.me873.ara@gmail.com"
   // }, function(result) {
   //   console.log(result.result);
   // });
@@ -155,13 +156,17 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.updateContacts({
-  //   id: "581",
-  //     firstName: "پوریا",
-  //     lastName: "پهلوانی",
-  //     cellphoneNumber: "09387181964",
-  //     email: "pr.pahlevani@fanap.ir"
+  //   id: "723",
+  //   firstName: "پوریا",
+  //   lastName: "پهلوانی",
+  //   cellphoneNumber: "09887181963",
+  //   email: "pr.pahlevani@fanap.ir"
   // }, function(result) {
-  //   console.log(result);
+  //   if (!result.hasError) {
+  //     console.log(result.result.contacts);
+  //   } else {
+  //     console.log(result);
+  //   }
   // });
 
   /**
@@ -242,7 +247,7 @@ chatAgent.on("chatReady", function() {
    * @param  {int}     imageId     Image ID
    * @param  {string}  hashCode    Hash Code
    */
-  // getImage(2531, '1649d4e932a-0.8852815409984853');
+  // getImage(47326, '16527629f8d-0.9077409239385894');
 
   /**
    * UPLOAD FILE
@@ -256,7 +261,7 @@ chatAgent.on("chatReady", function() {
    * @param  {string}  hashCode        Hash Code
    * @param  {boolean} downloadable    Downloadable link or not?
    */
-  // getFile(344, '196CHI61NUROW8S1', true);
+  // getFile(47325, '1652761cbb9-0.13605605117533726', true);
 
 });
 
@@ -330,10 +335,13 @@ chatAgent.on("messageEvents", function(event) {
   switch (type) {
     case "MESSAGE_NEW":
       /**
-         * Sending Message Seen to Sender after 5 secs
-         */
+       * Sending Message Seen to Sender after 5 secs
+       */
       setTimeout(function() {
-        chatAgent.seen({messageId: message.id, ownerId: message.ownerId});
+        chatAgent.seen({
+          messageId: message.id,
+          ownerId: message.ownerId
+        });
       }, 5000);
 
       break;
@@ -584,18 +592,22 @@ function createThread(invitees, threadType) {
 
   if (Array.isArray(invitees)) {
     for (var i = 0; i < invitees.length; i++) {
-      invitee = formatDataToMakeInvitee({id: invitees[i]});
+      invitee = formatDataToMakeInvitee({
+        id: invitees[i]
+      });
       if (invitee) {
         createThreadParams.invitees.push(invitee);
       }
     }
   } else {
-    invitee = formatDataToMakeInvitee({id: invitees});
+    invitee = formatDataToMakeInvitee({
+      id: invitees
+    });
     if (invitee) {
       createThreadParams.invitees.push(invitee);
     }
   }
-
+console.log(createThreadParams);
   chatAgent.createThread(createThreadParams, function(createThreadResult) {
     console.log(createThreadResult);
   });

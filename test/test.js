@@ -6,8 +6,8 @@ var assert = require('assert'),
   path = require('path');
 
 var TOKENS = {
-    TOKEN_1: "99367a5140064980938b14945b139053", // Masoud
-    TOKEN_2: "34e4be0447294605b6b30b1a2bd13bd4" // Pooria
+    TOKEN_1: "849bcb93a64e4ee3bf03d95122045ac5", // Masoud
+    TOKEN_2: "19e141e324d549c19fee1d9e8943ed56" // Pooria
   },
   P2P_THREAD = 1,//293,
   GROUP_THREAD = 3,//312,
