@@ -519,10 +519,19 @@
             }
 
             if (method === "POST" && data) {
+              var doesContainFiles = false;
               if (typeof data === "object") {
                 var formData = new FormData();
                 for (var key in data) {
+                  if (key == "image" || key == "file") {
+                    doesContainFiles = true;
+                  }
                   formData.append(key, data[key]);
+                }
+                if (doesContainFiles) {
+                  // request.setRequestHeader("Content-Type", "multipart/form-data");
+                } else {
+                  request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                 }
                 request.send(formData);
               } else {

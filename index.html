@@ -20,7 +20,7 @@
       platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
       fileServer: "http://sandbox.fanapium.com:8080", // {**REQUIRED**} File Server Address
       serverName: "chat-server", // {**REQUIRED**} Server to to register on
-      token: "1cbe190c8a154f1bbae883e8fccacc37", // {**REQUIRED**} SSO Token ZiZi
+      token: "f60367274a02441aab26cbbd34faa713", // {**REQUIRED**} SSO Token ZiZi
       // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
       // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
       wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
@@ -30,8 +30,8 @@
       reconnectOnClose: true, // auto connect to socket after socket close
       asyncLogging: {
         onFunction: true, // log main actions on console
-        onMessageReceive: true, // log received messages on console
-        onMessageSend: true, // log sent messaged on console
+        // onMessageReceive: true, // log received messages on console
+        // onMessageSend: true, // log sent messaged on console
         actualTiming: true // log actual functions running time
       }
     };
@@ -147,7 +147,7 @@
       /**
        * GET CONTACTS
        */
-      // getContacts();
+      getContacts();
 
       /**
        * ADD CONTACTS
@@ -283,7 +283,6 @@
         });
       });
 
-
       /**
        * UPLOAD FILE
        */
@@ -320,7 +319,6 @@
           }
         });
       });
-
 
       /**
        * GET FILE
@@ -793,10 +791,14 @@
         <label for="email">email : </label>
         <input type="text" name="email" id="email" value="">
         <br>
+        <label for="_token_">Token : </label>
+        <input type="text" name="_token_">
+        <br>
+        <label for="uniqueId">uniqueId : </label>
+        <input type="text" name="uniqueId">
+        <br>
 
-        <input type="hidden" name="_token_"  value="1cbe190c8a154f1bbae883e8fccacc37">
         <input type="hidden" name="_token_issuer_"  value="1">
-        <input type="hidden" name="uniqueId"  value="ew5b34fdg34">
         <button type="submit">Update Contact</button>
       </fieldset>
     </form>
