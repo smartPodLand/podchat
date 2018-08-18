@@ -51,7 +51,7 @@ chatAgent.on("chatReady", function() {
   // getThreads({
   //   count: 2,
   //   offset: 0,
-  //   threadIds: [293]
+  //   threadIds: [351]
   // });
 
   /**
@@ -65,7 +65,7 @@ chatAgent.on("chatReady", function() {
    * CREATE THREAD (Creates P2P Chat with a specific user)
    * @param contactId
    */
-  // createThread(572);
+  // createThread(563);
 
   /**
    * GET THREAD PARTICIPANTS
@@ -160,13 +160,13 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // chatAgent.updateContacts({
-  //   id: "1021",
-  //     firstName: "پور2یا",
-  //     lastName: "22پهلوانی34",
-  //     cellphoneNumber: "09384224964",
-  //     email: "pr.pah2244ani@fanap.ir"
+  //   id: "563",
+  //     firstName: "فیفی",
+  //     lastName: "فیفولی",
+  //     cellphoneNumber: "09122964316",
+  //     email: "fifuli@fanap.ir"
   // }, function(result) {
-  //   console.log(result.result.contacts);
+  //   console.log(result.result);
   // });
 
   /**
