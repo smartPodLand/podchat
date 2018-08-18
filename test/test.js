@@ -6,26 +6,26 @@ var assert = require('assert'),
   path = require('path');
 
 var TOKENS = {
-    TOKEN_1: "849bcb93a64e4ee3bf03d95122045ac5", // Masoud
-    TOKEN_2: "19e141e324d549c19fee1d9e8943ed56" // Pooria
+    TOKEN_1: "7cba09ff83554fc98726430c30afcfc6", // Masoud
+    TOKEN_2: "fbd4ecedb898426394646e65c6b1d5d1" // Pooria
   },
-  P2P_THREAD = 1,//293,
-  GROUP_THREAD = 3,//312,
+  P2P_THREAD = 293, //1
+  GROUP_THREAD = 312, //3
   timingLog = true,
   params1 = {
     // Sandbox
-    socketAddress: "wss://chat-sandbox.pod.land/ws",
-    ssoHost: "https://accounts.pod.land",
-    platformHost: "https://sandbox.pod.land:8043/srv/basic-platform",
-    fileServer: "http://sandbox.fanapium.com:8080",
-    serverName: "chat-server",
+    // socketAddress: "wss://chat-sandbox.pod.land/ws",
+    // ssoHost: "https://accounts.pod.land",
+    // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform",
+    // fileServer: "http://sandbox.fanapium.com:8080",
+    // serverName: "chat-server",
 
     // Local Developement
-    // socketAddress: "ws://172.16.106.26:8003/ws",
-    // ssoHost: "http://172.16.110.76",
-    // platformHost: "http://172.16.106.26:8080/hamsam",
-    // fileServer: "http://172.16.106.26:8080/hamsam",
-    // serverName: "chat-server",
+    socketAddress: "ws://172.16.106.26:8003/ws",
+    ssoHost: "http://172.16.110.76",
+    platformHost: "http://172.16.106.26:8080/hamsam",
+    fileServer: "http://172.16.106.26:8080/hamsam",
+    serverName: "chat-server",
 
     token: TOKENS.TOKEN_1,
     asyncLogging: {
@@ -735,7 +735,7 @@ describe("Messaging Functionality", function(done) {
       }, {
         onSent: function(result) {
           if (timingLog)
-            console.log("\x1b[33m    ★ Send File Message \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
+            console.log("\x1b[33m    ★ Send Message \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
           console.log("\n");
         },
@@ -762,7 +762,7 @@ describe("Messaging Functionality", function(done) {
       }, {
         onSent: function(result) {
           if (timingLog)
-            console.log("\x1b[33m    ★ Send Message \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
+            console.log("\x1b[33m    ★ Send File Message \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
           done();
           console.log("\n");
         },
@@ -819,7 +819,10 @@ describe("Messaging Functionality", function(done) {
           message = event.result.message;
 
         if (type == "MESSAGE_NEW") {
-          chatAgent2.seen({messageId: message.id, ownerId: message.ownerId});
+          chatAgent2.seen({
+            messageId: message.id,
+            ownerId: message.ownerId
+          });
         }
       });
     });
@@ -885,7 +888,9 @@ describe("Messaging Functionality", function(done) {
           var time2 = new Date().getTime();
           chatAgent1.deleteMessage({
             messageId: sentMessageID,
-            content: JSON.stringify({deleteForAll: false})
+            content: JSON.stringify({
+              deleteForAll: false
+            })
           }, function(result) {
             if (!result.hasError) {
               if (timingLog)
@@ -928,7 +933,9 @@ describe("Messaging Functionality", function(done) {
           var time2 = new Date().getTime();
           chatAgent1.deleteMessage({
             messageId: sentMessageID,
-            content: JSON.stringify({deleteForAll: true})
+            content: JSON.stringify({
+              deleteForAll: true
+            })
           }, function(result) {
             if (!result.hasError) {
               if (timingLog)
@@ -971,7 +978,9 @@ describe("Messaging Functionality", function(done) {
           var time2 = new Date().getTime();
           chatAgent1.deleteMessage({
             messageId: sentMessageID,
-            content: JSON.stringify({deleteForAll: false})
+            content: JSON.stringify({
+              deleteForAll: false
+            })
           }, function(result) {
             if (!result.hasError) {
               if (timingLog)
@@ -1014,7 +1023,9 @@ describe("Messaging Functionality", function(done) {
           var time2 = new Date().getTime();
           chatAgent1.deleteMessage({
             messageId: sentMessageID,
-            content: JSON.stringify({deleteForAll: true})
+            content: JSON.stringify({
+              deleteForAll: true
+            })
           }, function(result) {
             if (!result.hasError) {
               if (timingLog)
@@ -1083,7 +1094,10 @@ describe("Messaging Functionality", function(done) {
 
         if (type == "MESSAGE_NEW") {
           sentMessageID = message.id;
-          chatAgent2.seen({messageId: message.id, ownerId: message.ownerId});
+          chatAgent2.seen({
+            messageId: message.id,
+            ownerId: message.ownerId
+          });
         }
       });
     });
@@ -1130,7 +1144,10 @@ describe("Messaging Functionality", function(done) {
 
         if (type == "MESSAGE_NEW") {
           sentMessageID = message.id;
-          chatAgent2.seen({messageId: message.id, ownerId: message.ownerId});
+          chatAgent2.seen({
+            messageId: message.id,
+            ownerId: message.ownerId
+          });
         }
       });
     });

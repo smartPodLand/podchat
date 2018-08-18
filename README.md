@@ -12,13 +12,25 @@ All notable changes to this project will be documented here.
 -   Block / Unblock an user
 -   Load Tests
 
-## [0.7.6] - 2018-08-01
+## [1.1.5] - 2018-08-18
 
 ### Added
 
+-   `getChatState()` Function
+-   `TO_BE_USER_ID` type has been added to `inviteeVOidTypes` but only works while making P2P threads
+
+### Changed
+
+-   `PARTICIPANT` object now has `firstName` , `lastName` and `contactId` attributes
+-   `image` attribute in `CONVRSATION` model changed to `lastParticipantImage`
+
+
+<details><summary>[0.7.6] - 2018-08-01</summary>
+-   Added
+
 -   `setToken()` Function
 -   `firstMessageId` and `lastMessageId` attributes in `getHistory()`
-
+</details>
 
 <details><summary>[0.7.0] - 2018-07-22</summary>
 -   Added

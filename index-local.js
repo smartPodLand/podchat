@@ -6,9 +6,11 @@ var params = {
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "7cba09ff83554fc98726430c30afcfc6", // "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
-  // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
+  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
+  // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
+  // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
+  // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -48,7 +50,8 @@ chatAgent.on("chatReady", function() {
    */
   // getThreads({
   //   count: 2,
-  //   offset: 0
+  //   offset: 0,
+  //   threadIds: [293]
   // });
 
   /**
@@ -142,8 +145,8 @@ chatAgent.on("chatReady", function() {
   // chatAgent.addContacts({
   //   firstName: "حامد",
   //   lastName: "مهرآرا",
-  //   cellphoneNumber: "09188660304",
-  //   email: "hamed.m88r6a@gmail.com"
+  //   cellphoneNumber: "09188644304",
+  //   email: "hamed.m844a@gmail.com"
   // }, function(result) {
   //   console.log(result.result);
   // });
@@ -171,7 +174,7 @@ chatAgent.on("chatReady", function() {
    * @param id
    */
   // chatAgent.removeContacts({
-  //   id: "681"
+  //   id: "1103"
   // }, function(result) {
   //   console.log(result);
   // });
@@ -186,7 +189,7 @@ chatAgent.on("chatReady", function() {
    * @param newMessage
    * @param metaData
    */
-  // sendMessage(572, "This is a Sample Message at " + new Date(), {
+  // sendMessage(293, "This is a Sample Message at " + new Date(), {
   //   custom_date: new Date(),
   //   custom_code: "235fg43gw",
   //   custom_name: "John Doe"

@@ -95,7 +95,8 @@
         TO_BE_USER_SSO_ID: 1,
         TO_BE_USER_CONTACT_ID: 2,
         TO_BE_USER_CELLPHONE_NUMBER: 3,
-        TO_BE_USER_USERNAME: 4
+        TO_BE_USER_USERNAME: 4,
+        TO_BE_USER_ID: 5 // only in P2P mode
       },
       createThreadTypes = {
         NORMAL: 0,
@@ -105,7 +106,7 @@
         CHANNEL: 8
       },
       msgPriority = params.msgPriority || 1,
-      msgTTL = params.msgTTL || 10000,
+      messageTtl = params.messageTtl || 10000,
       serverName = params.serverName || "",
       chatPingMessageInterval = 20000,
       lastSentMessageTime,
@@ -172,6 +173,7 @@
         3: "CLOSED"
       },
       chatState = false,
+      chatFullStateObject = {},
       connectionCheckTimeout = params.connectionCheckTimeout,
       connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold,
       httpRequestTimeout = params.httpRequestTimeout || 20000,
@@ -233,7 +235,7 @@
 
           asyncClient.on("stateChange", function(state) {
             fireEvent("chatState", state);
-
+            chatFullStateObject = state;
             switch (state.socketState) {
               case 1: // CONNECTED
                 chatState = true;
@@ -773,7 +775,7 @@
             peerName: serverName,
             priority: msgPriority,
             content: JSON.stringify(messageVO),
-            ttl: msgTTL
+            ttl: messageTtl
           }
         };
 
@@ -1483,6 +1485,7 @@
         /**
          * + ContactVO                        {object}
          *    - id                            {long}
+         *    - userId                        {long}
          *    - firstName                     {string}
          *    - lastName                      {string}
          *    - profileImage                  {string}
@@ -1496,6 +1499,7 @@
 
         var contact = {
           id: messageContent.id,
+          userId: messageContent.userId,
           firstName: messageContent.firstName,
           lastName: messageContent.lastName,
           profileImage: messageContent.profileImage,
@@ -1562,11 +1566,15 @@
          *    - id                           {long}
          *    - sendEnable                   {boolean}
          *    - receiveEnable                {boolean}
+         *    - firstName                    {string}
+         *    - lastName                     {string}
          *    - name                         {string}
+         *    - cellphoneNumber              {string}
+         *    - email                        {string}
          *    - myFriend                     {boolean}
          *    - online                       {boolean}
          *    - notSeenDuration              {long}
-         *    - userId                       {long}
+         *    - contactId                    {long}
          *    - image                        {string}
          */
 
@@ -1574,11 +1582,15 @@
           id: messageContent.id,
           sendEnable: messageContent.sendEnable,
           receiveEnable: messageContent.receiveEnable,
+          firstName: messageContent.firstName,
+          lastName: messageContent.lastName,
           name: messageContent.name,
+          cellphoneNumber: messageContent.cellphoneNumber,
+          email: messageContent.email,
           myFriend: messageContent.myFriend,
           online: messageContent.online,
           notSeenDuration: messageContent.notSeenDuration,
-          userId: messageContent.userId,
+          contactId: messageContent.contactId,
           image: messageContent.image
         };
 
@@ -1599,7 +1611,7 @@
          *    - lastParticipantName           {string}
          *    - group                         {boolean}
          *    - partner                       {long}
-         *    - image                         {string}
+         *    - lastParticipantImage          {string}
          *    - unreadCount                   {long}
          *    - lastSeenMessageId             {long}
          *    - lastMessageVO                 {object : ChatMessageVO}
@@ -1623,7 +1635,7 @@
           lastParticipantName: messageContent.lastParticipantName,
           group: messageContent.group,
           partner: messageContent.partner,
-          image: messageContent.image,
+          image: messageContent.lastParticipantImage,
           unreadCount: messageContent.unreadCount,
           lastSeenMessageId: messageContent.lastSeenMessageId,
           lastMessageVO: undefined,
@@ -1720,7 +1732,7 @@
          *    - seen                         {boolean}
          *    - participant                  {object : ParticipantVO}
          *    - conversation                 {object : ConversationVO}
-         *    - replyInfoVO                  {object : replyInfoVO}
+         *    - replyInfo                    {object : replyInfoVO}
          *    - forwardInfo                  {object : forwardInfoVO}
          *    - metadata                     {string}
          *    - time                         {long}
@@ -3068,6 +3080,10 @@
     };
 
     this.clearCache = clearCache;
+
+    this.getChatState = function() {
+      return chatFullStateObject;
+    }
 
     this.reconnect = function() {
       asyncClient.reconnectSocket();
