@@ -20,6 +20,7 @@
         FS = require('fs'),
         Mime = require('mime'),
         FormData = require('form-data');
+      Path = require("path");
     } else {
       Async = POD.Async;
       ChatUtility = POD.ChatUtility;
@@ -359,33 +360,41 @@
           var headers = params.headers;
 
           if (params.method == "POST" && data) {
-            var doesContainFiles = false;
-            var formData = {};
-            for (var i in data) {
-              if (i == "image" || i == "file") {
-                formData[i] = FS.createReadStream(data[i]);
-                doesContainFiles = true;
-              } else {
-                formData[i] = data[i];
-              }
-            }
-
-            if (doesContainFiles) {
+            if (data.hasOwnProperty("image") || data.hasOwnProperty("file")) {
               headers['Content-Type'] = 'multipart/form-data';
-              data = formData;
+              var postFormData = {};
+
+              for (var i in data) {
+                if (i == "image" || i == "file") {
+                  postFormData[i] = FS.createReadStream(data[i]);
+                } else {
+                  postFormData[i] = data[i];
+                }
+              }
+
               Request.post({
                 url: url,
-                formData: data,
+                formData: postFormData,
                 headers: headers
               }, function(error, response, body) {
                 if (!error) {
                   if (response.statusCode == 200) {
-                    callback && callback({
-                      hasError: false,
-                      result: {
-                        responseText: body
-                      }
-                    });
+                    var body = JSON.parse(body);
+                    if (typeof body.hasError !== "undefined" && body.hasError) {
+                      callback && callback({
+                        hasError: true,
+                        errorCode: body.errorCode,
+                        errorMessage: body.message,
+                        errorEvent: body
+                      });
+                    } else {
+                      callback && callback({
+                        hasError: false,
+                        result: {
+                          responseText: body
+                        }
+                      });
+                    }
                   } else {
                     callback && callback({
                       hasError: true,
@@ -404,7 +413,7 @@
               });
             } else {
               headers['Content-Type'] = 'application/x-www-form-urlencoded';
-              data = QueryString.stringify(formData);
+              data = QueryString.stringify(data);
               Request.post({
                 url: url,
                 body: data,
@@ -435,7 +444,6 @@
                 }
               });
             }
-
           } else if (params.method == "GET") {
             if (typeof data === "object") {
               data = QueryString.stringify(data);
@@ -443,7 +451,6 @@
             } else if (typeof data === "string") {
               url += "?" + data;
             }
-
             Request.get({
               url: url,
               headers: headers
@@ -473,8 +480,6 @@
               }
             });
           }
-
-          return;
         } else {
           var request = new XMLHttpRequest(),
             settings = params.settings;
@@ -488,65 +493,90 @@
               callback({
                 hasError: true,
                 errorCode: 6200,
-                errorMessage: CHAT_ERRORS[6200] + " (XMLHttpRequest Error Event Listener)"
+                errorMessage: CHAT_ERRORS[6200] + " (XMLHttpRequest Error Event Listener)" + event
               });
             }
           }, false);
 
           try {
-            if (typeof data === "object" && data !== null && method == "GET") {
-              var keys = Object.keys(data);
+            if (method == "GET") {
+              if (typeof data === "object" && data !== null) {
+                var keys = Object.keys(data);
 
-              if (keys.length > 0) {
-                url += "?";
+                if (keys.length > 0) {
+                  url += "?";
 
-                for (var i = 0; i < keys.length; i++) {
-                  var key = keys[i];
-                  url += key + "=" + data[key];
-                  if (i < keys.length - 1) {
-                    url += "&";
+                  for (var i = 0; i < keys.length; i++) {
+                    var key = keys[i];
+                    url += key + "=" + data[key];
+                    if (i < keys.length - 1) {
+                      url += "&";
+                    }
                   }
                 }
+              } else if (typeof data === "string" && data !== null) {
+                url += "?" + data;
               }
-            } else if (typeof data === "string") {
-              url += "?" + data;
-            }
 
-            request.open(method, url, true);
+              request.open(method, url, true);
 
-            if (typeof params.headers === "object") {
-              for (var key in params.headers) {
-                request.setRequestHeader(key, params.headers[key]);
+              if (typeof params.headers === "object") {
+                for (var key in params.headers) {
+                  request.setRequestHeader(key, params.headers[key]);
+                }
               }
+
+              request.send();
             }
 
             if (method === "POST" && data) {
-              var doesContainFiles = false;
-              if (typeof data === "object") {
-                var formData = new FormData();
-                for (var key in data) {
-                  if (key == "image" || key == "file") {
-                    doesContainFiles = true;
-                  }
-                  formData.append(key, data[key]);
+
+              request.open(method, url, true);
+
+              if (typeof params.headers === "object") {
+                for (var key in params.headers) {
+                  request.setRequestHeader(key, params.headers[key]);
                 }
-                if (doesContainFiles) {
+              }
+
+              if (typeof data == "object") {
+                if (data.hasOwnProperty("image") || data.hasOwnProperty("file")) {
                   // request.setRequestHeader("Content-Type", "multipart/form-data");
+
+                  var formData = new FormData();
+                  for (var key in data) {
+                    formData.append(key, data[key]);
+                  }
+
+                  request.send(formData);
                 } else {
                   request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                  var keys = Object.keys(data);
+
+                  if (keys.length > 0) {
+                    sendData = "";
+
+                    for (var i = 0; i < keys.length; i++) {
+                      var key = keys[i];
+                      sendData += key + "=" + data[key];
+                      if (i < keys.length - 1) {
+                        sendData += "&";
+                      }
+                    }
+                  }
+
+                  request.send(sendData);
                 }
-                request.send(formData);
               } else {
                 request.send(data);
               }
-            } else {
-              request.send();
             }
           } catch (e) {
             callback && callback({
               hasError: true,
               errorCode: 6200,
-              errorMessage: CHAT_ERRORS[6200] + " (Request Catch Error)"
+              errorMessage: CHAT_ERRORS[6200] + " (Request Catch Error)" + e
             });
           }
 
@@ -680,51 +710,6 @@
             if (!threadCallbacks[threadId]) {
               threadCallbacks[threadId] = {};
             }
-
-            // threadCallbacks = [
-            //   threadId1 : {
-            //     uniqueId1 : {
-            //       onSent: function(){},
-            //       onDeliver: function(){},
-            //       onSeen: function(){}
-            //     },
-            //     uniqueId2: {
-            //
-            //     },
-            //     .
-            //     .
-            //     .
-            //     .
-            //   },
-            //   threadId2 : {},
-            //   threadId3 : {
-            //     uniqueId: {
-            //       uniqueId: uniqueId,
-            //       onSent: false,
-            //       onSeen: false,
-            //       onDeliver: false
-            //     }
-            //   }
-            //   .
-            //   .
-            //   .
-            //   .
-            // ];
-            //
-            // sendMessageCallbacks = [
-            //   uniqueId1 : {
-            //     onSent: function(){},
-            //     onDeliver: function(){},
-            //     onSeen: function(){}
-            //   },
-            //   uniqueId2: {
-            //
-            //   },
-            //   .
-            //   .
-            //   .
-            //   .
-            // ];
 
             threadCallbacks[threadId][uniqueId] = {};
 
@@ -1488,7 +1473,7 @@
          *    - userId                        {long}
          *    - firstName                     {string}
          *    - lastName                      {string}
-         *    - profileImage                  {string}
+         *    - image                         {string}
          *    - email                         {string}
          *    - cellphoneNumber               {string}
          *    - uniqueId                      {string}
@@ -1502,7 +1487,7 @@
           userId: messageContent.userId,
           firstName: messageContent.firstName,
           lastName: messageContent.lastName,
-          profileImage: messageContent.profileImage,
+          image: messageContent.profileImage,
           email: messageContent.email,
           cellphoneNumber: messageContent.cellphoneNumber,
           uniqueId: messageContent.uniqueId,
@@ -1635,7 +1620,7 @@
           lastParticipantName: messageContent.lastParticipantName,
           group: messageContent.group,
           partner: messageContent.partner,
-          image: messageContent.lastParticipantImage,
+          lastParticipantImage: messageContent.lastParticipantImage,
           unreadCount: messageContent.unreadCount,
           lastSeenMessageId: messageContent.lastSeenMessageId,
           lastMessageVO: undefined,
@@ -2012,7 +1997,7 @@
         }, (result) => {
           if (!result.hasError) {
             try {
-              var response = JSON.parse(result.result.responseText);
+              var response = (typeof result.result.responseText == "string") ? JSON.parse(result.result.responseText) : result.result.responseText;
               callback({
                 hasError: response.hasError,
                 result: response.result
@@ -2114,11 +2099,20 @@
           }, (result) => {
             if (!result.hasError) {
               try {
-                var response = JSON.parse(result.result.responseText);
-                callback({
-                  hasError: response.hasError,
-                  result: response.result
-                });
+                // var response = JSON.parse(result.result.responseText);
+                var response = (typeof result.result.responseText == "string") ? JSON.parse(result.result.responseText) : result.result.responseText;
+                if (typeof response.hasError !== "undefined" && !response.hasError) {
+                  callback({
+                    hasError: response.hasError,
+                    result: response.result
+                  });
+                } else {
+                  callback({
+                    hasError: true,
+                    errorCode: response.errorCode,
+                    errorMessage: response.message
+                  });
+                }
               } catch (e) {
                 callback({
                   hasError: true,

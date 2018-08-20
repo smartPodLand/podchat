@@ -20,7 +20,13 @@
       platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
       fileServer: "http://sandbox.fanapium.com:8080", // {**REQUIRED**} File Server Address
       serverName: "chat-server", // {**REQUIRED**} Server to to register on
-      token: "f60367274a02441aab26cbbd34faa713", // {**REQUIRED**} SSO Token ZiZi
+      //
+      // socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+      // ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
+      // platformHost:"http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
+      // fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
+      // serverName: "chat-server", // {**REQUIRED**} Server to to register on
+      token: "34e5a9ff9f884133987049bbab5db42a", // {**REQUIRED**} SSO Token ZiZi
       // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
       // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
       wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
@@ -147,7 +153,7 @@
       /**
        * GET CONTACTS
        */
-      getContacts();
+      // getContacts();
 
       /**
        * ADD CONTACTS
@@ -156,14 +162,14 @@
        * @param cellphoneNumber
        * @param email
        */
-      // chatAgent.addContacts({
-      //   firstName: "Sina",
-      //   lastName: "Rahimi",
-      //   cellphoneNumber: "05953847458",
-      //   email: "sinarah3imi1@gmail.com"
-      // }, function(result) {
-      //   console.log(result.result);
-      // });
+      chatAgent.addContacts({
+        firstName: "Sina",
+        lastName: "Rahimi",
+        cellphoneNumber: "05953847458",
+        email: "sinarah3imi1@gmail.com"
+      }, function(result) {
+        console.log(result.result);
+      });
 
       /**
        * UPDATE CONTACTS
@@ -240,7 +246,7 @@
           content = document.getElementById("sendFileDescription").value;
 
         chatAgent.sendFileMessage({
-          threadId: 293,
+          threadId: 1,
           file: image,
           content: content,
           metaData: {
@@ -277,8 +283,16 @@
           console.log(result);
           if (!result.hasError) {
             var image = result.result;
-            document.getElementById("uploadedImage").src = "http://172.16.106.26:8080/hamsam/nzh/image?imageId=" + image.id + "&hashCode=" + image.hashCode;
-            document.getElementById("uploadedImageData").innerHTML = "<pre><br>Uploaded Image Id: " + image.id + "<br>Uploaded Image Name : " + image.name + "<br>Uploaded Image HashCode : " + image.hashCode + "</pre>";
+
+            chatAgent.getImage({
+              imageId: image.id,
+              hashCode: image.hashCode
+            }, function(result) {
+              if (!result.hasError) {
+                document.getElementById("uploadedImage").src = result.result;
+                document.getElementById("uploadedImageData").innerHTML = "<pre><br>Uploaded Image Id: " + image.id + "<br>Uploaded Image Name : " + image.name + "<br>Uploaded Image HashCode : " + image.hashCode + "</pre>";
+              }
+            });
           }
         });
       });
@@ -770,38 +784,70 @@
   </form>
 
 
-    <br>
-    <hr><br>
 
-    <form method="POST" action="https://sandbox.pod.land:8043/srv/basic-platform/nzh/updateContacts">
-      <fieldset>
-        <legend>Update Contact</legend>
-        <label for="id">id : </label>
-        <input type="text" name="id" id="id" value="">
-        <br>
-        <label for="firstName">firstName : </label>
-        <input type="text" name="firstName" id="firstName" value="">
-        <br>
-        <label for="lastName">lastName : </label>
-        <input type="text" name="lastName" id="lastName" value="">
-        <br>
-        <label for="cellphoneNumber">cellphoneNumber : </label>
-        <input type="text" name="cellphoneNumber" id="cellphoneNumber" value="">
-        <br>
-        <label for="email">email : </label>
-        <input type="text" name="email" id="email" value="">
-        <br>
-        <label for="_token_">Token : </label>
-        <input type="text" name="_token_">
-        <br>
-        <label for="uniqueId">uniqueId : </label>
-        <input type="text" name="uniqueId">
-        <br>
+  <br>
+  <hr><br>
 
-        <input type="hidden" name="_token_issuer_"  value="1">
-        <button type="submit">Update Contact</button>
-      </fieldset>
-    </form>
+  <form method="POST" action="https://sandbox.pod.land:8043/srv/basic-platform/nzh/addContacts">
+    <fieldset>
+      <legend>Add Contact</legend>
+      <label for="firstName">firstName : </label>
+      <input type="text" name="firstName" id="firstName" value="">
+      <br>
+      <label for="lastName">lastName : </label>
+      <input type="text" name="lastName" id="lastName" value="">
+      <br>
+      <label for="cellphoneNumber">cellphoneNumber : </label>
+      <input type="text" name="cellphoneNumber" id="cellphoneNumber" value="">
+      <br>
+      <label for="email">email : </label>
+      <input type="text" name="email" id="email" value="">
+      <br>
+      <label for="_token_">Token : </label>
+      <input type="text" name="_token_">
+      <br>
+      <label for="uniqueId">uniqueId : </label>
+      <input type="text" name="uniqueId">
+      <br>
+
+      <input type="hidden" name="_token_issuer_" value="1">
+      <button type="submit">Add Contact</button>
+    </fieldset>
+  </form>
+
+
+  <br>
+  <hr><br>
+
+  <form method="POST" action="https://sandbox.pod.land:8043/srv/basic-platform/nzh/updateContacts">
+    <fieldset>
+      <legend>Update Contact</legend>
+      <label for="id">id : </label>
+      <input type="text" name="id" id="id" value="">
+      <br>
+      <label for="firstName">firstName : </label>
+      <input type="text" name="firstName" id="firstName" value="">
+      <br>
+      <label for="lastName">lastName : </label>
+      <input type="text" name="lastName" id="lastName" value="">
+      <br>
+      <label for="cellphoneNumber">cellphoneNumber : </label>
+      <input type="text" name="cellphoneNumber" id="cellphoneNumber" value="">
+      <br>
+      <label for="email">email : </label>
+      <input type="text" name="email" id="email" value="">
+      <br>
+      <label for="_token_">Token : </label>
+      <input type="text" name="_token_">
+      <br>
+      <label for="uniqueId">uniqueId : </label>
+      <input type="text" name="uniqueId">
+      <br>
+
+      <input type="hidden" name="_token_issuer_" value="1">
+      <button type="submit">Update Contact</button>
+    </fieldset>
+  </form>
 </body>
 
 </html>

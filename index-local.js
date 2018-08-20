@@ -18,8 +18,8 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    onMessageReceive: true, // log received messages on console
-    onMessageSend: true, // log sent messaged on console
+    // onMessageReceive: true, // log received messages on console
+    // onMessageSend: true, // log sent messaged on console
     actualTiming: true // log actual functions running time
   }
 };
@@ -161,8 +161,8 @@ chatAgent.on("chatReady", function() {
    */
   // chatAgent.updateContacts({
   //   id: "563",
-  //     firstName: "فیفی",
-  //     lastName: "فیفولی",
+  //     firstName: "Fifi",
+  //     lastName: "Fifuli",
   //     cellphoneNumber: "09122964316",
   //     email: "fifuli@fanap.ir"
   // }, function(result) {
@@ -202,7 +202,7 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(3, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
+  // sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -691,6 +691,7 @@ function uploadFile(file) {
   chatAgent.uploadFile({
     file: file
   }, function(result) {
+    console.log(result);
     if (!result.hasError) {
       var file = result.result;
       console.log("File has been Successfully Uploaded => \n", file);
