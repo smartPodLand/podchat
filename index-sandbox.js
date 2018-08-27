@@ -122,6 +122,32 @@ chatAgent.on("chatReady", function() {
    */
   // renameThread(3, "دوستان");
 
+  /**
+   * UPDATE THREAD INFO
+   * @param threadId
+   */
+  // chatAgent.updateThreadInfo({
+  //   threadId: 1002,
+  //   image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
+  //   description: "This is a sample description for a god damn thread",
+  //   metadata: {
+  //     id: 312,
+  //     owner: "masoudmanson",
+  //     name: "John Doe"
+  //   }
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * SPAM P2P THREAD
+   * @param threadId
+   */
+  // chatAgent.spamPvThread({
+  //   threadId: 293
+  // }, function(result) {
+  //   console.log(result);
+  // });
   /*******************************************************
    *                   C O N T A C T S                   *
    *******************************************************/
@@ -306,6 +332,14 @@ chatAgent.on("error", function(error) {
  * Listen to Chat State Changes
  */
 chatAgent.on("chatState", function(chatState) {});
+
+/**
+ * Listen to File Upload Events
+ */
+chatAgent.on("fileUploadEvents", function(event) {
+  var type = event.type;
+  console.log(event);
+});
 
 /**
  * Listen to Thread Events
