@@ -4,9 +4,9 @@ var params = {
   socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
   ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
   platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-  fileServer: "http://sandbox.fanapium.com:8080", // {**REQUIRED**} File Server Address
+  fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "e519c8cd89d44198b3ab2ab017b6bda7", // {**REQUIRED**} SSO Token
+  token: "1af2f41395ea4fd8896b0257ff156804", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -74,14 +74,14 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param contacts {Array}  CONTACT ID
    */
-  // addParticipants(3, [583]);
+  // addParticipants(3, [718]);
 
   /**
    * REMOVE PARTICIPANTS
    * @param threadId
    * @param participants {Array}  USER ID
    */
-  // removeParticipants(3, [4]);
+  // removeParticipants(3, [2]);
 
   /**
    * LEAVE THREAD
@@ -132,6 +132,25 @@ chatAgent.on("chatReady", function() {
   // getContacts();
 
   /**
+   * BLOCK CONTACT
+   * @param contactId
+   */
+  // blockContact(563);
+
+  /**
+   * GET BLOCKED CONTACTS LIST
+   * @param count
+   * @param offset
+   */
+  // getBlockedList();
+
+  /**
+   * UNBLOCK CONTACT
+   * @param blockId
+   */
+  // unblockContact(83);
+
+  /**
    * ADD CONTACTS
    * @param firstName
    * @param lastName
@@ -174,10 +193,21 @@ chatAgent.on("chatReady", function() {
    * @param id
    */
   // chatAgent.removeContacts({
-  //   id: "681"
+  //   id: "714"
   // }, function(result) {
   //   console.log(result);
   // });
+
+  /**
+   * SEARCH CONTACTS
+   */
+   // chatAgent.searchContacts({
+   //   cellphoneNumber: 099
+   // }, function(result){
+   //   if (!result.hasError) {
+   //     console.log(result.result);
+   //   }
+   // });
 
   /*******************************************************
    *                   M E S S A G E S                   *
@@ -607,7 +637,7 @@ function createThread(invitees, threadType) {
       createThreadParams.invitees.push(invitee);
     }
   }
-console.log(createThreadParams);
+
   chatAgent.createThread(createThreadParams, function(createThreadResult) {
     console.log(createThreadResult);
   });
@@ -643,6 +673,39 @@ function unMuteThread(threadId) {
     if (!result.hasError)
       console.log("Threaded has been successfully unMuted!");
     console.log(result);
+  });
+}
+
+function blockContact(contactId) {
+  var data = {
+    contactId: contactId
+  }
+  chatAgent.block(data, function(result) {
+    if (!result.hasError)
+      console.log("Contact has been successfully Blocked!");
+    console.log(result);
+  });
+}
+
+function unblockContact(blockId) {
+  var data = {
+    blockId: blockId
+  }
+  chatAgent.unblock(data, function(result) {
+    if (!result.hasError)
+      console.log("Contact has been successfully unBlocked!");
+    console.log(result);
+  });
+}
+
+function getBlockedList(blockId) {
+  var data = {
+    count: 50,
+    offset: 0
+  }
+  chatAgent.getBlocked(data, function(result) {
+    if (!result.hasError)
+      console.log(result);
   });
 }
 

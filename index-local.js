@@ -51,7 +51,7 @@ chatAgent.on("chatReady", function() {
   // getThreads({
   //   count: 2,
   //   offset: 0,
-  //   threadIds: [351]
+  //   threadIds: [293]
   // });
 
   /**
@@ -95,12 +95,30 @@ chatAgent.on("chatReady", function() {
 
   /**
    * GET THREAD HISTORY
-   * @param threadId
    * @param count
    * @param offset
+   * @param threadId
+   * @param firstMessageId
+   * @param lastMessageId
+   * @param metaQuery
+   * @param query
    */
-  // getHistory(3, 5, 0);
-
+  // getHistory({
+  //   count: 5,
+  //   offset: 0,
+  //   threadId: 293,
+  //   // firstMessageId: 0,
+  //   // lastMessageId: 10,
+  //   metadataCriteria: {
+  //     "field": "type",
+  //     "has": "BOT_",
+  //     "and": [{
+  //       "field": "id",
+  //       "is": "1534835339446"
+  //     }]
+  //   },
+  //   // query: "PooPoo"
+  // });
   /**
    * GET SINGLE MESSAGE
    * @param threadId
@@ -126,6 +144,33 @@ chatAgent.on("chatReady", function() {
    */
   // renameThread(3, "دوستان");
 
+  /**
+   * UPDATE THREAD INFO
+   * @param threadId
+   */
+  // chatAgent.updateThreadInfo({
+  //   threadId: 1002,
+  //   image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
+  //   description: "This is a sample description for a god damn thread",
+  //   metadata: {
+  //     id: 312,
+  //     owner: "masoudmanson",
+  //     name: "John Doe"
+  //   }
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * SPAM P2P THREAD
+   * @param threadId
+   */
+  // chatAgent.spamPvThread({
+  //   threadId: 293
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
   /*******************************************************
    *                   C O N T A C T S                   *
    *******************************************************/
@@ -134,6 +179,25 @@ chatAgent.on("chatReady", function() {
    * GET CONTACTS
    */
   // getContacts();
+
+  /**
+   * BLOCK CONTACT
+   * @param contactId
+   */
+  // blockContact(563);
+
+  /**
+   * GET BLOCKED CONTACTS LIST
+   * @param count
+   * @param offset
+   */
+  // getBlockedList();
+
+  /**
+   * UNBLOCK CONTACT
+   * @param blockId
+   */
+  // unblockContact(83);
 
   /**
    * ADD CONTACTS
@@ -179,6 +243,18 @@ chatAgent.on("chatReady", function() {
   //   console.log(result);
   // });
 
+  /**
+   * SEARCH CONTACTS
+   * @link http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts
+   */
+  // chatAgent.searchContacts({
+  //   cellphoneNumber: 099
+  // }, function(result){
+  //   if (!result.hasError) {
+  //     console.log(result.result);
+  //   }
+  // });
+
   /*******************************************************
    *                   M E S S A G E S                   *
    *******************************************************/
@@ -189,10 +265,10 @@ chatAgent.on("chatReady", function() {
    * @param newMessage
    * @param metaData
    */
-  // sendMessage(293, "This is a Sample Message at " + new Date(), {
-  //   custom_date: new Date(),
-  //   custom_code: "235fg43gw",
-  //   custom_name: "John Doe"
+  // sendMessage(293, "PooPoo This is a Sample Message at " + new Date(), {
+  //   id: new Date().getTime(),
+  //   type: "BOT_MESSAGE",
+  //   owner: "Masoud"
   // });
 
   /**
@@ -202,7 +278,9 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
+  // sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {
+  //   custom_name: "John Doe"
+  // });
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -281,6 +359,16 @@ chatAgent.on("error", function(error) {
  * Listen to Chat State Changes
  */
 chatAgent.on("chatState", function(chatState) {});
+
+
+/**
+ * Listen to File Upload Events
+ */
+chatAgent.on("fileUploadEvents", function(event) {
+  var type = event.type;
+  console.log(event);
+});
+
 
 /**
  * Listen to Thread Events
@@ -462,25 +550,13 @@ function getSingleMessage(threadId, messageId) {
   });
 }
 
-function getHistory(threadId, count, offset) {
-  var getHistoryParams = {
-    offset: 0,
-    threadId: threadId
-  };
-
-  if (typeof count == "number") {
-    getHistoryParams.count = count;
-  }
-
-  if (typeof offset == "number") {
-    getHistoryParams.offset = offset;
-  }
-
-  chatAgent.getHistory(getHistoryParams, function(historyResult) {
+function getHistory(params) {
+  var test = chatAgent.getHistory(params, function(historyResult) {
     if (!historyResult.hasError) {
       console.log(historyResult.result.history);
     }
   });
+  console.log(test);
 }
 
 function sendMessage(threadId, message, metaData) {
@@ -490,7 +566,7 @@ function sendMessage(threadId, message, metaData) {
     metaData: metaData
   };
 
-  chatAgent.sendTextMessage(sendChatParams, {
+  var sentMesageUniqueId = chatAgent.sendTextMessage(sendChatParams, {
     onSent: function(result) {
       console.log(result.uniqueId + " \t has been Sent!");
     },
@@ -501,10 +577,12 @@ function sendMessage(threadId, message, metaData) {
       console.log(result.uniqueId + " \t has been Seen!");
     }
   });
+
+  console.log(sentMesageUniqueId);
 }
 
 function sendFileMessage(threadId, file, caption, metaData) {
-  chatAgent.sendFileMessage({
+  var uid = chatAgent.sendFileMessage({
     threadId: threadId,
     file: file,
     content: caption,
@@ -520,6 +598,8 @@ function sendFileMessage(threadId, file, caption, metaData) {
       console.log(result.uniqueId + " \t has been Seen!");
     }
   });
+
+  console.log("index sendFile return\t", uid);
 }
 
 function editMessage(messageId, newMessage) {
@@ -638,6 +718,39 @@ function muteThread(threadId) {
     if (!result.hasError)
       console.log("Threaded has been successfully muted!");
     console.log(result);
+  });
+}
+
+function blockContact(contactId) {
+  var data = {
+    contactId: contactId
+  }
+  chatAgent.block(data, function(result) {
+    if (!result.hasError)
+      console.log("Contact has been successfully Blocked!");
+    console.log(result);
+  });
+}
+
+function unblockContact(blockId) {
+  var data = {
+    blockId: blockId
+  }
+  chatAgent.unblock(data, function(result) {
+    if (!result.hasError)
+      console.log("Contact has been successfully unBlocked!");
+    console.log(result);
+  });
+}
+
+function getBlockedList() {
+  var data = {
+    count: 50,
+    offset: 0
+  }
+  chatAgent.getBlocked(data, function(result) {
+    if (!result.hasError)
+      console.log(result);
   });
 }
 

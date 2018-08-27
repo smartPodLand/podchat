@@ -8,21 +8,33 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
--   Search in Contacts & History
--   Block / Unblock an user
 -   Load Tests
 
-## [1.1.5] - 2018-08-18
+## [1.2.0] - 2018-08-27
 
 ### Added
+
+-   `Block / unBlock` Functionality
+-   `getBlockedList()` Function
+-   `Spam` Functionality
+-   Search in thread History and `metadata`
+-   Update Thread Info
+-   Search in Contacts list
+-   `fileUploadEvents` Listener
+-   Uploading progress for `File/Image Upload` and `sendFileMessage()`
+
+<details><summary>[1.1.5] - 2018-08-18</summary>
+-    Added
 
 -   `getChatState()` Function
 -   `TO_BE_USER_ID` type has been added to `inviteeVOidTypes` but only works while making P2P threads
 
-### Changed
+-    Changed
 
 -   `PARTICIPANT` object now has `firstName` , `lastName` and `contactId` attributes
 -   `image` attribute in `CONVRSATION` model changed to `lastParticipantImage`
+
+</details>
 
 
 <details><summary>[0.7.6] - 2018-08-01</summary>
@@ -203,13 +215,13 @@ var params = {
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
-  connectionCheckTimeoutThreshold: 2000, // Socket Ping time threshold
-  messageTtl: 10000, // Message time to live
+  messageTtl: 86400000, // Message time to live
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
     onMessageReceive: true, // log received messages on console
-    onMessageSend: true // log sent messaged on console
+    onMessageSend: true, // log sent messaged on console
+    actualTiming: true // log actual functions running time
   }
 };
 
@@ -329,6 +341,19 @@ chatAgent.on("threadEvents", function(event) {
     default:
       break;
   }
+});
+```
+
+### fileUploadEvents
+
+You'll get all the Events which are related to File Uploads in fileUploadEvents listener
+
+```javascript
+/**
+ * Listen to Thread Events
+ */
+chatAgent.on("fileUploadEvents", function(event) {
+  console.log(event);
 });
 ```
 
@@ -476,6 +501,33 @@ chatAgent.renameThread({
 );
 ```
 
+### updateThreadInfo
+
+```javascript
+chatAgent.updateThreadInfo({
+  threadId: threadId,
+  image: imageUrl,
+  description: "This is a sample description for a thread",
+  metadata: {
+    name: "John Doe"
+  }
+}, function(result) {
+  console.log(result);
+});
+```
+
+
+### spamPvThread
+If one who is not in your contacts list, creates a P2P thread including you. You can simply SPAM him/her by calling spamPvThread() and giving it the thread's ID. Notice that the thread must be a P2P thread and the thread owner should not be in your contacts list.
+```javascript
+chatAgent.spamPvThread({
+  threadId: P2PThreadId
+}, function(result) {
+  console.log(result);
+});
+```
+
+
 ## Contact Functions
 
 ### getContacts
@@ -487,6 +539,43 @@ chatAgent.getContacts({
   }, function(contactsResult) {
   var contacts = contactsResult.result.contacts;
   console.log(contacts);
+});
+```
+
+### getBlocked
+This function return a list of people who you have blocked already.
+```javascript
+chatAgent.getBlocked({
+    count: 50,
+    offset: 0
+  }, function(contactsResult) {
+    if (!result.hasError) {
+      console.log(result);
+    }
+});
+```
+
+### block
+In order to block a contact of yours, you can simply call block() function and give that contact's Id as a parameter.
+
+```javascript
+chatAgent.block({
+  contactId: contactId
+  }, function(result) {
+    if (!result.hasError)
+      console.log("Contact has been successfully Blocked!");
+});
+```
+
+### unblock
+To unblock an already blocked contact, call unblock() function with block Id of that blocked contact.
+
+```javascript
+chatAgent.unblock({
+    blockId: blockId
+  }, function(result) {
+    if (!result.hasError)
+      console.log("Contact has been successfully unBlocked!");
 });
 ```
 
@@ -521,6 +610,27 @@ chatAgent.updateContacts({
 
 ```javascript
 chatAgent.removeContacts({
+  id: 234 // contact's id
+}, function(result) {
+  console.log(result);
+});
+```
+
+### searchContacts
+To search in contacts list, you can use searchContacts() function. Accepted parameters to search are listed below:
+- cellphoneNumber {string}
+- email {string}
+- firstName {string}
+- lastName {string}
+- uniqueId {string}
+- id {string}
+- typeCode {string}
+- q {string}
+- offset {number}
+- size {number}
+extra information can be found here [listContacts() Documentation](http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts)
+```javascript
+chatAgent.searchContacts({
   id: 234 // contact's id
 }, function(result) {
   console.log(result);
