@@ -55,13 +55,16 @@ chatAgent.on("chatReady", function() {
    * @param invitees
    * @param threadType
    */
-  // createThread([716], "CHANNEL_GROUP");
+  // createThread([{
+  //   id: 716,
+  //   type: "TO_BE_USER_CONTACT_ID"
+  // }], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
    * @param contactId
    */
-  // createThread(563);
+  // createThread({id: 121, type: "TO_BE_USER_ID"});
 
   /**
    * GET THREAD PARTICIPANTS
@@ -657,7 +660,8 @@ function createThread(invitees, threadType) {
   if (Array.isArray(invitees)) {
     for (var i = 0; i < invitees.length; i++) {
       invitee = formatDataToMakeInvitee({
-        id: invitees[i]
+        id: invitees[i].id,
+        type: invitees[i].type
       });
       if (invitee) {
         createThreadParams.invitees.push(invitee);
@@ -665,7 +669,8 @@ function createThread(invitees, threadType) {
     }
   } else {
     invitee = formatDataToMakeInvitee({
-      id: invitees
+      id: invitees.id,
+      type: invitees.type
     });
     if (invitee) {
       createThreadParams.invitees.push(invitee);
@@ -746,7 +751,7 @@ function getBlockedList(blockId) {
 function formatDataToMakeInvitee(messageContent) {
   var inviteeData = {
     id: messageContent.id,
-    idType: "TO_BE_USER_CONTACT_ID"
+    idType: messageContent.type
   };
 
   return inviteeData;

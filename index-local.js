@@ -18,8 +18,8 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    // onMessageReceive: true, // log received messages on console
-    // onMessageSend: true, // log sent messaged on console
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true, // log sent messaged on console
     actualTiming: true // log actual functions running time
   }
 };
@@ -50,8 +50,8 @@ chatAgent.on("chatReady", function() {
    */
   // getThreads({
   //   count: 2,
-  //   offset: 0,
-  //   threadIds: [293]
+  //   offset: 0
+  //   // threadIds: [1018]
   // });
 
   /**
@@ -59,13 +59,19 @@ chatAgent.on("chatReady", function() {
    * @param invitees
    * @param threadType
    */
-  // createThread([581, 582], "NORMAL");
+  // createThread([{
+  //   id: 581,
+  //   type: "TO_BE_USER_CONTACT_ID"
+  // }, {
+  //   id: 582,
+  //   type: "TO_BE_USER_CONTACT_ID"
+  // }], "NORMAL");
 
   /**
    * CREATE THREAD (Creates P2P Chat with a specific user)
    * @param contactId
    */
-  // createThread(563);
+  // createThread({id: 121, type: "TO_BE_USER_ID"});
 
   /**
    * GET THREAD PARTICIPANTS
@@ -166,7 +172,7 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    */
   // chatAgent.spamPvThread({
-  //   threadId: 293
+  //   threadId: 1020
   // }, function(result) {
   //   console.log(result);
   // });
@@ -677,7 +683,8 @@ function createThread(invitees, threadType) {
   if (Array.isArray(invitees)) {
     for (var i = 0; i < invitees.length; i++) {
       invitee = formatDataToMakeInvitee({
-        id: invitees[i]
+        id: invitees[i].id,
+        type: invitees[i].type
       });
       if (invitee) {
         createThreadParams.invitees.push(invitee);
@@ -685,7 +692,8 @@ function createThread(invitees, threadType) {
     }
   } else {
     invitee = formatDataToMakeInvitee({
-      id: invitees
+      id: invitees.id,
+      type: invitees.type
     });
     if (invitee) {
       createThreadParams.invitees.push(invitee);
@@ -766,7 +774,7 @@ function unMuteThread(threadId) {
 function formatDataToMakeInvitee(messageContent) {
   var inviteeData = {
     id: messageContent.id,
-    idType: "TO_BE_USER_CONTACT_ID"
+    idType: messageContent.type
   };
 
   return inviteeData;

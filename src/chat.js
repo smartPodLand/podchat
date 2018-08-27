@@ -1844,6 +1844,7 @@
          *    - mute                          {boolean}
          *    - participantCount              {long}
          *    - canEditInfo                   {boolean}
+         *    - canSpam                       {boolean}
          */
 
         var conversation = {
@@ -1869,7 +1870,8 @@
           metadata: messageContent.metadata,
           mute: messageContent.mute,
           participantCount: messageContent.participantCount,
-          canEditInfo: messageContent.canEditInfo
+          canEditInfo: messageContent.canEditInfo,
+          canSpam: messageContent.canSpam
         };
 
         // Add inviter if exist
