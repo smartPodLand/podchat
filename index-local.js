@@ -360,7 +360,6 @@ chatAgent.on("error", function(error) {
  */
 chatAgent.on("chatState", function(chatState) {});
 
-
 /**
  * Listen to File Upload Events
  */
@@ -368,7 +367,6 @@ chatAgent.on("fileUploadEvents", function(event) {
   var type = event.type;
   console.log(event);
 });
-
 
 /**
  * Listen to Thread Events
