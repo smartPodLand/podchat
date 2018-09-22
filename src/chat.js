@@ -166,7 +166,8 @@
         6201: "URL is not clarified!",
         6300: "Error in uploading File!",
         6301: "Not an image!",
-        6302: "No file has been selected!"
+        6302: "No file has been selected!",
+        6303: "File upload has been canceled!"
       },
       getUserInfoRetry = 5,
       getUserInfoRetryCount = 0,
@@ -178,6 +179,7 @@
       },
       chatState = false,
       chatFullStateObject = {},
+      httpRequestObject = {},
       connectionCheckTimeout = params.connectionCheckTimeout,
       connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold,
       httpRequestTimeout = params.httpRequestTimeout || 20000,
@@ -353,7 +355,8 @@
           data = params.data,
           method = (typeof params.method == "string") ?
           params.method :
-          "GET";
+          "GET",
+          fileUploadUniqueId = (typeof params.uniqueId == "string") ? params.uniqueId : "uniqueId";
 
         if (!url) {
           callback({
@@ -385,7 +388,7 @@
                 }
               }
 
-              var r = Request.post({
+              var r = httpRequestObject[eval(`fileUploadUniqueId`)] = Request.post({
                 url: url,
                 formData: postFormData,
                 headers: headers
@@ -480,6 +483,25 @@
                     errorEvent: error
                   });
                 }
+              }).on('abort', function() {
+                fireEvent("fileUploadEvents", {
+                  threadId: threadId,
+                  uniqueId: fileUniqueId,
+                  state: "UPLOAD_CANCELED",
+                  progress: 0,
+                  fileInfo: {
+                    fileName: originalFileName,
+                    fileSize: fileSize
+                  },
+                  fileObject: fileObject,
+                  errorCode: 6303,
+                  errorMessage: CHAT_ERRORS[6303]
+                });
+                callback({
+                  hasError: true,
+                  errorCode: 6303,
+                  errorMessage: CHAT_ERRORS[6303]
+                });
               });
 
               var oldPercent = 0;
@@ -577,14 +599,15 @@
           }
         } else {
           var hasFile = false;
-          var request = new XMLHttpRequest(),
+
+          httpRequestObject[eval(`fileUploadUniqueId`)] = new XMLHttpRequest(),
             settings = params.settings;
 
-          request.timeout = (settings && typeof parseInt(settings.timeout) > 0 && settings.timeout > 0) ?
+          httpRequestObject[eval(`fileUploadUniqueId`)].timeout = (settings && typeof parseInt(settings.timeout) > 0 && settings.timeout > 0) ?
             settings.timeout :
             httpRequestTimeout;
 
-          request.addEventListener("error", function(event) {
+          httpRequestObject[eval(`fileUploadUniqueId`)].addEventListener("error", function(event) {
             if (callback) {
               if (hasFile) {
                 fireEvent("fileUploadEvents", {
@@ -609,6 +632,32 @@
             }
           }, false);
 
+
+          httpRequestObject[eval(`fileUploadUniqueId`)].addEventListener("abort", function(event) {
+            if (callback) {
+              if (hasFile) {
+                fireEvent("fileUploadEvents", {
+                  threadId: threadId,
+                  uniqueId: fileUniqueId,
+                  state: "UPLOAD_CANCELED",
+                  progress: 0,
+                  fileInfo: {
+                    fileName: originalFileName,
+                    fileSize: fileSize
+                  },
+                  fileObject: fileObject,
+                  errorCode: 6303,
+                  errorMessage: CHAT_ERRORS[6303]
+                });
+              }
+              callback({
+                hasError: true,
+                errorCode: 6303,
+                errorMessage: CHAT_ERRORS[6303]
+              });
+            }
+          }, false);
+
           try {
             if (method == "GET") {
               if (typeof data === "object" && data !== null) {
@@ -629,24 +678,24 @@
                 url += "?" + data;
               }
 
-              request.open(method, url, true);
+              httpRequestObject[eval(`fileUploadUniqueId`)].open(method, url, true);
 
               if (typeof params.headers === "object") {
                 for (var key in params.headers) {
-                  request.setRequestHeader(key, params.headers[key]);
+                  httpRequestObject[eval(`fileUploadUniqueId`)].setRequestHeader(key, params.headers[key]);
                 }
               }
 
-              request.send();
+              httpRequestObject[eval(`fileUploadUniqueId`)].send();
             }
 
             if (method === "POST" && data) {
 
-              request.open(method, url, true);
+              httpRequestObject[eval(`fileUploadUniqueId`)].open(method, url, true);
 
               if (typeof params.headers === "object") {
                 for (var key in params.headers) {
-                  request.setRequestHeader(key, params.headers[key]);
+                  httpRequestObject[eval(`fileUploadUniqueId`)].setRequestHeader(key, params.headers[key]);
                 }
               }
 
@@ -664,7 +713,7 @@
                   fileUniqueId = data.uniqueId;
                   fileObject = (data["image"]) ? data["image"] : data["file"];
 
-                  request.upload.onprogress = function(event) {
+                  httpRequestObject[eval(`fileUploadUniqueId`)].upload.onprogress = function(event) {
                     if (event.lengthComputable) {
                       fireEvent("fileUploadEvents", {
                         threadId: threadId,
@@ -680,9 +729,9 @@
                     }
                   };
 
-                  request.send(formData);
+                  httpRequestObject[eval(`fileUploadUniqueId`)].send(formData);
                 } else {
-                  request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                  httpRequestObject[eval(`fileUploadUniqueId`)].setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
                   var keys = Object.keys(data);
 
@@ -698,10 +747,10 @@
                     }
                   }
 
-                  request.send(sendData);
+                  httpRequestObject[eval(`fileUploadUniqueId`)].send(sendData);
                 }
               } else {
-                request.send(data);
+                httpRequestObject[eval(`fileUploadUniqueId`)].send(data);
               }
             }
           } catch (e) {
@@ -712,9 +761,9 @@
             });
           }
 
-          request.onreadystatechange = function() {
-            if (request.readyState == 4) {
-              if (request.status == 200) {
+          httpRequestObject[eval(`fileUploadUniqueId`)].onreadystatechange = function() {
+            if (httpRequestObject[eval(`fileUploadUniqueId`)].readyState == 4) {
+              if (httpRequestObject[eval(`fileUploadUniqueId`)].status == 200) {
                 if (hasFile) {
                   fireEvent("fileUploadEvents", {
                     threadId: threadId,
@@ -732,8 +781,8 @@
                 callback && callback({
                   hasError: false,
                   result: {
-                    responseText: request.responseText,
-                    responseHeaders: request.getAllResponseHeaders()
+                    responseText: httpRequestObject[eval(`fileUploadUniqueId`)].responseText,
+                    responseHeaders: httpRequestObject[eval(`fileUploadUniqueId`)].getAllResponseHeaders()
                   }
                 });
               } else {
@@ -750,7 +799,7 @@
                     fileObject: fileObject,
                     errorCode: 6200,
                     errorMessage: CHAT_ERRORS[6200] + " (Request Status != 200)",
-                    statusCode: request.status
+                    statusCode: httpRequestObject[eval(`fileUploadUniqueId`)].status
                   });
                 }
                 if (callback) {
@@ -758,7 +807,7 @@
                     hasError: true,
                     errorCode: 6200,
                     errorMessage: CHAT_ERRORS[6200] + " (Request Status != 200)",
-                    statusCode: request.status
+                    statusCode: httpRequestObject[eval(`fileUploadUniqueId`)].status
                   });
                 }
               }
@@ -2260,7 +2309,8 @@
             "_token_": token,
             "_token_issuer_": 1
           },
-          data: uploadFileData
+          data: uploadFileData,
+          uniqueId: uploadUniqueId
         }, (result) => {
           if (!result.hasError) {
             try {
@@ -2404,7 +2454,8 @@
               "_token_": token,
               "_token_issuer_": 1
             },
-            data: uploadImageData
+            data: uploadImageData,
+            uniqueId: uploadUniqueId
           }, (result) => {
             if (!result.hasError) {
               try {
@@ -2862,6 +2913,18 @@
     this.uploadFile = uploadFile;
 
     this.uploadImage = uploadImage;
+
+    this.cancelFileUpload = function(params, callback) {
+      if (params) {
+        if (typeof params.uniqueId == "string") {
+          var uniqueId = params.uniqueId;
+          httpRequestObject[eval(`uniqueId`)] && httpRequestObject[eval(`uniqueId`)].abort();
+          httpRequestObject[eval(`uniqueId`)] && delete(httpRequestObject[eval(`uniqueId`)]);
+          callback && callback();
+        }
+      }
+      return;
+    };
 
     this.sendFileMessage = function(params, callbacks) {
       var metaData = {},

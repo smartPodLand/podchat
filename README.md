@@ -10,9 +10,14 @@ All notable changes to this project will be documented here.
 
 -   Load Tests
 
-## [1.2.1] - 2018-08-27
+## [1.4.0] - 2018-08-27
 
 ### Added
+
+-   Now you can Cancel File Uploads by calling `cancelFileUpload()` and sending file's uniqueId as a parameter to it
+
+<details><summary>[1.2.1] - 2018-08-27</summary>
+-    Added
 
 -   `Block / unBlock` Functionality
 -   `getBlockedList()` Function
@@ -23,33 +28,34 @@ All notable changes to this project will be documented here.
 -   `fileUploadEvents` Listener
 -   Uploading progress for `File/Image Upload` and `sendFileMessage()`
 
+</details>
+
 <details><summary>[1.1.5] - 2018-08-18</summary>
 -    Added
 
 -   `getChatState()` Function
 -   `TO_BE_USER_ID` type has been added to `inviteeVOidTypes` but only works while making P2P threads
 
--    Changed
+-   Changed
 
 -   `PARTICIPANT` object now has `firstName` , `lastName` and `contactId` attributes
 -   `image` attribute in `CONVRSATION` model changed to `lastParticipantImage`
 
 </details>
 
-
 <details><summary>[0.7.6] - 2018-08-01</summary>
 -   Added
 
 -   `setToken()` Function
 -   `firstMessageId` and `lastMessageId` attributes in `getHistory()`
-</details>
+    </details>
 
 <details><summary>[0.7.0] - 2018-07-22</summary>
 -   Added
 
 -   Delete Message
 -   Benchmark Tests
-</details>
+    </details>
 
 <details><summary>[0.6.0] - 2018-07-16</summary>
 
@@ -82,7 +88,7 @@ All notable changes to this project will be documented here.
 <details><summary>[3.9.8] - 2018-07-04</summary>
 + Added
 
--   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /__Your Custom Data Here__/ }}
+-   Add extra data on Message's metaData field and you will get your data back in metaData:{sdk: {}, user: { /**Your Custom Data Here**/ }}
 
 
 -   Changes
@@ -516,9 +522,10 @@ chatAgent.updateThreadInfo({
 });
 ```
 
-
 ### spamPvThread
+
 If one who is not in your contacts list, creates a P2P thread including you. You can simply SPAM him/her by calling spamPvThread() and giving it the thread's ID. Notice that the thread must be a P2P thread and the thread owner should not be in your contacts list.
+
 ```javascript
 chatAgent.spamPvThread({
   threadId: P2PThreadId
@@ -526,7 +533,6 @@ chatAgent.spamPvThread({
   console.log(result);
 });
 ```
-
 
 ## Contact Functions
 
@@ -543,7 +549,9 @@ chatAgent.getContacts({
 ```
 
 ### getBlocked
+
 This function return a list of people who you have blocked already.
+
 ```javascript
 chatAgent.getBlocked({
     count: 50,
@@ -556,6 +564,7 @@ chatAgent.getBlocked({
 ```
 
 ### block
+
 In order to block a contact of yours, you can simply call block() function and give that contact's Id as a parameter.
 
 ```javascript
@@ -568,6 +577,7 @@ chatAgent.block({
 ```
 
 ### unblock
+
 To unblock an already blocked contact, call unblock() function with block Id of that blocked contact.
 
 ```javascript
@@ -617,18 +627,21 @@ chatAgent.removeContacts({
 ```
 
 ### searchContacts
+
 To search in contacts list, you can use searchContacts() function. Accepted parameters to search are listed below:
-- cellphoneNumber {string}
-- email {string}
-- firstName {string}
-- lastName {string}
-- uniqueId {string}
-- id {string}
-- typeCode {string}
-- q {string}
-- offset {number}
-- size {number}
-extra information can be found here [listContacts() Documentation](http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts)
+
+-   cellphoneNumber {string}
+-   email {string}
+-   firstName {string}
+-   lastName {string}
+-   uniqueId {string}
+-   id {string}
+-   typeCode {string}
+-   q {string}
+-   offset {number}
+-   size {number}
+    extra information can be found here [listContacts() Documentation](http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts)
+
 ```javascript
 chatAgent.searchContacts({
   id: 234 // contact's id
@@ -686,6 +699,7 @@ chatAgent.editMessage({
 ### deleteMessage
 
 In order to delete a message for all, set `deleteForAll` parameter as `TRUE`.
+
 ```javascript
 /**
  * DELETE MESSAGE IN THREAD
@@ -784,6 +798,29 @@ document.getElementById("sendFileMessage").addEventListener("click", function() 
     }
   });
 });
+```
+
+### cancelFileUpload
+
+If you want to cancel sending of the message with a file upload, You can get uploading file's uniqueId
+immediately after calling `sendFileMessage()` and send it as a parameter to `cancelFileUpload()`
+
+```javascript
+  var instantResult = chatAgent.sendFileMessage({
+    threadId: 293,
+    file: image,
+    content: content
+  }, {
+    onSent: function(result) {},
+    onDeliver: function(result) {},
+    onSeen: function(result) {}
+  });
+
+  chatAgent.cancelFileUpload({
+    uniqueId: instantResult.content.file.uniqueId
+  }, function() {
+    console.log("File Upload has been Canceled!");
+  });
 ```
 
 ### uploadFile

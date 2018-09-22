@@ -18,8 +18,8 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    onMessageReceive: true, // log received messages on console
-    onMessageSend: true, // log sent messaged on console
+    // onMessageReceive: true, // log received messages on console
+    // onMessageSend: true, // log sent messaged on console
     actualTiming: true // log actual functions running time
   }
 };
@@ -284,9 +284,9 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {
-  //   custom_name: "John Doe"
-  // });
+  sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
+    custom_name: "John Doe"
+  });
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -469,13 +469,14 @@ function getUserInfo() {
 }
 
 function getThreads(params) {
-  chatAgent.getThreads(params, function(threadsResult) {
+  var instantResult = chatAgent.getThreads(params, function(threadsResult) {
     if (!threadsResult.hasError) {
       var threadsCount = threadsResult.result.contentCount;
       var threads = threadsResult.result.threads;
       console.log(threads);
     }
   });
+  console.log(instantResult);
 }
 
 function getThreadParticipants(threadId) {
@@ -586,7 +587,7 @@ function sendMessage(threadId, message, metaData) {
 }
 
 function sendFileMessage(threadId, file, caption, metaData) {
-  var uid = chatAgent.sendFileMessage({
+  var instantResult = chatAgent.sendFileMessage({
     threadId: threadId,
     file: file,
     content: caption,
@@ -603,7 +604,16 @@ function sendFileMessage(threadId, file, caption, metaData) {
     }
   });
 
-  console.log("index sendFile return\t", uid);
+  // console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
+  // setTimeout(() => {
+  //   chatAgent.cancelFileUpload({
+  //     uniqueId: instantResult.content.file.uniqueId
+  //   }, function() {
+  //     console.log("Upload has been Canceled!");
+  //   });
+  // }, 100);
+
+  console.log("\nInstant Result For sendFileMessage:\n", instantResult);
 }
 
 function editMessage(messageId, newMessage) {
