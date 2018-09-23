@@ -6,7 +6,7 @@ var params = {
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
   // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
   // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
@@ -50,8 +50,8 @@ chatAgent.on("chatReady", function() {
    */
   // getThreads({
   //   count: 2,
-  //   offset: 0
-  //   // threadIds: [1018]
+  //   offset: 0,
+  //   // threadIds: [293]
   // });
 
   /**
@@ -284,8 +284,21 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
-    custom_name: "John Doe"
+  // sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
+  //   custom_name: "John Doe"
+  // });
+
+
+  /**
+   * SEND BOT MESSAGE IN THREAD
+   * @param messageId
+   * @param receiverId
+   * @param newMessage
+   */
+  sendBotMessage(14954, 121, {
+    command: "reverse",
+    lat: "35.7003510",
+    lng: "51.3376472"
   });
 
   /**
@@ -614,6 +627,26 @@ function sendFileMessage(threadId, file, caption, metaData) {
   // }, 100);
 
   console.log("\nInstant Result For sendFileMessage:\n", instantResult);
+}
+
+function sendBotMessage(messageId, receiverId, message, metaData) {
+  sendChatParams = {
+    messageId: messageId,
+    content: message,
+    receiver: receiverId,
+    metaData: metaData
+  };
+
+  var mim = chatAgent.sendBotMessage(sendChatParams, {
+    onSent: function(result) {
+      console.log(result.uniqueId + " \t has been Sent!");
+    },
+    onDeliver: function(result) {
+      console.log(result.uniqueId + " \t has been Delivered!");
+    }
+  });
+
+  console.log(mim);
 }
 
 function editMessage(messageId, newMessage) {

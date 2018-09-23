@@ -48,6 +48,7 @@
         reconnect: {},
         messageEvents: {},
         threadEvents: {},
+        botEvents:{},
         fileUploadEvents: {},
         chatReady: {},
         error: {},
@@ -90,6 +91,7 @@
         LAST_SEEN_UPDATED: 31,
         GET_MESSAGE_DELEVERY_PARTICIPANTS: 32,
         GET_MESSAGE_SEEN_PARTICIPANTS: 33,
+        BOT_MESSAGE: 40,
         SPAM_PV_THREAD: 41,
         LOGOUT: 100,
         ERROR: 999
@@ -1412,6 +1414,16 @@
               });
             });
 
+            break;
+
+            //40
+          case chatMessageVOTypes.BOT_MESSAGE:
+            fireEvent("botEvents", {
+              type: "BOT_MESSAGE",
+              result: {
+                bot: messageContent // todo: data will be formated
+              }
+            });
             break;
 
             // 41
@@ -2900,6 +2912,22 @@
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
+        systemMetadata: JSON.stringify(params.metaData),
+        metaData: JSON.stringify(metaData),
+        pushMsgType: 4
+      }, callbacks);
+    };
+
+    this.sendBotMessage = function(params, callbacks) {
+      var metaData = {};
+
+      return sendMessage({
+        chatMessageVOType: chatMessageVOTypes.BOT_MESSAGE,
+        subjectId: params.messageId,
+        repliedTo: params.repliedTo,
+        content: params.content,
+        uniqueId: params.uniqueId,
+        receiver: params.receiver,
         systemMetadata: JSON.stringify(params.metaData),
         metaData: JSON.stringify(metaData),
         pushMsgType: 4
