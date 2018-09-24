@@ -6,7 +6,7 @@ var params = {
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
   // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
   // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
@@ -18,8 +18,8 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    // onMessageReceive: true, // log received messages on console
-    // onMessageSend: true, // log sent messaged on console
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true, // log sent messaged on console
     actualTiming: true // log actual functions running time
   }
 };
@@ -113,16 +113,16 @@ chatAgent.on("chatReady", function() {
   //   count: 5,
   //   offset: 0,
   //   threadId: 293,
-  //   // firstMessageId: 0,
-  //   // lastMessageId: 10,
-  //   metadataCriteria: {
-  //     "field": "type",
-  //     "has": "BOT_",
-  //     "and": [{
-  //       "field": "id",
-  //       "is": "1534835339446"
-  //     }]
-  //   },
+  //   // firstMessageId: 15113,
+  //   // lastMessageId: 15150,
+  //   // metadataCriteria: {
+  //   //   "field": "type",
+  //   //   "has": "BOT_",
+  //   //   "and": [{
+  //   //     "field": "id",
+  //   //     "is": "1534835339446"
+  //   //   }]
+  //   // },
   //   // query: "PooPoo"
   // });
   /**
@@ -295,11 +295,11 @@ chatAgent.on("chatReady", function() {
    * @param receiverId
    * @param newMessage
    */
-  sendBotMessage(14954, 121, {
-    command: "reverse",
-    lat: "35.7003510",
-    lng: "51.3376472"
-  });
+  // sendBotMessage(14954, 121, {
+  //   command: "reverse",
+  //   lat: "35.7003510",
+  //   lng: "51.3376472"
+  // });
 
   /**
    * EDIT MESSAGE IN THREAD
@@ -538,7 +538,7 @@ function leaveThread(threadId) {
 
 function getContacts(params) {
   var getContactsParams = {
-    count: 50,
+    count: 2,
     offset: 0
   };
 

@@ -6,7 +6,7 @@ var params = {
   platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
   fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "4b15de94f2ef467092655616e8c51bdc", // {**REQUIRED**} SSO Token
+  token: "4a43d772ab4f43ab8f9fe4c5f5e18d0d", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server

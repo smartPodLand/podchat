@@ -48,7 +48,7 @@
         reconnect: {},
         messageEvents: {},
         threadEvents: {},
-        botEvents:{},
+        botEvents: {},
         fileUploadEvents: {},
         chatReady: {},
         error: {},
@@ -2570,7 +2570,7 @@
         }
       }
 
-      content.count = count;
+      content.size = count;
       content.offset = offset;
 
       var sendMessageParams = {
@@ -2934,26 +2934,6 @@
       }, callbacks);
     };
 
-    this.getImage = getImage;
-
-    this.getFile = getFile;
-
-    this.uploadFile = uploadFile;
-
-    this.uploadImage = uploadImage;
-
-    this.cancelFileUpload = function(params, callback) {
-      if (params) {
-        if (typeof params.uniqueId == "string") {
-          var uniqueId = params.uniqueId;
-          httpRequestObject[eval(`uniqueId`)] && httpRequestObject[eval(`uniqueId`)].abort();
-          httpRequestObject[eval(`uniqueId`)] && delete(httpRequestObject[eval(`uniqueId`)]);
-          callback && callback();
-        }
-      }
-      return;
-    };
-
     this.sendFileMessage = function(params, callbacks) {
       var metaData = {},
         fileUploadParams = {},
@@ -3110,6 +3090,26 @@
           });
         }
       }
+    };
+
+    this.getImage = getImage;
+
+    this.getFile = getFile;
+
+    this.uploadFile = uploadFile;
+
+    this.uploadImage = uploadImage;
+
+    this.cancelFileUpload = function(params, callback) {
+      if (params) {
+        if (typeof params.uniqueId == "string") {
+          var uniqueId = params.uniqueId;
+          httpRequestObject[eval(`uniqueId`)] && httpRequestObject[eval(`uniqueId`)].abort();
+          httpRequestObject[eval(`uniqueId`)] && delete(httpRequestObject[eval(`uniqueId`)]);
+          callback && callback();
+        }
+      }
+      return;
     };
 
     this.editMessage = function(params, callback) {
