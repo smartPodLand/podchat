@@ -358,7 +358,8 @@
           method = (typeof params.method == "string") ?
           params.method :
           "GET",
-          fileUploadUniqueId = (typeof params.uniqueId == "string") ? params.uniqueId : "uniqueId";
+          fileUploadUniqueId = (typeof params.uniqueId == "string") ? params.uniqueId : "uniqueId",
+          hasError = false;
 
         if (!url) {
           callback({
@@ -399,7 +400,7 @@
                   if (response.statusCode == 200) {
                     var body = JSON.parse(body);
                     if (typeof body.hasError !== "undefined" && body.hasError) {
-
+                      hasError = true;
                       fireEvent("fileUploadEvents", {
                         threadId: threadId,
                         uniqueId: fileUniqueId,
@@ -422,6 +423,7 @@
                         errorEvent: body
                       });
                     } else {
+                      hasError = false;
                       fireEvent("fileUploadEvents", {
                         threadId: threadId,
                         uniqueId: fileUniqueId,
@@ -442,6 +444,7 @@
                       });
                     }
                   } else {
+                    hasError = true;
                     fireEvent("fileUploadEvents", {
                       threadId: threadId,
                       uniqueId: fileUniqueId,
@@ -463,6 +466,7 @@
                     });
                   }
                 } else {
+                  hasError = true;
                   fireEvent("fileUploadEvents", {
                     threadId: threadId,
                     uniqueId: fileUniqueId,
@@ -486,6 +490,7 @@
                   });
                 }
               }).on('abort', function() {
+                hasError = true;
                 fireEvent("fileUploadEvents", {
                   threadId: threadId,
                   uniqueId: fileUniqueId,
@@ -512,7 +517,7 @@
                 var dispatched = r.req.connection._bytesDispatched;
                 var percent = Math.round(dispatched * 100 / fileSize);
 
-                if (percent < 100 && percent != oldPercent) {
+                if (percent < 100 && percent != oldPercent && !hasError) {
                   oldPercent = percent;
                   fireEvent("fileUploadEvents", {
                     threadId: threadId,
@@ -612,6 +617,7 @@
           httpRequestObject[eval(`fileUploadUniqueId`)].addEventListener("error", function(event) {
             if (callback) {
               if (hasFile) {
+                hasError = true;
                 fireEvent("fileUploadEvents", {
                   threadId: threadId,
                   uniqueId: fileUniqueId,
@@ -638,6 +644,7 @@
           httpRequestObject[eval(`fileUploadUniqueId`)].addEventListener("abort", function(event) {
             if (callback) {
               if (hasFile) {
+                hasError = true;
                 fireEvent("fileUploadEvents", {
                   threadId: threadId,
                   uniqueId: fileUniqueId,
@@ -716,7 +723,7 @@
                   fileObject = (data["image"]) ? data["image"] : data["file"];
 
                   httpRequestObject[eval(`fileUploadUniqueId`)].upload.onprogress = function(event) {
-                    if (event.lengthComputable) {
+                    if (event.lengthComputable && !hasError) {
                       fireEvent("fileUploadEvents", {
                         threadId: threadId,
                         uniqueId: fileUniqueId,
@@ -767,6 +774,7 @@
             if (httpRequestObject[eval(`fileUploadUniqueId`)].readyState == 4) {
               if (httpRequestObject[eval(`fileUploadUniqueId`)].status == 200) {
                 if (hasFile) {
+                  hasError = false;
                   fireEvent("fileUploadEvents", {
                     threadId: threadId,
                     uniqueId: fileUniqueId,
@@ -789,6 +797,7 @@
                 });
               } else {
                 if (hasFile) {
+                  hasError = true;
                   fireEvent("fileUploadEvents", {
                     threadId: threadId,
                     uniqueId: fileUniqueId,

@@ -18,8 +18,8 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    onMessageReceive: true, // log received messages on console
-    onMessageSend: true, // log sent messaged on console
+    // onMessageReceive: true, // log received messages on console
+    // onMessageSend: true, // log sent messaged on console
     actualTiming: true // log actual functions running time
   }
 };
@@ -284,10 +284,9 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
-  //   custom_name: "John Doe"
-  // });
-
+  sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
+    custom_name: "John Doe"
+  });
 
   /**
    * SEND BOT MESSAGE IN THREAD
