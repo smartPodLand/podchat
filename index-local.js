@@ -284,9 +284,9 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
-    custom_name: "John Doe"
-  });
+  // sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
+  //   custom_name: "John Doe"
+  // });
 
   /**
    * SEND BOT MESSAGE IN THREAD
@@ -616,14 +616,14 @@ function sendFileMessage(threadId, file, caption, metaData) {
     }
   });
 
-  console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
-  setTimeout(() => {
-    chatAgent.cancelFileUpload({
-      uniqueId: instantResult.content.file.uniqueId
-    }, function() {
-      console.log("Upload has been Canceled!");
-    });
-  }, 100);
+  // console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
+  // setTimeout(() => {
+  //   chatAgent.cancelFileUpload({
+  //     uniqueId: instantResult.content.file.uniqueId
+  //   }, function() {
+  //     console.log("Upload has been Canceled!");
+  //   });
+  // }, 100);
 
   console.log("\nInstant Result For sendFileMessage:\n", instantResult);
 }
