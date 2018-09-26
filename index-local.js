@@ -616,14 +616,14 @@ function sendFileMessage(threadId, file, caption, metaData) {
     }
   });
 
-  // console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
-  // setTimeout(() => {
-  //   chatAgent.cancelFileUpload({
-  //     uniqueId: instantResult.content.file.uniqueId
-  //   }, function() {
-  //     console.log("Upload has been Canceled!");
-  //   });
-  // }, 100);
+  console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
+  setTimeout(() => {
+    chatAgent.cancelFileUpload({
+      uniqueId: instantResult.content.file.uniqueId
+    }, function() {
+      console.log("Upload has been Canceled!");
+    });
+  }, 100);
 
   console.log("\nInstant Result For sendFileMessage:\n", instantResult);
 }
