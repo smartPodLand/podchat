@@ -3283,7 +3283,7 @@
           updateThreadInfoData.content.description = params.description;
         }
 
-        if (typeof params.metadata == "undefined") {
+        if (typeof params.metadata == "object") {
           updateThreadInfoData.content.metadata = JSON.stringify(params.metadata);
         } else if (typeof params.metadata == "string") {
           updateThreadInfoData.content.metadata = params.metadata;

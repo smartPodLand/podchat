@@ -18,8 +18,8 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    // onMessageReceive: true, // log received messages on console
-    // onMessageSend: true, // log sent messaged on console
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true, // log sent messaged on console
     actualTiming: true // log actual functions running time
   }
 };
@@ -154,18 +154,18 @@ chatAgent.on("chatReady", function() {
    * UPDATE THREAD INFO
    * @param threadId
    */
-  // chatAgent.updateThreadInfo({
-  //   threadId: 1002,
-  //   image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
-  //   description: "This is a sample description for a god damn thread",
-  //   metadata: {
-  //     id: 312,
-  //     owner: "masoudmanson",
-  //     name: "John Doe"
-  //   }
-  // }, function(result) {
-  //   console.log(result);
-  // });
+  chatAgent.updateThreadInfo({
+    threadId: 1151,
+    image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
+    description: "New Description",
+    metadata: {
+      id: 312,
+      owner: "masoudmanson",
+      name: "John Doe"
+    }
+  }, function(result) {
+    console.log(result);
+  });
 
   /**
    * SPAM P2P THREAD
