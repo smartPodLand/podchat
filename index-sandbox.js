@@ -120,12 +120,6 @@ chatAgent.on("chatReady", function() {
   // unMuteThread(3);
 
   /**
-   * RENAME THREAD
-   * @param threadId
-   */
-  // renameThread(3, "دوستان");
-
-  /**
    * UPDATE THREAD INFO
    * @param threadId
    */
@@ -133,6 +127,7 @@ chatAgent.on("chatReady", function() {
   //   threadId: 1002,
   //   image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
   //   description: "This is a sample description for a god damn thread",
+  //   title: "New Title",
   //   metadata: {
   //     id: 312,
   //     owner: "masoudmanson",

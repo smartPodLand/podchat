@@ -10,11 +10,27 @@ All notable changes to this project will be documented here.
 
 -   Load Tests
 
-## [1.4.0] - 2018-08-27
+## [1.4.4] - 2018-10-01
 
-### Added
+### Changes
+
+-   In order to rename a thread you can call `updateThreadInfo()` function and pass it 4 parameters as below:
+  - image
+  - description
+  - title
+  - metadata
+
+### Removed
+
+-   `renameThread()` has been depreciated.
+
+
+<details><summary>[1.4.0] - 2018-08-27</summary>
+
+-   Added
 
 -   Now you can Cancel File Uploads by calling `cancelFileUpload()` and sending file's uniqueId as a parameter to it
+</details>
 
 <details><summary>[1.2.1] - 2018-08-27</summary>
 -    Added
@@ -514,6 +530,7 @@ chatAgent.updateThreadInfo({
   threadId: threadId,
   image: imageUrl,
   description: "This is a sample description for a thread",
+  title: "New title for thread",
   metadata: {
     name: "John Doe"
   }

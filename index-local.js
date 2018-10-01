@@ -49,9 +49,9 @@ chatAgent.on("chatReady", function() {
    * @param name
    */
   // getThreads({
-  //   count: 2,
+  //   // count: 2,
   //   offset: 0,
-  //   // threadIds: [293]
+  //   threadIds: [1152]
   // });
 
   /**
@@ -145,27 +145,22 @@ chatAgent.on("chatReady", function() {
   // unMuteThread(3);
 
   /**
-   * RENAME THREAD
-   * @param threadId
-   */
-  // renameThread(3, "دوستان");
-
-  /**
    * UPDATE THREAD INFO
    * @param threadId
    */
-  chatAgent.updateThreadInfo({
-    threadId: 1151,
-    image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
-    description: "New Description",
-    metadata: {
-      id: 312,
-      owner: "masoudmanson",
-      name: "John Doe"
-    }
-  }, function(result) {
-    console.log(result);
-  });
+  // chatAgent.updateThreadInfo({
+  //   threadId: 1152,
+  //   image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
+  //   description: "توضیحات ترد",
+  //   title: "عنوان ترد",
+  //   metadata: {
+  //     id: 1152,
+  //     owner: "masoudmanson",
+  //     name: "John Doe"
+  //   }
+  // }, function(result) {
+  //   console.log(result);
+  // });
 
   /**
    * SPAM P2P THREAD

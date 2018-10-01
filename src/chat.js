@@ -67,7 +67,6 @@
         BLOCK: 7,
         UNBLOCK: 8,
         LEAVE_THREAD: 9,
-        RENAME: 10,
         ADD_PARTICIPANT: 11,
         GET_STATUS: 12,
         GET_CONTACTS: 13,
@@ -1186,35 +1185,6 @@
             });
             break;
 
-            // 10
-          case chatMessageVOTypes.RENAME:
-            if (messagesCallbacks[uniqueId])
-              messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
-
-            var threadRenameThreadId = messageContent.id;
-
-            getThreads({
-              threadIds: [threadRenameThreadId]
-            }, function(threadsResult) {
-              var threads = threadsResult.result.threads;
-
-              fireEvent("threadEvents", {
-                type: "THREAD_RENAME",
-                result: {
-                  thread: threads[0]
-                }
-              });
-
-              fireEvent("threadEvents", {
-                type: "THREAD_LAST_ACTIVITY_TIME",
-                result: {
-                  thread: threads[0]
-                }
-              });
-            });
-
-            break;
-
             // 11
           case chatMessageVOTypes.ADD_PARTICIPANT:
             if (messagesCallbacks[uniqueId])
@@ -1340,14 +1310,20 @@
           case chatMessageVOTypes.UPDATE_THREAD_INFO:
             if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
+            }
+
+            getThreads({
+              threadIds: [messageContent.id]
+            }, function(threadsResult) {
+              var threads = threadsResult.result.threads;
 
               fireEvent("threadEvents", {
                 type: "THREAD_INFO_UPDATED",
                 result: {
-                  thread: formatDataToMakeConversation(messageContent)
+                  thread: threads[0]
                 }
               });
-            }
+            });
             break;
 
             // 22
@@ -1729,6 +1705,53 @@
             }
 
             callback && callback(returnData);
+          }
+        });
+      },
+
+      updateThreadInfo = function(params, callback) {
+        var updateThreadInfoData = {
+          chatMessageVOType: chatMessageVOTypes.UPDATE_THREAD_INFO,
+          subjectId: params.threadId,
+          content: {},
+          pushMsgType: 4,
+          token: token
+        };
+
+        if (params) {
+          if (parseInt(params.threadId) > 0) {
+            updateThreadInfoData.subjectId = params.threadId;
+          } else {
+            fireEvent("error", {
+              code: 999,
+              message: "Thread ID is required for Updating thread info!"
+            });
+          }
+
+          if (typeof params.image == "string") {
+            updateThreadInfoData.content.image = params.image;
+          }
+
+          if (typeof params.description == "string") {
+            updateThreadInfoData.content.description = params.description;
+          }
+
+          if (typeof params.title == "string") {
+            updateThreadInfoData.content.name = params.title;
+          }
+
+          if (typeof params.metadata == "object") {
+            updateThreadInfoData.content.metadata = JSON.stringify(params.metadata);
+          } else if (typeof params.metadata == "string") {
+            updateThreadInfoData.content.metadata = params.metadata;
+          }
+        }
+
+        console.log(updateThreadInfoData);
+
+        return sendMessage(updateThreadInfoData, {
+          onResult: function(result) {
+            callback && callback(result);
           }
         });
       },
@@ -2877,41 +2900,6 @@
 
     };
 
-    this.renameThread = function(params, callback) {
-
-      var sendMessageParams = {
-        chatMessageVOType: chatMessageVOTypes.RENAME,
-        subjectId: params.threadId
-      };
-
-      if (params) {
-        if (typeof params.title === "string") {
-          sendMessageParams.content = params.title;
-        }
-      }
-
-      return sendMessage(sendMessageParams, {
-        onResult: function(result) {
-          var returnData = {
-            hasError: result.hasError,
-            errorMessage: result.errorMessage,
-            errorCode: result.errorCode
-          };
-
-          if (!returnData.hasError) {
-            var messageContent = result.result,
-              resultData = {
-                thread: createThread(messageContent)
-              };
-
-            returnData.result = resultData;
-          }
-
-          callback && callback(returnData);
-        }
-      });
-    };
-
     this.sendTextMessage = function(params, callbacks) {
       var metaData = {};
 
@@ -3256,46 +3244,7 @@
       }
     }
 
-    this.updateThreadInfo = function(params, callback) {
-      var updateThreadInfoData = {
-        chatMessageVOType: chatMessageVOTypes.UPDATE_THREAD_INFO,
-        subjectId: params.threadId,
-        content: {},
-        pushMsgType: 4,
-        token: token
-      };
-
-      if (params) {
-        if (parseInt(params.threadId) > 0) {
-          updateThreadInfoData.subjectId = params.threadId;
-        } else {
-          fireEvent("error", {
-            code: 999,
-            message: "Thread ID is required for Updating thread info!"
-          });
-        }
-
-        if (typeof params.image == "string") {
-          updateThreadInfoData.content.image = params.image;
-        }
-
-        if (typeof params.description == "string") {
-          updateThreadInfoData.content.description = params.description;
-        }
-
-        if (typeof params.metadata == "object") {
-          updateThreadInfoData.content.metadata = JSON.stringify(params.metadata);
-        } else if (typeof params.metadata == "string") {
-          updateThreadInfoData.content.metadata = params.metadata;
-        }
-      }
-
-      return sendMessage(updateThreadInfoData, {
-        onResult: function(result) {
-          callback && callback(result);
-        }
-      });
-    };
+    this.updateThreadInfo = updateThreadInfo;
 
     this.muteThread = function(params, callback) {
       var muteData = {
