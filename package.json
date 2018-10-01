@@ -1,6 +1,6 @@
 {
   "name": "podchat",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Javascript SDK to use POD's Chat Service",
   "main": "./src/chat.js",
   "scripts": {
