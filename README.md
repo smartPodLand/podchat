@@ -10,20 +10,28 @@ All notable changes to this project will be documented here.
 
 -   Load Tests
 
-## [1.4.4] - 2018-10-01
+## [1.5.0] - 2018-10-10
 
-### Changes
+### Added
+
+-   If you want to grant device id from SSO you can set `grantDeviceIdFromSSO` as `TRUE` in initializing parameters
+
+<details><summary>[1.4.4] - 2018-10-01</summary>
+
+- Changes
 
 -   In order to rename a thread you can call `updateThreadInfo()` function and pass it 4 parameters as below:
-  - image
-  - description
-  - title
-  - metadata
+    -   image
+    -   description
+    -   title
+    -   metadata
 
-### Removed
+-   `THREAD_INFO_UPDATED` events returns whole thread object
+
+- Removed
 
 -   `renameThread()` has been depreciated.
-
+</details>
 
 <details><summary>[1.4.0] - 2018-08-27</summary>
 
@@ -228,6 +236,7 @@ Create an Javascript file e.x `index.js` and put following code there:
 var Chat = require('podchat');
 
 var params = {
+  grantDeviceIdFromSSO: false,
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address

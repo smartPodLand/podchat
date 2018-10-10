@@ -15,6 +15,7 @@
     var Chat = POD.Chat;
 
     var params = {
+      grantDeviceIdFromSSO: false,
       // socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
       // ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
       // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
@@ -26,10 +27,13 @@
       platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
       fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
       serverName: "chat-server", // {**REQUIRED**} Server to to register on
-      token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
 
+      // token: "40afcc5061354780ba20f33f9a98f2cc",
+
+      token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
       // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
       // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
+      appId: "PodChat-" + new Date().getTime(),
       wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
       connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
       connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -37,14 +41,15 @@
       reconnectOnClose: true, // auto connect to socket after socket close
       asyncLogging: {
         onFunction: true, // log main actions on console
-        // onMessageReceive: true, // log received messages on console
-        // onMessageSend: true, // log sent messaged on console
+        onMessageReceive: true, // log received messages on console
+        onMessageSend: true, // log sent messaged on console
         // actualTiming: true // log actual functions running time
       }
     };
 
     var chatAgent = new Chat(params),
-      PID;
+      PID,
+      P2P_THREAD_ID = 293;
 
     chatAgent.on("chatReady", function() {
 
@@ -247,7 +252,7 @@
           content = document.getElementById("sendFileDescription").value;
 
         var instantResult = chatAgent.sendFileMessage({
-          threadId: 293,
+          threadId: P2P_THREAD_ID,
           file: image,
           content: content,
           metaData: {
@@ -267,7 +272,6 @@
 
         console.log(instantResult, "sendFileMessage");
 
-
         // console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
         // setTimeout(() => {
         //   chatAgent.cancelFileUpload({
@@ -276,7 +280,6 @@
         //     console.log("Upload has been Canceled!");
         //   });
         // }, 100);
-
       });
 
       /**

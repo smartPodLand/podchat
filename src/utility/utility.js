@@ -5,7 +5,6 @@
      * @return  {boolean}
      */
     this.isNode = function() {
-      // return (typeof module !== 'undefined' && typeof module.exports != "undefined");
       return (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]');
     }
 

@@ -42,6 +42,7 @@
       isNode = Utility.isNode(),
       ssoGrantDevicesAddress = params.ssoGrantDevicesAddress,
       ssoHost = params.ssoHost,
+      grantDeviceIdFromSSO = params.grantDeviceIdFromSSO || false,
       eventCallbacks = {
         connect: {},
         disconnect: {},
@@ -109,9 +110,14 @@
         CHANNEL_GROUP: 4,
         CHANNEL: 8
       },
+      socketAddress = params.socketAddress,
+      serverName = params.serverName || "",
+      wsConnectionWaitTime = params.wsConnectionWaitTime,
+      connectionRetryInterval = params.connectionRetryInterval,
       msgPriority = params.msgPriority || 1,
       messageTtl = params.messageTtl || 10000,
-      serverName = params.serverName || "",
+      reconnectOnClose = params.reconnectOnClose,
+      asyncLogging = params.asyncLogging,
       chatPingMessageInterval = 20000,
       lastSentMessageTime,
       lastSentMessageTimeoutId,
@@ -191,109 +197,117 @@
      *******************************************************/
 
     var init = function() {
-        var getDeviceIdWithTokenTime = new Date().getTime();
-        getDeviceIdWithToken(function(retrievedDeviceId) {
+        if (grantDeviceIdFromSSO) {
+          var getDeviceIdWithTokenTime = new Date().getTime();
+          getDeviceIdWithToken(function(retrievedDeviceId) {
 
+            if (actualTimingLog) {
+              Utility.chatStepLogger("Get Device ID ", new Date().getTime() - getDeviceIdWithTokenTime);
+            }
+
+            deviceId = retrievedDeviceId;
+
+            initAsync();
+          });
+        } else {
+          initAsync();
+        }
+      },
+
+      initAsync = function() {
+        var asyncGetReadyTime = new Date().getTime();
+
+        asyncClient = new Async({
+          socketAddress: socketAddress,
+          serverName: serverName,
+          deviceId: deviceId,
+          wsConnectionWaitTime: wsConnectionWaitTime,
+          connectionRetryInterval: connectionRetryInterval,
+          connectionCheckTimeout: connectionCheckTimeout,
+          connectionCheckTimeoutThreshold: connectionCheckTimeoutThreshold,
+          messageTtl: messageTtl,
+          reconnectOnClose: reconnectOnClose,
+          asyncLogging: asyncLogging
+        });
+
+        asyncClient.on("asyncReady", function() {
           if (actualTimingLog) {
-            Utility.chatStepLogger("Get Device ID ", new Date().getTime() - getDeviceIdWithTokenTime);
+            Utility.chatStepLogger("Async Connection ", new Date().getTime() - asyncGetReadyTime);
           }
 
-          deviceId = retrievedDeviceId;
+          peerId = asyncClient.getPeerId();
 
-          var asyncGetReadyTime = new Date().getTime();
+          if (!userInfo) {
+            var getUserInfoTime = new Date().getTime();
 
-          asyncClient = new Async({
-            socketAddress: params.socketAddress,
-            serverName: params.serverName,
-            deviceId: retrievedDeviceId,
-            wsConnectionWaitTime: params.wsConnectionWaitTime,
-            connectionRetryInterval: params.connectionRetryInterval,
-            connectionCheckTimeout: connectionCheckTimeout,
-            connectionCheckTimeoutThreshold: connectionCheckTimeoutThreshold,
-            messageTtl: params.messageTtl,
-            reconnectOnClose: params.reconnectOnClose,
-            asyncLogging: params.asyncLogging
-          });
-
-          asyncClient.on("asyncReady", function() {
-            if (actualTimingLog) {
-              Utility.chatStepLogger("Async Connection ", new Date().getTime() - asyncGetReadyTime);
-            }
-
-            peerId = asyncClient.getPeerId();
-
-            if (!userInfo) {
-              var getUserInfoTime = new Date().getTime();
-
-              getUserInfo(function(userInfoResult) {
-                if (actualTimingLog) {
-                  Utility.chatStepLogger("Get User Info ", new Date().getTime() - getUserInfoTime);
-                }
-
-                if (!userInfoResult.hasError) {
-                  userInfo = userInfoResult.result.user;
-                  chatState = true;
-                  ping();
-                  fireEvent("chatReady");
-                }
-              });
-            }
-          });
-
-          asyncClient.on("stateChange", function(state) {
-            fireEvent("chatState", state);
-            chatFullStateObject = state;
-            switch (state.socketState) {
-              case 1: // CONNECTED
-                chatState = true;
-                break;
-              case 0: // CONNECTING
-              case 2: // CLOSING
-              case 3: // CLOSED
-                chatState = false;
-                break;
-            }
-          });
-
-          asyncClient.on("connect", function(newPeerId) {
-            peerId = newPeerId;
-            fireEvent("connect");
-          });
-
-          asyncClient.on("disconnect", function() {
-            oldPeerId = peerId;
-            peerId = undefined;
-            fireEvent("disconnect");
-          });
-
-          asyncClient.on("reconnect", function(newPeerId) {
-            peerId = newPeerId;
-            fireEvent("reconnect");
-          });
-
-          asyncClient.on("message", function(params, ack) {
-
-            lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
-
-            lastReceivedMessageTime = new Date();
-
-            lastReceivedMessageTimeoutId = setTimeout(function() {
-              var currentDate = new Date();
-              if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout - JSTimeLatency) {
-                asyncClient.reconnectSocket();
+            getUserInfo(function(userInfoResult) {
+              if (actualTimingLog) {
+                Utility.chatStepLogger("Get User Info ", new Date().getTime() - getUserInfoTime);
               }
-            }, chatPingMessageInterval * 1.5);
 
-            pushMessageHandler(params);
-            ack && ack();
-          });
-
-          asyncClient.on("error", function(error) {
-            fireEvent("error", {
-              code: error.errorCode,
-              message: error.errorMessage,
-              error: error.errorEvent
+              if (!userInfoResult.hasError) {
+                userInfo = userInfoResult.result.user;
+                chatState = true;
+                ping();
+                fireEvent("chatReady");
+              }
             });
+          }
+        });
+
+        asyncClient.on("stateChange", function(state) {
+          fireEvent("chatState", state);
+          chatFullStateObject = state;
+          switch (state.socketState) {
+            case 1: // CONNECTED
+              chatState = true;
+              break;
+            case 0: // CONNECTING
+            case 2: // CLOSING
+            case 3: // CLOSED
+              chatState = false;
+              break;
+          }
+        });
+
+        asyncClient.on("connect", function(newPeerId) {
+          peerId = newPeerId;
+          fireEvent("connect");
+        });
+
+        asyncClient.on("disconnect", function() {
+          oldPeerId = peerId;
+          peerId = undefined;
+          fireEvent("disconnect");
+        });
+
+        asyncClient.on("reconnect", function(newPeerId) {
+          peerId = newPeerId;
+          fireEvent("reconnect");
+        });
+
+        asyncClient.on("message", function(params, ack) {
+
+          lastReceivedMessageTimeoutId && clearTimeout(lastReceivedMessageTimeoutId);
+
+          lastReceivedMessageTime = new Date();
+
+          lastReceivedMessageTimeoutId = setTimeout(function() {
+            var currentDate = new Date();
+            if (currentDate - lastReceivedMessageTime >= connectionCheckTimeout - JSTimeLatency) {
+              asyncClient.reconnectSocket();
+            }
+          }, chatPingMessageInterval * 1.5);
+
+          pushMessageHandler(params);
+          ack && ack();
+        });
+
+        asyncClient.on("error", function(error) {
+          fireEvent("error", {
+            code: error.errorCode,
+            message: error.errorMessage,
+            error: error.errorEvent
           });
         });
       },
@@ -1746,8 +1760,6 @@
             updateThreadInfoData.content.metadata = params.metadata;
           }
         }
-
-        console.log(updateThreadInfoData);
 
         return sendMessage(updateThreadInfoData, {
           onResult: function(result) {

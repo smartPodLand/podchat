@@ -1,11 +1,13 @@
 var Chat = require('./src/chat.js');
 
 var params = {
+  appId: new Date().getTime(),
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
+  grantDeviceIdFromSSO: false,
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
   // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -49,9 +51,9 @@ chatAgent.on("chatReady", function() {
    * @param name
    */
   // getThreads({
-  //   // count: 2,
+  //   count: 2,
   //   offset: 0,
-  //   threadIds: [1152]
+  //   // threadIds: [1152]
   // });
 
   /**
@@ -110,11 +112,12 @@ chatAgent.on("chatReady", function() {
    * @param query
    */
   // getHistory({
-  //   count: 5,
-  //   offset: 0,
+  //   count: 2,
+  //   // offset: 0,
   //   threadId: 293,
-  //   // firstMessageId: 15113,
-  //   // lastMessageId: 15150,
+  //   firstMessageId: 15585,
+  //   order: "ASC",
+  //   // lastMessageId: 15590,
   //   // metadataCriteria: {
   //   //   "field": "type",
   //   //   "has": "BOT_",
@@ -266,6 +269,7 @@ chatAgent.on("chatReady", function() {
    * @param newMessage
    * @param metaData
    */
+
   // sendMessage(293, "PooPoo This is a Sample Message at " + new Date(), {
   //   id: new Date().getTime(),
   //   type: "BOT_MESSAGE",
