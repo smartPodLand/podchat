@@ -182,7 +182,7 @@ chatAgent.on("chatReady", function() {
   /**
    * GET CONTACTS
    */
-  // getContacts();
+  getContacts();
 
   /**
    * BLOCK CONTACT
@@ -210,15 +210,14 @@ chatAgent.on("chatReady", function() {
    * @param cellphoneNumber
    * @param email
    */
-  // chatAgent.addContacts({
+  // var addContactInstantResult = chatAgent.addContacts({
   //   firstName: "حامد",
   //   lastName: "مهرآرا",
   //   cellphoneNumber: "09188644304",
   //   email: "hamed.m844a@gmail.com"
   // }, function(result) {
-  //   console.log(result.result);
+  //   console.log(result);
   // });
-
   /**
    * UPDATE CONTACTS
    * @param id
@@ -252,7 +251,7 @@ chatAgent.on("chatReady", function() {
    * @link http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts
    */
   // chatAgent.searchContacts({
-  //   cellphoneNumber: 099
+  //   cellphoneNumber: 09
   // }, function(result){
   //   if (!result.hasError) {
   //     console.log(result.result);
@@ -283,7 +282,7 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(293, __dirname + "/test/test.mp4", "Sample file description", {
+  // sendFileMessage(293, __dirname + "/test/test.jpeg", "Sample file description", {
   //   custom_name: "John Doe"
   // });
 
@@ -311,7 +310,7 @@ chatAgent.on("chatReady", function() {
    * @param {int}      messageId
    * @param {boolean}  deleteForAll
    */
-  // deleteMessage(13704, true);
+  // deleteMessage(15672, true);
 
   /**
    * REPLY TO MESSAGE
@@ -339,7 +338,7 @@ chatAgent.on("chatReady", function() {
    * @param  {int}     hC        Crop height
    * @param  {int}     wC        Crop width
    */
-  // uploadImage(__dirname + "/test/test.jpg", 0, 0, 400, 400);
+  // uploadImage(__dirname + "/test/test.jpeg", 0, 0, 400, 400);
 
   /**
    * GET IMAGE
@@ -829,6 +828,7 @@ function uploadImage(image, xC, yC, hC, wC) {
     hC: hC,
     wC: wC
   }, function(result) {
+    console.log(result);
     if (!result.hasError) {
       var image = result.result;
       console.log("Image has been Successfully Uploaded => \n\n", image);

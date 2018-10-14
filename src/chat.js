@@ -527,24 +527,26 @@
               var oldPercent = 0;
 
               var q = setInterval(function() {
-                var dispatched = r.req.connection._bytesDispatched;
-                var percent = Math.round(dispatched * 100 / fileSize);
+                if (r.req && r.req.connection) {
+                  var dispatched = r.req.connection._bytesDispatched;
+                  var percent = Math.round(dispatched * 100 / fileSize);
 
-                if (percent < 100 && percent != oldPercent && !hasError) {
-                  oldPercent = percent;
-                  fireEvent("fileUploadEvents", {
-                    threadId: threadId,
-                    uniqueId: fileUniqueId,
-                    state: "UPLOADING",
-                    progress: percent,
-                    fileInfo: {
-                      fileName: originalFileName,
-                      fileSize: fileSize
-                    },
-                    fileObject: params.file
-                  });
-                } else {
-                  clearInterval(q);
+                  if (percent < 100 && !hasError) {
+                    oldPercent = percent;
+                    fireEvent("fileUploadEvents", {
+                      threadId: threadId,
+                      uniqueId: fileUniqueId,
+                      state: "UPLOADING",
+                      progress: percent,
+                      fileInfo: {
+                        fileName: originalFileName,
+                        fileSize: fileSize
+                      },
+                      fileObject: params.file
+                    });
+                  } else {
+                    clearInterval(q);
+                  }
                 }
               }, 10);
 
