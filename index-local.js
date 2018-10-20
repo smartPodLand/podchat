@@ -16,7 +16,7 @@ var params = {
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
-  messageTtl: 86400000, // Message time to live
+  messageTtl: 24 * 60 * 60, // Message time to live (1 day in seonds)
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console

@@ -1898,9 +1898,13 @@
          *    - email                        {string}
          *    - myFriend                     {boolean}
          *    - online                       {boolean}
+         *    - blocked                      {boolean}
          *    - notSeenDuration              {long}
          *    - contactId                    {long}
          *    - image                        {string}
+         *    - contactName                  {string}
+         *    - contactFirstname             {string}
+         *    - contactLastname              {string}
          */
 
         var participant = {
@@ -1914,9 +1918,13 @@
           email: messageContent.email,
           myFriend: messageContent.myFriend,
           online: messageContent.online,
+          blocked: messageContent.blocked,
           notSeenDuration: messageContent.notSeenDuration,
           contactId: messageContent.contactId,
-          image: messageContent.image
+          image: messageContent.image,
+          contactName : messageContent.contactName,
+          contactFirstname: messageContent.contactFirstname,
+          contactLastname: messageContent.contactLastname
         };
 
         return participant;
@@ -1950,6 +1958,7 @@
          *    - participantCount              {long}
          *    - canEditInfo                   {boolean}
          *    - canSpam                       {boolean}
+         *    - admin                         {boolean}
          */
 
         var conversation = {
@@ -1976,7 +1985,8 @@
           mute: messageContent.mute,
           participantCount: messageContent.participantCount,
           canEditInfo: messageContent.canEditInfo,
-          canSpam: messageContent.canSpam
+          canSpam: messageContent.canSpam,
+          admin: messageContent.admin
         };
 
         // Add inviter if exist
@@ -2057,6 +2067,7 @@
          *    - uniqueId                     {string}
          *    - previousId                   {long}
          *    - message                      {string}
+         *    - messageType                  {int}
          *    - edited                       {boolean}
          *    - editable                     {boolean}
          *    - delivered                    {boolean}
@@ -2066,6 +2077,7 @@
          *    - replyInfo                    {object : replyInfoVO}
          *    - forwardInfo                  {object : forwardInfoVO}
          *    - metadata                     {string}
+         *    - systemMetadata               {string}
          *    - time                         {long}
          */
 
@@ -2076,6 +2088,7 @@
           uniqueId: pushMessageVO.uniqueId,
           previousId: pushMessageVO.previousId,
           message: pushMessageVO.message,
+          messageType: pushMessageVO.messageType,
           edited: pushMessageVO.edited,
           editable: pushMessageVO.editable,
           delivered: pushMessageVO.delivered,
