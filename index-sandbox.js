@@ -7,7 +7,7 @@ var params = {
   fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   grantDeviceIdFromSSO: false,
-  token: "d2916c96e8fa4f789dffecf33cd043d1", // {**REQUIRED**} SSO Token
+  token: "ffcc1573584e49ba883a3336d5aaca90", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -188,7 +188,7 @@ chatAgent.on("chatReady", function() {
   //   cellphoneNumber: "09188770304",
   //   email: "hamed.me873.ara@gmail.com"
   // }, function(result) {
-  //   console.log(result.result);
+  //   console.log(result);
   // });
 
   /**
