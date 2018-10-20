@@ -10,11 +10,20 @@ All notable changes to this project will be documented here.
 
 -   Load Tests
 
-## [1.5.0] - 2018-10-10
+## [1.6.0] - 2018-10-20
 
-### Added
+### Changes
+
+-   `messageType` has been added to `MESSAGE` model
+-   `admin` attribute has been added to `CONVERSATOIN` model
+-   `contactId`, `contactName`, `contactFirstname`, `contactLastname` and `blocked` have been added to `PARTICIPANT` model
+
+
+<details><summary>[1.5.0] - 2018-10-10</summary>
+-   Added
 
 -   If you want to grant device id from SSO you can set `grantDeviceIdFromSSO` as `TRUE` in initializing parameters
+</details>
 
 <details><summary>[1.4.4] - 2018-10-01</summary>
 
