@@ -310,7 +310,7 @@ chatAgent.on("chatReady", function() {
    * @param {int}      messageId
    * @param {boolean}  deleteForAll
    */
-  deleteMessage(16802, true);
+  // deleteMessage(16802, true);
 
   /**
    * REPLY TO MESSAGE

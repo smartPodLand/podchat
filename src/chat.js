@@ -16,7 +16,7 @@
       Async = require('podasync'),
         ChatUtility = require('./utility/utility.js'),
         FormData = require('form-data'),
-        Request = require('request'),
+        Request = require('request');
         // Dexie = require('dexie');
       var http = require('http'),
         QueryString = require('querystring'),
