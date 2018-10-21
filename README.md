@@ -30,14 +30,6 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 }
 ```
 
-### Changes
-
--   `messageType` has been added to `MESSAGE` model
--   `admin` attribute has been added to `CONVERSATOIN` model
--   `contactId`, `contactName`, `contactFirstname`, `contactLastname` and `blocked` have been added to `PARTICIPANT` model
-
-
-
 <details><summary>[1.6.0] - 2018-10-20</summary>
 -   Changes
 
