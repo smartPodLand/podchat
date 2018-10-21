@@ -8,7 +8,8 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
--   Load Tests
+-   Cache
+-   Message Delivered / Seen Info
 
 ## [1.6.1] - 2018-10-21
 
