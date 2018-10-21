@@ -10,7 +10,23 @@ All notable changes to this project will be documented here.
 
 -   Load Tests
 
-## [1.6.0] - 2018-10-20
+## [1.6.1] - 2018-10-21
+
+### Added
+
+-   Early version of Load Test are up now
+-   `MESSAGE_DELETE` has been added to `messageEvents` listener, and whenever a message gets delete, you'll have an event announcing you that action. The result is like below:
+
+```javascript
+{ type: 'MESSAGE_DELETE',
+  result: {
+    message: {
+      id: id_of_deleted_message,
+      threadId: id_of_message_thread
+    }
+  }
+}
+```
 
 ### Changes
 
@@ -18,6 +34,16 @@ All notable changes to this project will be documented here.
 -   `admin` attribute has been added to `CONVERSATOIN` model
 -   `contactId`, `contactName`, `contactFirstname`, `contactLastname` and `blocked` have been added to `PARTICIPANT` model
 
+
+
+<details><summary>[1.6.0] - 2018-10-20</summary>
+-   Changes
+
+-   `messageType` has been added to `MESSAGE` model
+-   `admin` attribute has been added to `CONVERSATOIN` model
+-   `contactId`, `contactName`, `contactFirstname`, `contactLastname` and `blocked` have been added to `PARTICIPANT` model
+
+</details>
 
 <details><summary>[1.5.0] - 2018-10-10</summary>
 -   Added
@@ -741,7 +767,7 @@ In order to delete a message for all, set `deleteForAll` parameter as `TRUE`.
  * @param {int}      messageId
  * @param {boolean}  deleteForAll
  */
-chatAgent.editMessage({
+chatAgent.deleteMessage({
   messageId: messageId,
   deleteForAll: false
 }, function(result) {

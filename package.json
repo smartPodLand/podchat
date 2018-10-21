@@ -26,8 +26,10 @@
   },
   "homepage": "https://github.com/masoudmanson/pod-chat#readme",
   "dependencies": {
+    "dexie": "^2.0.4",
     "faker": "^4.1.0",
     "form-data": "^2.3.2",
+    "indexeddbshim": "^3.10.0",
     "mime": "^2.3.1",
     "podasync": "^2.4.3",
     "query-string": "^6.1.0",

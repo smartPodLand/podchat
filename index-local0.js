@@ -8,8 +8,8 @@ var params = {
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   grantDeviceIdFromSSO: false,
-  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
+  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
   // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
   // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
   // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
@@ -269,7 +269,7 @@ chatAgent.on("chatReady", function() {
    * @param newMessage
    * @param metaData
    */
-  // sendMessage(312, "PooPoo This is a Sample Message at " + new Date(), {
+  // sendMessage(293, "PooPoo This is a Sample Message at " + new Date(), {
   //   id: new Date().getTime(),
   //   type: "BOT_MESSAGE",
   //   owner: "Masoud"
@@ -310,7 +310,7 @@ chatAgent.on("chatReady", function() {
    * @param {int}      messageId
    * @param {boolean}  deleteForAll
    */
-  deleteMessage(16802, true);
+  // deleteMessage(16792, true);
 
   /**
    * REPLY TO MESSAGE

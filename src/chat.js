@@ -7,24 +7,35 @@
    */
   var Async,
     ChatUtility,
+    FormData,
     Request,
-    FormData;
+    Dexie;
 
   function Chat(params) {
     if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
-      var Async = require('podasync'),
+      Async = require('podasync'),
         ChatUtility = require('./utility/utility.js'),
-        http = require('http'),
+        FormData = require('form-data'),
         Request = require('request'),
+        // Dexie = require('dexie');
+      var http = require('http'),
         QueryString = require('querystring'),
         FS = require('fs'),
         Mime = require('mime'),
-        FormData = require('form-data');
-      Path = require("path");
+        Path = require("path");
+
+      /**
+       * Defining global variables for dexie to work in Node ENV
+       */
+      // const setGlobalVars = require('indexeddbshim');
+      // global.window = global;
+      // setGlobalVars();
+      // Dexie.dependencies.indexedDB = setGlobalVars.shimIndexedDB;
+      // Dexie.dependencies.IDBKeyRange = setGlobalVars.shimIndexedDB.modules.IDBKeyRange;
     } else {
-      Async = POD.Async;
-      ChatUtility = POD.ChatUtility;
-      FormData = window.FormData;
+      Async = POD.Async,
+        ChatUtility = POD.ChatUtility,
+        FormData = window.FormData;
     }
 
     /*******************************************************
@@ -40,6 +51,9 @@
       token = params.token,
       deviceId,
       isNode = Utility.isNode(),
+      hasCache = (typeof Dexie != "undefined"),
+      enableCache = params.enableCache || true,
+      cacheDb = hasCache && enableCache,
       ssoGrantDevicesAddress = params.ssoGrantDevicesAddress,
       ssoHost = params.ssoHost,
       grantDeviceIdFromSSO = params.grantDeviceIdFromSSO || false,
@@ -174,7 +188,8 @@
         6300: "Error in uploading File!",
         6301: "Not an image!",
         6302: "No file has been selected!",
-        6303: "File upload has been canceled!"
+        6303: "File upload has been canceled!",
+        6600: "Database is not defined and usable"
       },
       getUserInfoRetry = 5,
       getUserInfoRetryCount = 0,
@@ -191,6 +206,15 @@
       connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold,
       httpRequestTimeout = params.httpRequestTimeout || 20000,
       actualTimingLog = params.asyncLogging.actualTiming || false;
+
+    // if (hasCache && enableCache) {
+    //   var db = new Dexie('podChat');
+    //   db.version(1).stores({
+    //     contacts: '&id, &userId, cellphoneNumber, email, firstName, lastName'
+    //   });
+    // } else {
+    //   console.log(new Error(CHAT_ERRORS[6600]));
+    // }
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -1379,6 +1403,17 @@
           case chatMessageVOTypes.DELETE_MESSAGE:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+
+
+            fireEvent("messageEvents", {
+              type: "MESSAGE_DELETE",
+              result: {
+                message: {
+                  id: messageContent,
+                  threadId: threadId
+                }
+              }
+            });
             break;
 
             // 30
@@ -1924,7 +1959,7 @@
           notSeenDuration: messageContent.notSeenDuration,
           contactId: messageContent.contactId,
           image: messageContent.image,
-          contactName : messageContent.contactName,
+          contactName: messageContent.contactName,
           contactFirstname: messageContent.contactFirstname,
           contactLastname: messageContent.contactLastname
         };
@@ -2636,6 +2671,20 @@
         chatMessageVOType: chatMessageVOTypes.GET_CONTACTS,
         content: content
       };
+
+      // if (cacheDb && db) {
+      //   console.log("Dashagh injam");
+      //   db.contacts
+      //     .offset(offset)
+      //     .limit(count)
+      //     .toArray()
+      //     .then((contacts) => {
+      //       console.log("retrieved form cache", contacts);
+      //     }).catch((e) => {
+      //       console.log(e);
+      //     });
+      //   console.log("Zadam ta javabesh biad");
+      // }
 
       return sendMessage(sendMessageParams, {
         onResult: function(result) {
