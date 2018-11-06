@@ -318,6 +318,81 @@ chatAgent.on("chatReady", function() {
    */
   // getFile(47325, '1652761cbb9-0.13605605117533726', true);
 
+    /*******************************************************
+     *                 N E S H A N   M A P                 *
+     *******************************************************/
+
+    /**
+     * Get Address of a GeoLocation point
+     *
+     * @param  {float}   lat     Latitute of the Location
+     * @param  {float}   lng     Longtitute of the Location
+     */
+    // chatAgent.mapReverse({
+    //   lat: 35.7003508,
+    //   lng: 51.3376460
+    // }, function(result) {
+    //   console.log(result);
+    // });
+
+    /**
+     * Get nearby places names as "term" keyword
+     * around the given GeoLocation
+     *
+     * @param  {float}   lat     Latitute of the Location
+     * @param  {float}   lng     Longtitute of the Location
+     * @param  {string}  term    Search term to be searched
+     */
+    // chatAgent.mapSearch({
+    //   lat: 35.7003508,
+    //   lng: 51.3376460,
+    //   term: "فروشگاه"
+    // }, function(result) {
+    //   console.log(result);
+    // });
+
+    /**
+     * Get routing between two given GeoLocations
+     *
+     * @param  {object}   origin         Lat & Lng of Origin as a JSON
+     * @param  {object}   destination    Lat & Lng of Destination as a JSON
+     * @param  {boolean}  alternative    Give Alternative Routs too
+     */
+    // chatAgent.mapRouting({
+    //   origin: {
+    //     lat: 35.7003508,
+    //     lng: 51.3376460
+    //   },
+    //   destination: {
+    //     lat: 35.7343510,
+    //     lng: 50.3376472
+    //   },
+    //   alternative: true
+    // }, function(result) {
+    //   console.log(result);
+    // });
+
+    /**
+     * Get Static Image of a GeoLocation
+     *
+     * @param  {string}   type           Map style (default standard-night)
+     * @param  {int}      zoom           Map zoom (default 15)
+     * @param  {object}   center         Lat & Lng of Map center as a JSON
+     * @param  {int}      width          width of image in pixels (default 800px)
+     * @param  {int}      height         height of image in pixels (default 600px)
+     */
+    // chatAgent.mapStaticImage({
+    //   type: "standard-night",
+    //   zoom: 15,
+    //   center: {
+    //     lat: 35.7003508,
+    //     lng: 51.3376462
+    //   },
+    //   width: 800,
+    //   height: 500
+    // }, function(result) {
+    //   console.log(result);
+    // });
 });
 
 /**

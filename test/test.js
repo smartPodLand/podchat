@@ -271,7 +271,7 @@ describe("Working with contacts", function(done) {
  * THREADS FUNCTIONALITY
  */
 describe("Working with threads", function(done) {
-  this.timeout(60000);
+  this.timeout(20000);
 
   var chatAgent,
     p2pThreadId,
@@ -456,7 +456,6 @@ describe("Working with threads", function(done) {
             console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
           var time2 = new Date().getTime();
           var groupInvitees = [];
-
           for (var i = 0; i < contactsResult.result.contacts.length; i++) {
             if (contactsResult.result.contacts[i].hasUser) {
               groupInvitees.push({
@@ -555,13 +554,14 @@ describe("Working with threads", function(done) {
                 offset: 0,
                 threadId: newGroupThreadId
               }, function(participantsResult) {
+
                 if (!participantsResult.hasError) {
 
                   if (timingLog)
                     console.log("\x1b[90m    ☰ Get Thread Participants \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time4);
                   var time5 = new Date().getTime();
 
-                  var userId = participantsResult.result.participants[0];
+                  var userId = participantsResult.result.participants[participantsResult.result.participants.length-1];
                   chatAgent.removeParticipants({
                     threadId: newGroupThreadId,
                     participants: [userId.id]
@@ -787,65 +787,7 @@ describe("Working with threads", function(done) {
     });
   });
 
-  it("Should RENAME a newly created thread", function(done) {
-    chatAgent.on("chatReady", function() {
-      var time1 = new Date().getTime();
-      chatAgent.getContacts({
-        count: 50,
-        offset: 0
-      }, function(contactsResult) {
-        if (!contactsResult.hasError) {
-          if (timingLog)
-            console.log("\x1b[90m    ☰ Get Contacts List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
-          var time2 = new Date().getTime();
-          var groupInvitees = [];
-
-          for (var i = 0; i < contactsResult.result.contacts.length; i++) {
-            if (contactsResult.result.contacts[i].hasUser) {
-              groupInvitees.push({
-                id: contactsResult.result.contacts[i].id,
-                idType: "TO_BE_USER_CONTACT_ID"
-              });
-
-              if (groupInvitees.length > 2) {
-                break;
-              }
-            }
-          }
-
-          if (timingLog)
-            console.log("\x1b[90m    ☰ Create Invitees List \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time2);
-          var time3 = new Date().getTime();
-
-          chatAgent.createThread({
-            title: faker.lorem.word(),
-            type: "NORMAL",
-            invitees: groupInvitees
-          }, function(createThreadResult) {
-            if (!createThreadResult.hasError && createThreadResult.result.thread.id > 0) {
-              if (timingLog)
-                console.log("\x1b[90m    ☰ Create Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time3);
-              var time4 = new Date().getTime();
-
-              var newGroupThreadId = createThreadResult.result.thread.id;
-
-              chatAgent.renameThread({
-                title: faker.lorem.sentence(),
-                threadId: newGroupThreadId
-              }, function(renameThreadResult) {
-                if (timingLog)
-                  console.log("\x1b[33m    ★ Rename Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
-                done();
-                console.log("\n");
-              });
-            }
-          });
-        }
-      });
-    });
-  });
-
-  it("Should update a newly created thread's Meta Info", function(done) {
+  it("Should update a newly created thread's Meta Info (name, image, description, metadata)", function(done) {
     chatAgent.on("chatReady", function() {
       var time1 = new Date().getTime();
       chatAgent.getContacts({
@@ -887,9 +829,10 @@ describe("Working with threads", function(done) {
 
               var newGroupThreadId = createThreadResult.result.thread.id;
               chatAgent.updateThreadInfo({
-                threadId: 1002,
+                threadId: GROUP_THREAD,
                 image: "https://static2.farakav.com/files/pictures/thumb/01330672.jpg",
                 description: faker.lorem.sentence(),
+                title: faker.lorem.sentence(),
                 metadata: {
                   title: "Test",
                   name: "Masoud Amjadi"
@@ -897,7 +840,7 @@ describe("Working with threads", function(done) {
               }, function(result) {
                 if (!result.hasError) {
                   if (timingLog)
-                    console.log("\x1b[33m    ★ Rename Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
+                    console.log("\x1b[33m    ★ Thread Info get updated \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
                   done();
                   console.log("\n");
                 }
@@ -914,7 +857,7 @@ describe("Working with threads", function(done) {
  * MESSAGING FUNCTIONS
  */
 describe("Messaging Functionality", function(done) {
-  this.timeout(20000);
+  this.timeout(60000);
 
   var chatAgent1,
     chatAgent2;
@@ -935,10 +878,7 @@ describe("Messaging Functionality", function(done) {
 
       chatAgent1.sendTextMessage({
         threadId: P2P_THREAD,
-        content: faker.lorem.paragraph(),
-        metaData: {
-          custom_name: "John Doe"
-        }
+        content: faker.lorem.paragraph()
       }, {
         onSent: function(result) {
           if (timingLog)
@@ -947,10 +887,8 @@ describe("Messaging Functionality", function(done) {
           console.log("\n");
         },
         onDeliver: function(result) {
-          console.log(result.uniqueId + " \t has been Delivered!");
         },
         onSeen: function(result) {
-          console.log(result.uniqueId + " \t has been Seen!");
         }
       });
     });
@@ -1045,7 +983,8 @@ describe("Messaging Functionality", function(done) {
         threadId: P2P_THREAD,
         content: faker.lorem.paragraph()
       }, {
-        onSent: function(result) {},
+        onSent: function(result) {
+        },
         onDeliver: function(result) {
           if (timingLog)
             console.log("\x1b[90m    ☰ Send a Message to P2P Thread \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time1);
@@ -1079,7 +1018,7 @@ describe("Messaging Functionality", function(done) {
 
   });
 
-  it("Should sent a message to a P2P thread then DELETE the sent message afterwards (Delete For himself Only)", function(done) {
+  it("Should sent a message to a P2P thread then DELETE the sent message afterwards (Delete For themeself Only)", function(done) {
     var sentMessageID;
 
     chatAgent1.on("chatReady", function() {
@@ -1169,7 +1108,7 @@ describe("Messaging Functionality", function(done) {
 
   });
 
-  it("Should sent a message to a GROUP thread then DELETE the sent message afterwards (Delete For himself Only)", function(done) {
+  it("Should sent a message to a GROUP thread then DELETE the sent message afterwards (Delete For themeself Only)", function(done) {
     var sentMessageID;
 
     chatAgent1.on("chatReady", function() {

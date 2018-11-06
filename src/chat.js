@@ -16,9 +16,11 @@
       Async = require('podasync'),
         ChatUtility = require('./utility/utility.js'),
         FormData = require('form-data'),
-        Request = require('request');
-        // Dexie = require('dexie');
-      var http = require('http'),
+        Request = require('request'),
+        Dexie = require('dexie');
+
+      var setGlobalVars = require('indexeddbshim'),
+        http = require('http'),
         QueryString = require('querystring'),
         FS = require('fs'),
         Mime = require('mime'),
@@ -27,15 +29,21 @@
       /**
        * Defining global variables for dexie to work in Node ENV
        */
-      // const setGlobalVars = require('indexeddbshim');
-      // global.window = global;
-      // setGlobalVars();
-      // Dexie.dependencies.indexedDB = setGlobalVars.shimIndexedDB;
-      // Dexie.dependencies.IDBKeyRange = setGlobalVars.shimIndexedDB.modules.IDBKeyRange;
+      var shim = {};
+      setGlobalVars(shim, {
+        checkOrigin: false
+      });
+      var {
+        indexedDB,
+        IDBKeyRange
+      } = shim;
+      Dexie.dependencies.indexedDB = indexedDB;
+      Dexie.dependencies.IDBKeyRange = IDBKeyRange;
     } else {
       Async = POD.Async,
         ChatUtility = POD.ChatUtility,
-        FormData = window.FormData;
+        FormData = window.FormData,
+        Dexie = window.Dexie;
     }
 
     /*******************************************************
@@ -49,14 +57,22 @@
       oldPeerId,
       userInfo,
       token = params.token,
+      mapApiKey = params.mapApiKey || "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
       deviceId,
       isNode = Utility.isNode(),
+      db,
       hasCache = (typeof Dexie != "undefined"),
-      enableCache = params.enableCache || true,
+      enableCache = (params.enableCache && typeof params.enableCache === "boolean") ?
+      params.enableCache :
+      false,
       cacheDb = hasCache && enableCache,
+      // cacheSecret = "urlLyxCdr1dzj6dl4TAJyNS00mZD2RIc", // This should be replaced with SSO key
+      cacheSecret = params.token, // This should be replaced with SSO key
       ssoGrantDevicesAddress = params.ssoGrantDevicesAddress,
       ssoHost = params.ssoHost,
-      grantDeviceIdFromSSO = params.grantDeviceIdFromSSO || false,
+      grantDeviceIdFromSSO = (params.grantDeviceIdFromSSO && typeof params.grantDeviceIdFromSSO === "boolean") ?
+      params.grantDeviceIdFromSSO :
+      false,
       eventCallbacks = {
         connect: {},
         disconnect: {},
@@ -139,23 +155,32 @@
       lastReceivedMessageTimeoutId,
       JSTimeLatency = 100,
       config = {
-        getHistoryCount: 100
+        getHistoryCount: 50
       },
       SERVICE_ADDRESSES = {
         SSO_ADDRESS: params.ssoHost || "http://172.16.110.76",
         PLATFORM_ADDRESS: params.platformHost || "http://172.16.106.26:8080/hamsam",
-        FILESERVER_ADDRESS: params.fileServer || "http://172.16.106.26:8080/hamsam"
+        FILESERVER_ADDRESS: params.fileServer || "http://172.16.106.26:8080/hamsam",
+        MAP_ADDRESS: params.mapServer || "https://api.neshan.org/v1"
       },
       SERVICES_PATH = {
+        // Grant Devices
         SSO_DEVICES: "/oauth2/grants/devices",
+        // Contacts
         ADD_CONTACTS: "/nzh/addContacts",
         UPDATE_CONTACTS: "/nzh/updateContacts",
         REMOVE_CONTACTS: "/nzh/removeContacts",
         SEARCH_CONTACTS: "/nzh/listContacts",
+        // File/Image Upload and Download
         UPLOAD_IMAGE: "/nzh/uploadImage",
         GET_IMAGE: "/nzh/image/",
         UPLOAD_FILE: "/nzh/uploadFile",
-        GET_FILE: "/nzh/file/"
+        GET_FILE: "/nzh/file/",
+        // Neshan Map
+        REVERSE: "/reverse",
+        SEARCH: "/search",
+        ROUTING: "/routing",
+        STATIC_IMAGE: "/static"
       },
       imageMimeTypes = [
         "image/bmp",
@@ -178,18 +203,26 @@
         "webp"
       ],
       CHAT_ERRORS = {
+        // Socket Errors
         6000: "No Active Device found for this Token!",
         6001: "Invalid Token!",
         6002: "User not found!",
+        // Get User Info Errors
         6100: "Cant get UserInfo!",
         6101: "Getting User Info Retry Count exceeded 5 times; Connection Can Not Estabilish!",
+        // Http Request Errors
         6200: "Network Error",
         6201: "URL is not clarified!",
+        // File Uploads Errors
         6300: "Error in uploading File!",
         6301: "Not an image!",
         6302: "No file has been selected!",
         6303: "File upload has been canceled!",
-        6600: "Database is not defined and usable"
+        // Cache Database Errors
+        6600: "Your Environment doesn't have Databse compatibility",
+        6601: "Database is not defined! (missing db)",
+        // Map Errors
+        6700: "You should Enter a Center Location like {lat: \" \", lng: \" \"}",
       },
       getUserInfoRetry = 5,
       getUserInfoRetryCount = 0,
@@ -205,16 +238,35 @@
       connectionCheckTimeout = params.connectionCheckTimeout,
       connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold,
       httpRequestTimeout = params.httpRequestTimeout || 20000,
-      actualTimingLog = params.asyncLogging.actualTiming || false;
+      actualTimingLog = (params.asyncLogging.actualTiming && typeof params.asyncLogging.actualTiming === "boolean") ?
+      params.asyncLogging.actualTiming :
+      false;
 
-    // if (hasCache && enableCache) {
-    //   var db = new Dexie('podChat');
-    //   db.version(1).stores({
-    //     contacts: '&id, &userId, cellphoneNumber, email, firstName, lastName'
-    //   });
-    // } else {
-    //   console.log(new Error(CHAT_ERRORS[6600]));
-    // }
+    if (hasCache) {
+      if (enableCache) {
+        db = new Dexie('podChat');
+
+        // db.delete().then(() => {
+        //   console.log("Database successfully deleted");
+        // }).catch((err) => {
+        //   console.log(err);
+        // });
+
+        db.version(1).stores({
+          users: "&id, name, cellphoneNumber",
+          contacts: "[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName",
+          threads: "[owner+id] ,id, owner, title, time, [owner+time]",
+          participants: "[owner+id], id, owner, threadId, notSeenDuration",
+          messages: "[owner+id], id, owner, threadId, time, [threadId+id]"
+        });
+      }
+    } else {
+      fireEvent("error", {
+        code: 6600,
+        message: CHAT_ERRORS[6600],
+        error: null
+      });
+    }
 
     /*******************************************************
      *            P R I V A T E   M E T H O D S            *
@@ -295,14 +347,15 @@
         });
 
         asyncClient.on("connect", function(newPeerId) {
+          asyncGetReadyTime = new Date().getTime();
           peerId = newPeerId;
           fireEvent("connect");
         });
 
-        asyncClient.on("disconnect", function() {
+        asyncClient.on("disconnect", function(event) {
           oldPeerId = peerId;
           peerId = undefined;
-          fireEvent("disconnect");
+          fireEvent("disconnect", event);
         });
 
         asyncClient.on("reconnect", function(newPeerId) {
@@ -475,6 +528,7 @@
 
                       callback && callback({
                         hasError: false,
+                        cache: false,
                         result: {
                           responseText: body
                         }
@@ -586,6 +640,7 @@
                   if (response.statusCode == 200) {
                     callback && callback({
                       hasError: false,
+                      cache: false,
                       result: {
                         responseText: body
                       }
@@ -622,6 +677,7 @@
                 if (response.statusCode == 200) {
                   callback && callback({
                     hasError: false,
+                    cache: false,
                     result: {
                       responseText: body
                     }
@@ -804,6 +860,7 @@
           } catch (e) {
             callback && callback({
               hasError: true,
+              cache: false,
               errorCode: 6200,
               errorMessage: CHAT_ERRORS[6200] + " (Request Catch Error)" + e
             });
@@ -829,6 +886,7 @@
 
                 callback && callback({
                   hasError: false,
+                  cache: false,
                   result: {
                     responseText: httpRequestObject[eval(`fileUploadUniqueId`)].responseText,
                     responseHeaders: httpRequestObject[eval(`fileUploadUniqueId`)].getAllResponseHeaders()
@@ -877,19 +935,52 @@
           onResult: function(result) {
             var returnData = {
               hasError: result.hasError,
+              cache: false,
               errorMessage: result.errorMessage,
               errorCode: result.errorCode
             };
 
             if (!returnData.hasError) {
-              var messageContent = result.result,
-                resultData = {
-                  user: formatDataToMakeUser(messageContent)
-                };
+              var messageContent = result.result;
+              var currentUser = formatDataToMakeUser(messageContent);
+
+              /**
+               * Add current user into cache database #cache
+               */
+              if (cacheDb) {
+                if (db) {
+                  db.users.where("id").above(0).delete();
+                  db.users.put(currentUser)
+                    .catch(function(error) {
+                      fireEvent("error", {
+                        code: error.code,
+                        message: error.message,
+                        error: error
+                      });
+                    });
+                } else {
+                  fireEvent("error", {
+                    code: 6601,
+                    message: CHAT_ERRORS[6601],
+                    error: null
+                  });
+                }
+              }
+
+              resultData = {
+                user: currentUser
+              };
 
               returnData.result = resultData;
               getUserInfoRetryCount = 0;
+
               callback && callback(returnData);
+
+              /**
+               * Delete callback so if server pushes response before
+               * cache, cache won't send data again
+               */
+              callback = undefined;
             } else {
               if (getUserInfoRetryCount > getUserInfoRetry) {
                 fireEvent("error", {
@@ -897,6 +988,33 @@
                   message: CHAT_ERRORS[6101],
                   error: null
                 });
+
+                /**
+                 * Retrieve User info from cache #cache
+                 */
+                if (cacheDb) {
+                  if (db) {
+                    db.users.toArray()
+                      .then(function(users) {
+                        if (users.length > 0) {
+                          var returnData = {
+                            hasError: false,
+                            cache: true,
+                            errorCode: 0,
+                            errorMessage: '',
+                            user: users[0]
+                          };
+                        }
+                      });
+                  } else {
+                    fireEvent("error", {
+                      code: 6601,
+                      message: CHAT_ERRORS[6601],
+                      error: null
+                    });
+                  }
+                }
+
               } else {
                 getUserInfoRecursive(callback);
               }
@@ -1433,21 +1551,23 @@
             }, function(threadsResult) {
               var threads = threadsResult.result.threads;
 
-              fireEvent("threadEvents", {
-                type: "THREAD_UNREAD_COUNT_UPDATED",
-                result: {
-                  thread: threads[0],
-                  messageId: messageContent.messageId,
-                  senderId: messageContent.participantId
-                }
-              });
+              if (!threadsResult.cache) {
+                fireEvent("threadEvents", {
+                  type: "THREAD_UNREAD_COUNT_UPDATED",
+                  result: {
+                    thread: threads[0],
+                    messageId: messageContent.messageId,
+                    senderId: messageContent.participantId
+                  }
+                });
 
-              fireEvent("threadEvents", {
-                type: "THREAD_LAST_ACTIVITY_TIME",
-                result: {
-                  thread: threads[0]
-                }
-              });
+                fireEvent("threadEvents", {
+                  type: "THREAD_LAST_ACTIVITY_TIME",
+                  result: {
+                    thread: threads[0]
+                  }
+                });
+              }
             });
 
             break;
@@ -1557,6 +1677,7 @@
       },
 
       chatMessageHandler = function(threadId, messageContent) {
+
         var message = formatDataToMakeMessage(threadId, messageContent);
         deliver({
           messageId: message.id,
@@ -1575,7 +1696,7 @@
         }, function(threadsResult) {
           var threads = threadsResult.result.threads;
 
-          if (messageContent.participant.id !== userInfo.id) {
+          if (messageContent.participant.id !== userInfo.id && !threadsResult.cache) {
             fireEvent("threadEvents", {
               type: "THREAD_UNREAD_COUNT_UPDATED",
               result: {
@@ -1586,12 +1707,14 @@
             });
           }
 
-          fireEvent("threadEvents", {
-            type: "THREAD_LAST_ACTIVITY_TIME",
-            result: {
-              thread: threads[0]
-            }
-          });
+          if (!threadsResult.cache) {
+            fireEvent("threadEvents", {
+              type: "THREAD_LAST_ACTIVITY_TIME",
+              result: {
+                thread: threads[0]
+              }
+            });
+          }
         });
       },
 
@@ -1622,7 +1745,10 @@
       getThreads = function(params, callback) {
         var count = 50,
           offset = 0,
-          content = {};
+          content = {},
+          whereClause = {},
+          cacheDigest,
+          serverDigest;
 
         if (params) {
           if (parseInt(params.count) > 0) {
@@ -1634,11 +1760,11 @@
           }
 
           if (typeof params.name === "string") {
-            content.name = params.name;
+            content.name = whereClause.name = params.name;
           }
 
           if (Array.isArray(params.threadIds)) {
-            content.threadIds = params.threadIds;
+            content.threadIds = whereClause.threadIds = params.threadIds;
           }
 
           if (typeof params.new === "boolean") {
@@ -1654,22 +1780,131 @@
           content: content
         };
 
+        /**
+         * Retrieve threads from cache #cache
+         */
+        if (cacheDb) {
+          if (db) {
+            var thenAble;
+
+            if (Object.keys(whereClause).length === 0) {
+              thenAble = db.threads
+                .where("[owner+time]")
+                .between([userInfo.id, Dexie.minKey], [userInfo.id, Dexie.maxKey])
+                .reverse();
+            } else {
+              if (whereClause.hasOwnProperty("threadIds")) {
+                thenAble = db.threads
+                  .where("id")
+                  .anyOf(whereClause.threadIds)
+                  .and(function(thread) {
+                    return thread.owner == userInfo.id;
+                  });
+              }
+
+              if (whereClause.hasOwnProperty("name")) {
+                thenAble = db.threads
+                  .where("owner")
+                  .equals(userInfo.id)
+                  .filter(function(thread) {
+                    var reg = new RegExp(whereClause.name);
+                    return reg.test(crypt(thread.title, thread.salt));
+                  });
+              }
+            }
+
+            thenAble
+              .offset(offset)
+              .limit(count)
+              .toArray()
+              .then(function(threads) {
+                db.threads
+                  .where("owner")
+                  .equals(userInfo.id)
+                  .count()
+                  .then(function(threadsCount) {
+                    var cacheData = [];
+
+                    for (var i = 0; i < threads.length; i++) {
+                      try {
+                        var tempData = {},
+                          salt = threads[i].salt;
+
+                        cacheData.push(createThread(JSON.parse(crypt(threads[i].data, threads[i].salt)), false));
+                      } catch (error) {
+                        fireEvent("error", {
+                          code: error.code,
+                          message: error.message,
+                          error: error
+                        });
+                      }
+                    }
+
+                    var returnData = {
+                      hasError: false,
+                      cache: true,
+                      errorCode: 0,
+                      errorMessage: '',
+                      result: {
+                        threads: cacheData,
+                        contentCount: threadsCount,
+                        hasNext: (offset + count < threadsCount && threads.length > 0),
+                        nextOffset: offset + threads.length
+                      }
+                    };
+
+                    /**
+                     * Calculate checksum hash of cache response
+                     */
+                    try {
+                      cacheDigest = Utility.MD5(JSON.stringify(cacheData));
+                    } catch (error) {
+                      fireEvent("error", {
+                        code: error.code,
+                        message: error.message,
+                        error: error
+                      });
+                    }
+
+                    callback && callback(returnData);
+                  });
+              }).catch(function(error) {
+                fireEvent("error", {
+                  code: error.code,
+                  message: error.message,
+                  error: error
+                });
+              });
+          } else {
+            fireEvent("error", {
+              code: 6601,
+              message: CHAT_ERRORS[6601],
+              error: null
+            });
+          }
+        }
+
+        /**
+         * Retrive get threads response from server
+         */
         return sendMessage(sendMessageParams, {
           onResult: function(result) {
             var returnData = {
               hasError: result.hasError,
+              cache: false,
               errorMessage: result.errorMessage,
               errorCode: result.errorCode
             };
 
             if (!returnData.hasError) {
+
               var messageContent = result.result,
                 messageLength = messageContent.length,
                 resultData = {
                   threads: [],
                   contentCount: result.contentCount,
                   hasNext: (offset + count < result.contentCount && messageLength > 0),
-                  nextOffset: offset += messageLength
+                  nextOffset: offset + messageLength
                 },
                 threadData;
 
@@ -1681,55 +1916,241 @@
               }
 
               returnData.result = resultData;
+
+              /**
+               * Calculating hash of server response to check with
+               * cache's response. If hashes are different,
+               * server response will be emitted out
+               */
+              try {
+                serverDigest = Utility.MD5(JSON.stringify(resultData.threads));
+
+                if (cacheDigest !== serverDigest) {
+
+                  /**
+                   * Add Threads into cache database #cache
+                   */
+                  if (cacheDb) {
+                    if (db) {
+                      var cacheData = [];
+
+                      for (var i = 0; i < resultData.threads.length; i++) {
+                        try {
+                          var tempData = {},
+                            salt = Utility.generateUUID();
+                          tempData.id = resultData.threads[i].id;
+                          tempData.owner = userInfo.id;
+                          tempData.title = crypt(resultData.threads[i].title, salt);
+                          tempData.time = resultData.threads[i].time;
+                          tempData.data = crypt(JSON.stringify(resultData.threads[i]), salt);
+                          tempData.salt = salt;
+
+                          cacheData.push(tempData);
+                        } catch (error) {
+                          fireEvent("error", {
+                            code: error.code,
+                            message: error.message,
+                            error: error
+                          });
+                        }
+                      }
+
+                      db.threads
+                        .bulkPut(cacheData)
+                        .catch(function(error) {
+                          fireEvent("error", {
+                            code: error.code,
+                            message: error.message,
+                            error: error
+                          });
+                        });
+                    } else {
+                      fireEvent("error", {
+                        code: 6601,
+                        message: CHAT_ERRORS[6601],
+                        error: null
+                      });
+                    }
+                  }
+                }
+              } catch (error) {
+                fireEvent("error", {
+                  code: error.code,
+                  message: error.message,
+                  error: error
+                });
+              }
             }
 
-            callback && callback(returnData);
+            if (cacheDigest !== serverDigest) {
+
+              callback && callback(returnData);
+              /**
+               * Delete callback so if server pushes response before
+               * cache, cache won't send data again
+               */
+              callback = undefined;
+            }
           }
         });
       },
 
       getHistory = function(params, callback) {
         var sendMessageParams = {
-          chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
-          content: {
-            count: 50,
-            offset: 0
+            chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
+            content: {},
+            subjectId: params.threadId
           },
-          subjectId: params.threadId
-        };
+          whereClause = {},
+          offset = (parseInt(params.offset) > 0) ? parseInt(params.offset) : 0,
+          count = (parseInt(params.count) > 0) ? parseInt(params.count) : config.getHistoryCount,
+          cacheDigest,
+          serverDigest;
 
-        if (parseInt(params.count) > 0) {
-          sendMessageParams.content.count = params.count;
-        }
+        sendMessageParams.content.count = count;
+        sendMessageParams.content.offset = offset;
 
-        if (parseInt(params.offset) > 0) {
-          sendMessageParams.content.offset = params.offset;
+        if (parseInt(params.id) > 0) {
+          sendMessageParams.content.id = whereClause.id = params.id;
         }
 
         if (parseInt(params.firstMessageId) > 0) {
-          sendMessageParams.content.firstMessageId = params.firstMessageId;
+          sendMessageParams.content.firstMessageId = whereClause.firstMessageId = params.firstMessageId;
         }
 
         if (parseInt(params.lastMessageId) > 0) {
-          sendMessageParams.content.lastMessageId = params.lastMessageId;
+          sendMessageParams.content.lastMessageId = whereClause.lastMessageId = params.lastMessageId;
         }
 
         if (typeof params.order != "undefined") {
-          sendMessageParams.content.order = params.order;
+          sendMessageParams.content.order = whereClause.order = params.order;
         }
 
         if (typeof params.query != "undefined") {
-          sendMessageParams.content.query = params.query;
+          sendMessageParams.content.query = whereClause.query = params.query;
         }
 
         if (typeof params.metadataCriteria == "object" && params.metadataCriteria.hasOwnProperty("field")) {
           sendMessageParams.content.metadataCriteria = params.metadataCriteria;
         }
 
+        /**
+         * Get Thread Messages from cache #cache
+         */
+        if (cacheDb) {
+          if (db) {
+            var thenAble,
+              table = db.messages,
+              collection = table.where("[threadId+id]")
+              .between([params.threadId, Dexie.minKey], [params.threadId, Dexie.maxKey])
+              .and(function(message) {
+                return message.owner == userInfo.id;
+              })
+              .reverse();
+
+            collection
+              .toArray()
+              .then(function(messages) {
+                messages = messages.sort(dynamicSort("id", !(whereClause.order === "ASC")));
+
+                if (whereClause.hasOwnProperty("firstMessageId") && whereClause.firstMessageId > 0) {
+                  messages = messages.filter(function(message) {
+                    return message.id >= whereClause.firstMessageId;
+                  });
+                }
+
+                if (whereClause.hasOwnProperty("lastMessageId") && whereClause.lastMessageId > 0) {
+                  messages = messages.filter(function(message) {
+                    return message.id <= whereClause.lastMessageId;
+                  });
+                }
+
+                if (whereClause.hasOwnProperty("query") && typeof whereClause.query == "string") {
+                  messages = messages.filter(function(message) {
+                    var reg = new RegExp(whereClause.query);
+                    return reg.test(crypt(message.message, message.salt));
+                  });
+                }
+
+                messages = messages.slice(offset, offset + count);
+
+                collection.count().then(function(contentCount) {
+                  var cacheData = [];
+
+                  for (var i = 0; i < messages.length; i++) {
+                    try {
+                      var tempData = {},
+                        salt = messages[i].salt;
+
+                      cacheData.push(formatDataToMakeMessage(messages[i].threadId, JSON.parse(crypt(messages[i].data, messages[i].salt))));
+                    } catch (error) {
+                      fireEvent("error", {
+                        code: error.code,
+                        message: error.message,
+                        error: error
+                      });
+                    }
+                  }
+
+                  var returnData = {
+                    hasError: false,
+                    cache: true,
+                    errorCode: 0,
+                    errorMessage: '',
+                    result: {
+                      history: cacheData,
+                      contentCount: contentCount,
+                      hasNext: (offset + count < contentCount && messages.length > 0),
+                      nextOffset: offset + messages.length
+                    }
+                  };
+
+                  /**
+                   * Calculate checksum hash of cache response
+                   */
+                  try {
+                    cacheDigest = Utility.MD5(JSON.stringify(cacheData));
+                  } catch (error) {
+                    fireEvent("error", {
+                      code: error.code,
+                      message: error.message,
+                      error: error
+                    });
+                  }
+
+                  callback && callback(returnData);
+                }).catch((error) => {
+                  fireEvent("error", {
+                    code: error.code,
+                    message: error.message,
+                    error: error
+                  });
+                });
+              }).catch((error) => {
+                fireEvent("error", {
+                  code: error.code,
+                  message: error.message,
+                  error: error
+                });
+              });
+
+          } else {
+            fireEvent("error", {
+              code: 6601,
+              message: CHAT_ERRORS[6601],
+              error: null
+            });
+          }
+        }
+
+        /**
+         * Get Thread Messages From Server
+         */
         return sendMessage(sendMessageParams, {
           onResult: function(result) {
             var returnData = {
               hasError: result.hasError,
+              cache: false,
               errorMessage: result.errorMessage,
               errorCode: result.errorCode
             };
@@ -1741,7 +2162,7 @@
                   history: reformatThreadHistory(params.threadId, messageContent),
                   contentCount: result.contentCount,
                   hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount && messageLength > 0),
-                  nextOffset: sendMessageParams.content.offset += messageLength
+                  nextOffset: sendMessageParams.content.offset + messageLength
                 };
 
               if (messageLength > 0) {
@@ -1753,9 +2174,82 @@
               }
 
               returnData.result = resultData;
+
+              /**
+               * Calculating hash of server response to check with
+               * cache's response. If hashes are different,
+               * server response will be emitted out
+               */
+              try {
+                serverDigest = Utility.MD5(JSON.stringify(resultData.history));
+
+                if (cacheDigest !== serverDigest) {
+
+                  /**
+                   * Add Thread Messages into cache database #cache
+                   */
+                  if (cacheDb) {
+                    if (db) {
+
+                      var cacheData = [];
+
+                      for (var i = 0; i < resultData.history.length; i++) {
+                        try {
+                          var tempData = {},
+                            salt = Utility.generateUUID();
+                          tempData.id = resultData.history[i].id;
+                          tempData.owner = userInfo.id;
+                          tempData.threadId = resultData.history[i].threadId;
+                          tempData.time = resultData.history[i].time;
+                          tempData.message = crypt(resultData.history[i].message, salt);
+                          tempData.data = crypt(JSON.stringify(resultData.history[i]), salt);
+                          tempData.salt = salt;
+
+                          cacheData.push(tempData);
+                        } catch (error) {
+                          fireEvent("error", {
+                            code: error.code,
+                            message: error.message,
+                            error: error
+                          });
+                        }
+                      }
+
+                      db.messages
+                        .bulkPut(cacheData)
+                        .catch(function(error) {
+                          fireEvent("error", {
+                            code: error.code,
+                            message: error.message,
+                            error: error
+                          });
+                        });
+                    } else {
+                      fireEvent("error", {
+                        code: 6601,
+                        message: CHAT_ERRORS[6601],
+                        error: null
+                      });
+                    }
+                  }
+                }
+              } catch (error) {
+                fireEvent("error", {
+                  code: error.code,
+                  message: error.message,
+                  error: error
+                });
+              }
             }
 
-            callback && callback(returnData);
+            if (cacheDigest !== serverDigest) {
+              callback && callback(returnData);
+              /**
+               * Delete callback so if server pushes response before
+               * cache, cache won't send data again
+               */
+              callback = undefined;
+            }
           }
         });
       },
@@ -1922,10 +2416,11 @@
         return inviteeData;
       },
 
-      formatDataToMakeParticipant = function(messageContent) {
+      formatDataToMakeParticipant = function(messageContent, threadId) {
         /**
          * + ParticipantVO                   {object}
          *    - id                           {long}
+         *    - threadId                     {long}
          *    - sendEnable                   {boolean}
          *    - receiveEnable                {boolean}
          *    - firstName                    {string}
@@ -1940,12 +2435,13 @@
          *    - contactId                    {long}
          *    - image                        {string}
          *    - contactName                  {string}
-         *    - contactFirstname             {string}
-         *    - contactLastname              {string}
+         *    - contactFirstName             {string}
+         *    - contactLastName              {string}
          */
 
         var participant = {
           id: messageContent.id,
+          threadId: threadId,
           sendEnable: messageContent.sendEnable,
           receiveEnable: messageContent.receiveEnable,
           firstName: messageContent.firstName,
@@ -1960,8 +2456,8 @@
           contactId: messageContent.contactId,
           image: messageContent.image,
           contactName: messageContent.contactName,
-          contactFirstname: messageContent.contactFirstname,
-          contactLastname: messageContent.contactLastname
+          contactFirstname: messageContent.contactFirstName,
+          contactLastname: messageContent.contactLastName
         };
 
         return participant;
@@ -2028,7 +2524,7 @@
 
         // Add inviter if exist
         if (messageContent.inviter) {
-          conversation.inviter = formatDataToMakeParticipant(messageContent.inviter);
+          conversation.inviter = formatDataToMakeParticipant(messageContent.inviter, messageContent.id);
         }
 
         // Add participants list if exist
@@ -2036,7 +2532,7 @@
           conversation.participants = [];
 
           for (var i = 0; i < messageContent.participants.length; i++) {
-            var participantData = formatDataToMakeParticipant(messageContent.participants[i]);
+            var participantData = formatDataToMakeParticipant(messageContent.participants[i], messageContent.id);
             if (participantData) {
               conversation.participants.push(participantData);
             }
@@ -2045,13 +2541,13 @@
 
         // Add lastMessageVO if exist
         if (messageContent.lastMessageVO) {
-          conversation.lastMessageVO = formatDataToMakeMessage(undefined, messageContent.lastMessageVO);
+          conversation.lastMessageVO = formatDataToMakeMessage(messageContent.id, messageContent.lastMessageVO);
         }
 
         return conversation;
       },
 
-      formatDataToMakeReplyInfo = function(messageContent) {
+      formatDataToMakeReplyInfo = function(messageContent, threadId) {
         /**
          * + replyInfoVO                  {object : replyInfoVO}
          *   - participant                {object : ParticipantVO}
@@ -2066,13 +2562,13 @@
         };
 
         if (messageContent.participant) {
-          replyInfo.participant = formatDataToMakeParticipant(messageContent.participant);
+          replyInfo.participant = formatDataToMakeParticipant(messageContent.participant, threadId);
         }
 
         return replyInfo;
       },
 
-      formatDataToMakeForwardInfo = function(messageContent) {
+      formatDataToMakeForwardInfo = function(messageContent, threadId) {
         /**
          * + forwardInfo                  {object : forwardInfoVO}
          *   - participant                {object : ParticipantVO}
@@ -2089,7 +2585,7 @@
         }
 
         if (messageContent.participant) {
-          forwardInfo.participant = formatDataToMakeParticipant(messageContent.participant);
+          forwardInfo.participant = formatDataToMakeParticipant(messageContent.participant, threadId);
         }
 
         return forwardInfo;
@@ -2149,15 +2645,15 @@
         }
 
         if (pushMessageVO.replyInfoVO) {
-          message.replyInfo = formatDataToMakeReplyInfo(pushMessageVO.replyInfoVO);
+          message.replyInfo = formatDataToMakeReplyInfo(pushMessageVO.replyInfoVO, threadId);
         }
 
         if (pushMessageVO.forwardInfo) {
-          message.forwardInfo = formatDataToMakeForwardInfo(pushMessageVO.forwardInfo);
+          message.forwardInfo = formatDataToMakeForwardInfo(pushMessageVO.forwardInfo, threadId);
         }
 
         if (pushMessageVO.participant) {
-          message.participant = formatDataToMakeParticipant(pushMessageVO.participant);
+          message.participant = formatDataToMakeParticipant(pushMessageVO.participant, threadId);
         }
 
         return message;
@@ -2190,11 +2686,11 @@
         return returnData;
       },
 
-      reformatThreadParticipants = function(participantsContent) {
+      reformatThreadParticipants = function(participantsContent, threadId) {
         var returnData = [];
 
         for (var i = 0; i < participantsContent.length; i++) {
-          returnData.push(formatDataToMakeParticipant(participantsContent[i]));
+          returnData.push(formatDataToMakeParticipant(participantsContent[i], threadId));
         }
 
         return returnData;
@@ -2621,6 +3117,30 @@
         for (var id in eventCallbacks[eventName]) {
           eventCallbacks[eventName][id](param);
         }
+      },
+
+      dynamicSort = function(property, reverse) {
+        var sortOrder = 1;
+        if (reverse) {
+          sortOrder = -1;
+        }
+        return function(a, b) {
+          var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+          return result * sortOrder;
+        }
+      },
+
+      crypt = function(str, salt) {
+        if (typeof str !== 'string') {
+          str = JSON.stringify(str);
+        }
+
+        if (str == undefined || str == "undefined") {
+          str = "";
+        }
+
+        var encryptionKey = cacheSecret;
+        return Utility.RC4(encryptionKey + salt, str);
       };
 
     /******************************************************
@@ -2648,7 +3168,9 @@
     this.getContacts = function(params, callback) {
       var count = 50,
         offset = 0,
-        content = {};
+        content = {},
+        cacheDigest,
+        serverDigest;
 
       if (params) {
         if (parseInt(params.count) > 0) {
@@ -2672,36 +3194,106 @@
         content: content
       };
 
-      // if (cacheDb && db) {
-      //   console.log("Dashagh injam");
-      //   db.contacts
-      //     .offset(offset)
-      //     .limit(count)
-      //     .toArray()
-      //     .then((contacts) => {
-      //       console.log("retrieved form cache", contacts);
-      //     }).catch((e) => {
-      //       console.log(e);
-      //     });
-      //   console.log("Zadam ta javabesh biad");
-      // }
+      /**
+       * Retrieve contacts from cache #cache
+       */
+      if (cacheDb) {
+        if (db) {
+          db.contacts
+            .where("owner")
+            .equals(userInfo.id)
+            .reverse()
+            .offset(offset)
+            .limit(count)
+            .toArray()
+            .then(function(contacts) {
+              db.contacts
+                .where("owner")
+                .equals(userInfo.id)
+                .count()
+                .then(function(contactsCount) {
+                  var cacheData = [];
 
+                  for (var i = 0; i < contacts.length; i++) {
+                    try {
+                      var tempData = {},
+                        salt = contacts[i].salt;
+
+                      cacheData.push(formatDataToMakeContact(JSON.parse(crypt(contacts[i].data, contacts[i].salt))));
+                    } catch (error) {
+                      fireEvent("error", {
+                        code: error.code,
+                        message: error.message,
+                        error: error
+                      });
+                    }
+                  }
+
+                  var returnData = {
+                    hasError: false,
+                    cache: true,
+                    errorCode: 0,
+                    errorMessage: '',
+                    result: {
+                      contacts: cacheData,
+                      contentCount: contactsCount,
+                      hasNext: (offset + count < contactsCount && contacts.length > 0),
+                      nextOffset: offset + contacts.length
+                    }
+                  };
+
+                  /**
+                   * Calculate checksum hash of cache response
+                   */
+                  try {
+                    cacheDigest = Utility.MD5(JSON.stringify(cacheData));
+                  } catch (error) {
+                    fireEvent("error", {
+                      code: error.code,
+                      message: error.message,
+                      error: error
+                    });
+                  }
+
+                  callback && callback(returnData);
+                });
+            }).catch(function(error) {
+              fireEvent("error", {
+                code: error.code,
+                message: error.message,
+                error: error
+              });
+            });
+        } else {
+          fireEvent("error", {
+            code: 6601,
+            message: CHAT_ERRORS[6601],
+            error: null
+          });
+        }
+      }
+
+      /**
+       * Retrieve Contacts from server
+       */
       return sendMessage(sendMessageParams, {
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
 
           if (!returnData.hasError) {
+
             var messageContent = result.result,
               messageLength = messageContent.length,
               resultData = {
                 contacts: [],
                 contentCount: result.contentCount,
                 hasNext: (offset + count < result.contentCount && messageLength > 0),
-                nextOffset: offset += messageLength
+                nextOffset: offset + messageLength
               },
               contactData;
 
@@ -2713,9 +3305,85 @@
             }
 
             returnData.result = resultData;
+
+            /**
+             * Calculating hash of server response to check with
+             * cache's response. If hashes are different,
+             * server response will be emitted out
+             */
+            try {
+              serverDigest = Utility.MD5(JSON.stringify(resultData.contacts));
+
+              if (cacheDigest !== serverDigest) {
+
+                /**
+                 * Add Contacts into cache database #cache
+                 */
+                if (cacheDb) {
+                  if (db) {
+                    var cacheData = [];
+
+                    for (var i = 0; i < resultData.contacts.length; i++) {
+                      try {
+                        var tempData = {},
+                          salt = Utility.generateUUID();
+                        tempData.id = resultData.contacts[i].id;
+                        tempData.owner = userInfo.id;
+                        tempData.uniqueId = resultData.contacts[i].uniqueId;
+                        tempData.userId = crypt(resultData.contacts[i].userId, salt);
+                        tempData.cellphoneNumber = crypt(resultData.contacts[i].cellphoneNumber, salt);
+                        tempData.email = crypt(resultData.contacts[i].email, salt);
+                        tempData.firstName = crypt(resultData.contacts[i].firstName, salt);
+                        tempData.lastName = crypt(resultData.contacts[i].lastName, salt);
+                        tempData.data = crypt(JSON.stringify(resultData.contacts[i]), salt);
+                        tempData.salt = salt;
+
+                        cacheData.push(tempData);
+                      } catch (error) {
+                        fireEvent("error", {
+                          code: error.code,
+                          message: error.message,
+                          error: error
+                        });
+                      }
+                    }
+
+                    db.contacts
+                      .bulkPut(cacheData)
+                      .catch(function(error) {
+                        fireEvent("error", {
+                          code: error.code,
+                          message: error.message,
+                          error: error
+                        });
+                      });
+                  } else {
+                    fireEvent("error", {
+                      code: 6601,
+                      message: CHAT_ERRORS[6601],
+                      error: null
+                    });
+                  }
+                }
+              }
+            } catch (error) {
+              fireEvent("error", {
+                code: error.code,
+                message: error.message,
+                error: error
+              });
+            }
           }
 
-          callback && callback(returnData);
+          if (cacheDigest !== serverDigest) {
+
+            callback && callback(returnData);
+            /**
+             * Delete callback so if server pushes response before
+             * cache, cache won't send data again
+             */
+            callback = undefined;
+          }
         }
       });
     };
@@ -2726,22 +3394,18 @@
 
     this.getThreadParticipants = function(params, callback) {
       var sendMessageParams = {
-        chatMessageVOType: chatMessageVOTypes.THREAD_PARTICIPANTS,
-        content: {},
-        subjectId: params.threadId
-      };
+          chatMessageVOType: chatMessageVOTypes.THREAD_PARTICIPANTS,
+          content: {},
+          subjectId: params.threadId
+        },
+        cacheDigest,
+        serverDigest;
 
-      if (parseInt(params.count) > 0) {
-        sendMessageParams.content.count = params.count;
-      } else {
-        sendMessageParams.content.count = config.getHistoryCount;
-      }
+      var offset = (parseInt(params.offset) > 0) ? parseInt(params.offset) : 0,
+        count = (parseInt(params.count) > 0) ? parseInt(params.count) : config.getHistoryCount;
 
-      if (parseInt(params.offset) > 0) {
-        sendMessageParams.content.offset = params.offset;
-      } else {
-        sendMessageParams.content.offset = 0;
-      }
+      sendMessageParams.content.count = count;
+      sendMessageParams.content.offset = offset;
 
       if (parseInt(params.firstMessageId) > 0) {
         sendMessageParams.content.firstMessageId = params.firstMessageId;
@@ -2754,10 +3418,90 @@
         content.name = params.name;
       }
 
+      /**
+       * Retrieve thread participants from cache
+       */
+      if (cacheDb) {
+        if (db) {
+          db.participants
+            .where("threadId")
+            .equals(params.threadId)
+            .and(function(participant) {
+              return participant.owner == userInfo.id;
+            })
+            .offset(offset)
+            .limit(count)
+            .reverse()
+            .toArray()
+            .then(function(participants) {
+              db.participants.count().then(function(participantsCount) {
+
+                var cacheData = [];
+
+                for (var i = 0; i < participants.length; i++) {
+                  try {
+                    var tempData = {},
+                      salt = participants[i].salt;
+
+                    cacheData.push(formatDataToMakeParticipant(JSON.parse(crypt(participants[i].data, participants[i].salt)), participants[i].threadId));
+                  } catch (error) {
+                    fireEvent("error", {
+                      code: error.code,
+                      message: error.message,
+                      error: error
+                    });
+                  }
+                }
+
+                var returnData = {
+                  hasError: false,
+                  cache: true,
+                  errorCode: 0,
+                  errorMessage: '',
+                  result: {
+                    participants: cacheData,
+                    contentCount: participantsCount,
+                    hasNext: (offset + count < participantsCount && participants.length > 0),
+                    nextOffset: offset + participants.length
+                  }
+                };
+
+                /**
+                 * Calculate checksum hash of cache response
+                 */
+                try {
+                  cacheDigest = Utility.MD5(JSON.stringify(cacheData));
+                } catch (error) {
+                  fireEvent("error", {
+                    code: error.code,
+                    message: error.message,
+                    error: error
+                  });
+                }
+
+                callback && callback(returnData);
+              });
+            }).catch(function(error) {
+              fireEvent("error", {
+                code: error.code,
+                message: error.message,
+                error: error
+              });
+            });
+        } else {
+          fireEvent("error", {
+            code: 6601,
+            message: CHAT_ERRORS[6601],
+            error: null
+          });
+        }
+      }
+
       return sendMessage(sendMessageParams, {
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -2766,16 +3510,90 @@
             var messageContent = result.result,
               messageLength = messageContent.length,
               resultData = {
-                participants: reformatThreadParticipants(messageContent),
+                participants: reformatThreadParticipants(messageContent, params.threadId),
                 contentCount: result.contentCount,
                 hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount && messageLength > 0),
-                nextOffset: sendMessageParams.content.offset += messageLength
+                nextOffset: sendMessageParams.content.offset + messageLength
               };
 
             returnData.result = resultData;
+
+            /**
+             * Calculating hash of server response to check with
+             * cache's response. If hashes are different,
+             * server response will be emitted out
+             */
+            try {
+              serverDigest = Utility.MD5(JSON.stringify(resultData.participants));
+
+              if (cacheDigest !== serverDigest) {
+
+                /**
+                 * Add thread participants into cache database #cache
+                 */
+                if (cacheDb) {
+                  if (db) {
+
+                    var cacheData = [];
+
+                    for (var i = 0; i < resultData.participants.length; i++) {
+                      try {
+                        var tempData = {},
+                          salt = Utility.generateUUID();
+
+                        tempData.id = resultData.participants[i].id;
+                        tempData.owner = userInfo.id;
+                        tempData.threadId = resultData.participants[i].threadId;
+                        tempData.notSeenDuration = resultData.participants[i].notSeenDuration;
+                        tempData.data = crypt(JSON.stringify(resultData.participants[i]), salt);
+                        tempData.salt = salt;
+
+                        cacheData.push(tempData);
+                      } catch (error) {
+                        fireEvent("error", {
+                          code: error.code,
+                          message: error.message,
+                          error: error
+                        });
+                      }
+                    }
+
+                    db.participants
+                      .bulkPut(cacheData)
+                      .catch(function(error) {
+                        fireEvent("error", {
+                          code: error.code,
+                          message: error.message,
+                          error: error
+                        });
+                      });
+                  } else {
+                    fireEvent("error", {
+                      code: 6601,
+                      message: CHAT_ERRORS[6601],
+                      error: null
+                    });
+                  }
+                }
+              }
+            } catch (error) {
+              fireEvent("error", {
+                code: error.code,
+                message: error.message,
+                error: error
+              });
+            }
           }
 
-          callback && callback(returnData);
+          if (cacheDigest !== serverDigest) {
+
+            callback && callback(returnData);
+            /**
+             * Delete callback so if server pushes response before
+             * cache, cache won't send data again
+             */
+            callback = undefined;
+          }
         }
       });
     };
@@ -2808,6 +3626,7 @@
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -2854,6 +3673,7 @@
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -2894,6 +3714,7 @@
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -2957,6 +3778,7 @@
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -3198,6 +4020,7 @@
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -3229,6 +4052,7 @@
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -3458,6 +4282,7 @@
         onResult: function(result) {
           var returnData = {
             hasError: result.hasError,
+            cache: false,
             errorMessage: result.errorMessage,
             errorCode: result.errorCode
           };
@@ -3469,7 +4294,7 @@
                 blockedUsers: [],
                 contentCount: result.contentCount,
                 hasNext: (offset + count < result.contentCount && messageLength > 0),
-                nextOffset: offset += messageLength
+                nextOffset: offset + messageLength
               },
               blockedUser;
 
@@ -3535,6 +4360,7 @@
 
           var returnData = {
             hasError: responseData.hasError,
+            cache: false,
             errorMessage: responseData.message,
             errorCode: responseData.errorCode
           };
@@ -3639,6 +4465,7 @@
 
           var returnData = {
             hasError: responseData.hasError,
+            cache: false,
             errorMessage: responseData.message,
             errorCode: responseData.errorCode
           };
@@ -3705,6 +4532,7 @@
 
           var returnData = {
             hasError: responseData.hasError,
+            cache: false,
             errorMessage: responseData.message,
             errorCode: responseData.errorCode
           };
@@ -3727,41 +4555,44 @@
 
     this.searchContacts = function(params, callback) {
       var data = {
-        size: 50,
-        offset: 0
-      };
+          size: 50,
+          offset: 0
+        },
+        whereClause = {},
+        cacheDigest,
+        serverDigest;
 
       if (params) {
         if (typeof params.firstName === "string") {
-          data.firstName = params.firstName;
+          data.firstName = whereClause.firstName = params.firstName;
         }
 
         if (typeof params.lastName === "string") {
-          data.lastName = params.lastName;
+          data.lastName = whereClause.lastName = params.lastName;
         }
 
         if (parseInt(params.cellphoneNumber) > 0) {
-          data.cellphoneNumber = params.cellphoneNumber;
+          data.cellphoneNumber = whereClause.cellphoneNumber = params.cellphoneNumber;
         }
 
         if (typeof params.email === "string") {
-          data.email = params.email;
+          data.email = whereClause.email = params.email;
         }
 
         if (typeof params.q === "string") {
-          data.q = params.q;
+          data.q = whereClause.q = params.q;
         }
 
         if (typeof params.uniqueId === "string") {
-          data.uniqueId = params.uniqueId;
+          data.uniqueId = whereClause.uniqueId = params.uniqueId;
         }
 
         if (parseInt(params.id) > 0) {
-          data.id = params.id;
+          data.id = whereClause.id = params.id;
         }
 
         if (parseInt(params.typeCode) > 0) {
-          data.typeCode = params.typeCode;
+          data.typeCode = whereClause.typeCode = params.typeCode;
         }
 
         if (parseInt(params.size) > 0) {
@@ -3783,12 +4614,162 @@
         }
       };
 
+      /**
+       * Search contacts in cache #cache
+       */
+      if (cacheDb) {
+        if (db) {
+          var thenAble;
+
+          if (Object.keys(whereClause).length === 0) {
+            thenAble = db.contacts
+              .where("owner")
+              .equals(userInfo.id);
+          } else {
+            if (whereClause.hasOwnProperty("id")) {
+              thenAble = db.contacts
+                .where("owner")
+                .equals(userInfo.id)
+                .and(function(contact) {
+                  return contact.id == whereClause.id;
+                });
+            } else if (whereClause.hasOwnProperty("uniqueId")) {
+              thenAble = db.contacts
+                .where("owner")
+                .equals(userInfo.id)
+                .and(function(contact) {
+                  return contact.uniqueId == whereClause.uniqueId;
+                });
+            } else {
+              if (whereClause.hasOwnProperty("firstName")) {
+                thenAble = db.contacts
+                  .where("owner")
+                  .equals(userInfo.id)
+                  .filter(function(contact) {
+                    var reg = new RegExp(whereClause.firstName);
+                    return reg.test(crypt(contact.firstName, contact.salt));
+                  });
+              }
+
+              if (whereClause.hasOwnProperty("lastName")) {
+                thenAble = db.contacts
+                  .where("owner")
+                  .equals(userInfo.id)
+                  .filter(function(contact) {
+                    var reg = new RegExp(whereClause.lastName);
+                    return reg.test(crypt(contact.lastName, contact.salt));
+                  });
+              }
+
+              if (whereClause.hasOwnProperty("email")) {
+                thenAble = db.contacts
+                  .where("owner")
+                  .equals(userInfo.id)
+                  .filter(function(contact) {
+                    var reg = new RegExp(whereClause.email);
+                    return reg.test(crypt(contact.email, contact.salt));
+                  });
+              }
+
+              if (whereClause.hasOwnProperty("q")) {
+                thenAble = db.contacts
+                  .where("owner")
+                  .equals(userInfo.id)
+                  .filter(function(contact) {
+                    var reg = new RegExp(whereClause.q);
+                    return reg.test(crypt(contact.firstName, contact.salt) + " " + crypt(contact.lastName, contact.salt) + " " + crypt(contact.email, contact.salt));
+                  });
+              }
+            }
+          }
+
+          thenAble
+            .offset(data.offset)
+            .limit(data.size)
+            .toArray()
+            .then(function(contacts) {
+              db.contacts
+                .where("owner")
+                .equals(userInfo.id)
+                .count()
+                .then(function(contactsCount) {
+                  var cacheData = [];
+
+                  for (var i = 0; i < contacts.length; i++) {
+                    try {
+                      var tempData = {},
+                        salt = contacts[i].salt;
+
+                      cacheData.push(formatDataToMakeContact(JSON.parse(crypt(contacts[i].data, contacts[i].salt))));
+                    } catch (error) {
+                      fireEvent("error", {
+                        code: error.code,
+                        message: error.message,
+                        error: error
+                      });
+                    }
+                  }
+
+                  var returnData = {
+                    hasError: false,
+                    cache: true,
+                    errorCode: 0,
+                    errorMessage: '',
+                    result: {
+                      contacts: cacheData,
+                      contentCount: contactsCount,
+                      hasNext: (data.offset + data.size < contactsCount && contacts.length > 0),
+                      nextOffset: data.offset + contacts.length
+                    }
+                  };
+
+                  /**
+                   * Calculate checksum hash of cache response
+                   */
+                  try {
+                    cacheDigest = Utility.MD5(JSON.stringify(cacheData));
+                  } catch (error) {
+                    fireEvent("error", {
+                      code: error.code,
+                      message: error.message,
+                      error: error
+                    });
+                  }
+
+                  callback && callback(returnData);
+                }).catch((error) => {
+                  fireEvent("error", {
+                    code: error.code,
+                    message: error.message,
+                    error: error
+                  });
+                });
+            }).catch(function(error) {
+              fireEvent("error", {
+                code: error.code,
+                message: error.message,
+                error: error
+              });
+            });
+        } else {
+          fireEvent("error", {
+            code: 6601,
+            message: CHAT_ERRORS[6601],
+            error: null
+          });
+        }
+      }
+
+      /**
+       * Get Search Contacts Result From Server
+       */
       httpRequest(requestParams, function(result) {
         if (!result.hasError) {
           var responseData = JSON.parse(result.result.responseText);
 
           var returnData = {
             hasError: responseData.hasError,
+            cache: false,
             errorMessage: responseData.message,
             errorCode: responseData.errorCode
           };
@@ -3810,7 +4791,131 @@
             }
 
             returnData.result = resultData;
+
+            /**
+             * Calculating hash of server response to check with
+             * cache's response. If hashes are different,
+             * server response will be emitted out
+             */
+            try {
+              serverDigest = Utility.MD5(JSON.stringify(resultData.contacts));
+
+              if (cacheDigest !== serverDigest) {
+
+                /**
+                 * Add Contacts into cache database #cache
+                 */
+                if (cacheDb) {
+                  if (db) {
+                    var cacheData = [];
+
+                    for (var i = 0; i < resultData.contacts.length; i++) {
+                      try {
+                        var tempData = {},
+                          salt = Utility.generateUUID();
+
+                        tempData.id = resultData.contacts[i].id;
+                        tempData.owner = userInfo.id;
+                        tempData.uniqueId = resultData.contacts[i].uniqueId;
+                        tempData.userId = crypt(resultData.contacts[i].userId, salt);
+                        tempData.cellphoneNumber = crypt(resultData.contacts[i].cellphoneNumber, salt);
+                        tempData.email = crypt(resultData.contacts[i].email, salt);
+                        tempData.firstName = crypt(resultData.contacts[i].firstName, salt);
+                        tempData.lastName = crypt(resultData.contacts[i].lastName, salt);
+                        tempData.data = crypt(JSON.stringify(resultData.contacts[i]), salt);
+                        tempData.salt = salt;
+
+                        cacheData.push(tempData);
+                      } catch (error) {
+                        fireEvent("error", {
+                          code: error.code,
+                          message: error.message,
+                          error: error
+                        });
+                      }
+                    }
+
+                    db.contacts
+                      .bulkPut(cacheData)
+                      .catch(function(error) {
+                        fireEvent("error", {
+                          code: error.code,
+                          message: error.message,
+                          error: error
+                        });
+                      });
+                  } else {
+                    fireEvent("error", {
+                      code: 6601,
+                      message: CHAT_ERRORS[6601],
+                      error: null
+                    });
+                  }
+                }
+              }
+            } catch (error) {
+              fireEvent("error", {
+                code: error.code,
+                message: error.message,
+                error: error
+              });
+            }
           }
+
+          if (cacheDigest !== serverDigest) {
+
+            callback && callback(returnData);
+            /**
+             * Delete callback so if server pushes response before
+             * cache, cache won't send data again
+             */
+            callback = undefined;
+          }
+        } else {
+          fireEvent("error", {
+            code: result.errorCode,
+            message: result.errorMessage,
+            error: result
+          });
+        }
+      });
+    }
+
+    this.mapReverse = function(params, callback) {
+      var data = {};
+
+      if (params) {
+        if (parseFloat(params.lat) > 0) {
+          data.lat = params.lat;
+        }
+
+        if (parseFloat(params.lng) > 0) {
+          data.lng = params.lng;
+        }
+
+        data.uniqueId = Utility.generateUUID();
+      }
+
+      var requestParams = {
+        url: SERVICE_ADDRESSES.MAP_ADDRESS + SERVICES_PATH.REVERSE,
+        method: "GET",
+        data: data,
+        headers: {
+          "Api-Key": mapApiKey
+        }
+      };
+
+      httpRequest(requestParams, function(result) {
+        if (!result.hasError) {
+          var responseData = JSON.parse(result.result.responseText);
+
+          var returnData = {
+            hasError: result.hasError,
+            cache: result.cache,
+            errorMessage: result.message,
+            errorCode: result.errorCode,
+            result: responseData
+          };
 
           callback && callback(returnData);
 
@@ -3822,7 +4927,201 @@
           });
         }
       });
-    }
+    };
+
+    this.mapSearch = function(params, callback) {
+      var data = {};
+
+      if (params) {
+        if (typeof params.term === "string") {
+          data.term = params.term;
+        }
+
+        if (parseFloat(params.lat) > 0) {
+          data.lat = params.lat;
+        }
+
+        if (parseFloat(params.lng) > 0) {
+          data.lng = params.lng;
+        }
+
+        data.uniqueId = Utility.generateUUID();
+      }
+
+      var requestParams = {
+        url: SERVICE_ADDRESSES.MAP_ADDRESS + SERVICES_PATH.SEARCH,
+        method: "GET",
+        data: data,
+        headers: {
+          "Api-Key": mapApiKey
+        }
+      };
+
+      httpRequest(requestParams, function(result) {
+        if (!result.hasError) {
+          var responseData = JSON.parse(result.result.responseText);
+
+          var returnData = {
+            hasError: result.hasError,
+            cache: result.cache,
+            errorMessage: result.message,
+            errorCode: result.errorCode,
+            result: responseData
+          };
+
+          callback && callback(returnData);
+
+        } else {
+          fireEvent("error", {
+            code: result.errorCode,
+            message: result.errorMessage,
+            error: result
+          });
+        }
+      });
+    };
+
+    this.mapRouting = function(params, callback) {
+      var data = {};
+
+      if (params) {
+        if (typeof params.alternative === "boolean") {
+          data.alternative = params.alternative;
+        } else {
+          data.alternative = true;
+        }
+
+        if (typeof params.origin === "object") {
+          if (parseFloat(params.origin.lat) > 0 && parseFloat(params.origin.lng)) {
+            data.origin = params.origin.lat + "," + parseFloat(params.origin.lng);
+          } else {
+            // Throw Error
+          }
+        }
+
+        if (typeof params.destination === "object") {
+          if (parseFloat(params.destination.lat) > 0 && parseFloat(params.destination.lng)) {
+            data.destination = params.destination.lat + "," + parseFloat(params.destination.lng);
+          } else {
+            // Throw Error
+          }
+        }
+
+        data.uniqueId = Utility.generateUUID();
+      }
+
+      var requestParams = {
+        url: SERVICE_ADDRESSES.MAP_ADDRESS + SERVICES_PATH.ROUTING,
+        method: "GET",
+        data: data,
+        headers: {
+          "Api-Key": mapApiKey
+        }
+      };
+
+      httpRequest(requestParams, function(result) {
+        if (!result.hasError) {
+          var responseData = JSON.parse(result.result.responseText);
+
+          var returnData = {
+            hasError: result.hasError,
+            cache: result.cache,
+            errorMessage: result.message,
+            errorCode: result.errorCode,
+            result: responseData
+          };
+
+          callback && callback(returnData);
+
+        } else {
+          fireEvent("error", {
+            code: result.errorCode,
+            message: result.errorMessage,
+            error: result
+          });
+        }
+      });
+    };
+
+    this.mapStaticImage = function(params, callback) {
+      var data = {},
+        url = SERVICE_ADDRESSES.MAP_ADDRESS + SERVICES_PATH.STATIC_IMAGE,
+        hasError = false;
+
+      if (params) {
+        if (typeof params.type === "string") {
+          data.type = params.type;
+        } else {
+          data.type = "standard-night";
+        }
+
+        if (parseInt(params.zoom) > 0) {
+          data.zoom = params.zoom;
+        } else {
+          data.zoom = 15;
+        }
+
+        if (parseInt(params.width) > 0) {
+          data.width = params.width;
+        } else {
+          data.width = 800;
+        }
+
+        if (parseInt(params.height) > 0) {
+          data.height = params.height;
+        } else {
+          data.height = 600;
+        }
+
+        if (typeof params.center === "object") {
+          if (parseFloat(params.center.lat) > 0 && parseFloat(params.center.lng)) {
+            data.center = params.center.lat + "," + parseFloat(params.center.lng);
+          } else {
+            hasError = true;
+            fireEvent("error", {
+              code: 6700,
+              message: CHAT_ERRORS[6700],
+              error: undefined
+            });
+          }
+        } else {
+          hasError = true;
+          fireEvent("error", {
+            code: 6700,
+            message: CHAT_ERRORS[6700],
+            error: undefined
+          });
+        }
+
+        data.key = mapApiKey;
+      }
+
+      var keys = Object.keys(data);
+
+      if (keys.length > 0) {
+        url += "?";
+
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          url += key + "=" + data[key];
+          if (i < keys.length - 1) {
+            url += "&";
+          }
+        }
+      }
+
+      var returnData = {
+        hasError: hasError,
+        cache: false,
+        errorMessage: (hasError) ? CHAT_ERRORS[6700] : "",
+        errorCode:  (hasError) ? 6700 : undefined,
+        result: {
+          link: (!hasError) ? url : ""
+        }
+      };
+
+      callback && callback(returnData);
+    };
 
     this.generateUUID = Utility.generateUUID;
 

@@ -9,6 +9,7 @@
   <script type="text/javascript" src="node_modules/podasync/src/utility/utility.js"></script>
   <script type="text/javascript" src="node_modules/podasync/src/network/socket.js"></script>
   <script type="text/javascript" src="node_modules/podasync/src/network/async.js"></script>
+  <script type="text/javascript" src="node_modules/dexie/dist/dexie.min.js"></script>
   <script type="text/javascript" src="src/chat.js"></script>
 
   <script type="text/javascript">
@@ -34,6 +35,7 @@
       // token: "f53f39a1893e4c4da18e59822290a552", //  {**REQUIRED**} SSO Token JiJi
       // token: "1fcecc269a8949d6b58312cab66a4926",  {**REQUIRED**} SSO Token FiFi
       appId: "PodChat-" + new Date().getTime(),
+      enableCache: true, // Enable Client side caching
       wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
       connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
       connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -41,9 +43,9 @@
       reconnectOnClose: true, // auto connect to socket after socket close
       asyncLogging: {
         onFunction: true, // log main actions on console
-        onMessageReceive: true, // log received messages on console
-        onMessageSend: true, // log sent messaged on console
-        actualTiming: true // log actual functions running time
+        // onMessageReceive: true, // log received messages on console
+        // onMessageSend: true, // log sent messaged on console
+        // actualTiming: true // log actual functions running time
       }
     };
 
@@ -73,9 +75,10 @@
        * @param name
        */
       // getThreads({
-      //   count: 2,
+      //   count: 5,
       //   offset: 0,
-      //   // threadIds: [1152]
+      //   // threadIds: [312, 1210],
+      //   name: "flower"
       // });
 
       /**
@@ -134,12 +137,12 @@
        * @param query
        */
       // getHistory({
-      //   count: 2,
-      //   // offset: 0,
-      //   threadId: 293,
-      //   firstMessageId: 15585,
-      //   order: "ASC",
-      //   // lastMessageId: 15590,
+      //   count: 10,
+      //   offset: 0,
+      //   threadId: 312,
+      //   // firstMessageId: 17035,
+      //   // order: "ASC",
+      //   // lastMessageId: 17052,
       //   // metadataCriteria: {
       //   //   "field": "type",
       //   //   "has": "BOT_",
@@ -148,8 +151,10 @@
       //   //     "is": "1534835339446"
       //   //   }]
       //   // },
-      //   // query: "PooPoo"
+      //   query: "query"
       // });
+
+
       /**
        * GET SINGLE MESSAGE
        * @param threadId
@@ -268,15 +273,22 @@
       //   console.log(result);
       // });
 
+
       /**
        * SEARCH CONTACTS
        * @link http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts
        */
       // chatAgent.searchContacts({
-      //   cellphoneNumber: 09
-      // }, function(result){
+      //   // cellphoneNumber: "0912", // LIKE
+      //   // id: 563, // EXACT
+      //   // firstName: "masodi", // LIKE
+      //   // lastName: "ra", // LIKE
+      //   // email: "m", // LIKE
+      //   // uniqueId: "f10c94f7-3013-4e34-9b3e-6a3bd25ce2a6", // EXACT
+      //   q: "v" // LIKE in firstName, lastName, email
+      // }, function(result) {
       //   if (!result.hasError) {
-      //     console.log(result.result);
+      //     console.log(result);
       //   }
       // });
 
@@ -513,6 +525,81 @@
         });
       });
 
+      /*******************************************************
+       *                 N E S H A N   M A P                 *
+       *******************************************************/
+
+      /**
+       * Get Address of a GeoLocation point
+       *
+       * @param  {float}   lat     Latitute of the Location
+       * @param  {float}   lng     Longtitute of the Location
+       */
+      // chatAgent.mapReverse({
+      //   lat: 35.7003508,
+      //   lng: 51.3376460
+      // }, function(result) {
+      //   console.log(result);
+      // });
+
+      /**
+       * Get nearby places names as "term" keyword
+       * around the given GeoLocation
+       *
+       * @param  {float}   lat     Latitute of the Location
+       * @param  {float}   lng     Longtitute of the Location
+       * @param  {string}  term    Search term to be searched
+       */
+      // chatAgent.mapSearch({
+      //   lat: 35.7003508,
+      //   lng: 51.3376460,
+      //   term: "فروشگاه"
+      // }, function(result) {
+      //   console.log(result);
+      // });
+
+      /**
+       * Get routing between two given GeoLocations
+       *
+       * @param  {object}   origin         Lat & Lng of Origin as a JSON
+       * @param  {object}   destination    Lat & Lng of Destination as a JSON
+       * @param  {boolean}  alternative    Give Alternative Routs too
+       */
+      // chatAgent.mapRouting({
+      //   origin: {
+      //     lat: 35.7003508,
+      //     lng: 51.3376460
+      //   },
+      //   destination: {
+      //     lat: 35.7343510,
+      //     lng: 50.3376472
+      //   },
+      //   alternative: true
+      // }, function(result) {
+      //   console.log(result);
+      // });
+
+      /**
+       * Get Static Image of a GeoLocation
+       *
+       * @param  {string}   type           Map style (default standard-night)
+       * @param  {int}      zoom           Map zoom (default 15)
+       * @param  {object}   center         Lat & Lng of Map center as a JSON
+       * @param  {int}      width          width of image in pixels (default 800px)
+       * @param  {int}      height         height of image in pixels (default 600px)
+       */
+      // chatAgent.mapStaticImage({
+      //   type: "standard-night",
+      //   zoom: 15,
+      //   center: {
+      //     lat: 35.7003508,
+      //     lng: 51.3376462
+      //   },
+      //   width: 800,
+      //   height: 500
+      // }, function(result) {
+      //   console.log(result);
+      // });
     });
 
     /**
@@ -635,10 +722,10 @@
         if (!threadsResult.hasError) {
           var threadsCount = threadsResult.result.contentCount;
           var threads = threadsResult.result.threads;
-          console.log(threads);
+          console.log(threadsResult);
         }
       });
-      console.log(instantResult);
+      // console.log(instantResult);
     }
 
     function getThreadParticipants(threadId) {
@@ -650,9 +737,7 @@
 
       chatAgent.getThreadParticipants(getParticipantsParams, function(participantsResult) {
         if (!participantsResult.hasError) {
-          var participantsCount = participantsResult.result.contentCount;
-          var participants = participantsResult.result.participants;
-          console.log(participants);
+          console.log(participantsResult);
         }
       });
     }
@@ -687,7 +772,7 @@
 
     function getContacts(params) {
       var getContactsParams = {
-        count: 2,
+        count: 5,
         offset: 0
       };
 
@@ -698,9 +783,7 @@
       }
       chatAgent.getContacts(getContactsParams, function(contactsResult) {
         if (!contactsResult.hasError) {
-          var contactsCount = contactsResult.result.contentCount;
-          var contacts = contactsResult.result.contacts;
-          console.log(contacts);
+          console.log(contactsResult);
         }
       });
     }
@@ -720,10 +803,10 @@
     function getHistory(params) {
       var test = chatAgent.getHistory(params, function(historyResult) {
         if (!historyResult.hasError) {
-          console.log(historyResult.result.history);
+          console.log(historyResult);
         }
       });
-      console.log(test);
+      // console.log(test);
     }
 
     function sendMessage(threadId, message, metaData) {
@@ -1023,6 +1106,7 @@
       border: none !important;
       text-decoration: none;
       margin: 10px 15px;
+      display: inline-block;
     }
   </style>
 </head>
@@ -1046,6 +1130,7 @@
       <a class="btn" href="#" onclick="getContacts()">Get Contacts</a>
       <a class="btn" href="#" onclick="getThreads({count:10, offset: 0})">Get Threads</a>
       <a class="btn" href="#" onclick="getHistory({count:10, offset: 0, threadId: document.getElementById('g-p2p').value})">Get History</a>
+      <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread Participants</a>
       <br>
     </fieldset>
   </form>

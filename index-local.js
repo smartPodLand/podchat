@@ -8,6 +8,8 @@ var params = {
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   grantDeviceIdFromSSO: false,
+  enableCache: true, // Enable Client side caching
+  mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
   token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
   // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
   // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -20,9 +22,9 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    onMessageReceive: true, // log received messages on console
-    onMessageSend: true, // log sent messaged on console
-    actualTiming: true // log actual functions running time
+    // onMessageReceive: true, // log received messages on console
+    // onMessageSend: true, // log sent messaged on console
+    // actualTiming: true // log actual functions running time
   }
 };
 
@@ -51,10 +53,10 @@ chatAgent.on("chatReady", function() {
    * @param name
    */
   // getThreads({
-  //   count: 2,
+  //   count: 1,
   //   offset: 0,
-  //   threadIds: [1152],
-  //   name: "Pooria"
+  //   // threadIds: [312, 293, 528],
+  //   // name: "Pooria"
   // });
 
   /**
@@ -80,7 +82,7 @@ chatAgent.on("chatReady", function() {
    * GET THREAD PARTICIPANTS
    * @param threadId
    */
-  // getThreadParticipants(293);
+  // getThreadParticipants(312);
 
   /**
    * ADD PARTICIPANTS
@@ -113,28 +115,29 @@ chatAgent.on("chatReady", function() {
    * @param query
    */
   // getHistory({
-  //   count: 2,
+  //   count: 1,
   //   offset: 0,
-  //   threadId: 293,
-  //   firstMessageId: 15585,
-  //   order: "ASC",
-  //   lastMessageId: 15590,
-  //   metadataCriteria: {
-  //     "field": "type",
-  //     "has": "BOT_",
-  //     "and": [{
-  //       "field": "id",
-  //       "is": "1534835339446"
-  //     }]
-  //   },
-  //   query: "PooPoo"
+  //   threadId: 312,
+  //   // firstMessageId: 16975,
+  //   // order: "ASC",
+  //   // lastMessageId: 17040,
+  //   // metadataCriteria: {
+  //   //   "field": "type",
+  //   //   "has": "BOT_",
+  //   //   "and": [{
+  //   //     "field": "id",
+  //   //     "is": "1534835339446"
+  //   //   }]
+  //   // },
+  //   // query: "query"
   // });
+
   /**
    * GET SINGLE MESSAGE
    * @param threadId
    * @param messageId
    */
-  // getSingleMessage(293, 13698);
+  // getSingleMessage(312, 16955);
 
   /**
    * MUTE THREAD
@@ -212,10 +215,10 @@ chatAgent.on("chatReady", function() {
    * @param email
    */
   // var addContactInstantResult = chatAgent.addContacts({
-  //   firstName: "حامد",
-  //   lastName: "مهرآرا",
-  //   cellphoneNumber: "09188644304",
-  //   email: "hamed.m844a@gmail.com"
+  //   firstName: "Jiji",
+  //   lastName: "Jijuli",
+  //   cellphoneNumber: "09038231263",
+  //   email: "jijuli@gmail.com"
   // }, function(result) {
   //   console.log(result);
   // });
@@ -252,9 +255,16 @@ chatAgent.on("chatReady", function() {
    * @link http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts
    */
   // chatAgent.searchContacts({
-  //   cellphoneNumber: 09
+  //   // cellphoneNumber: "0912", // LIKE
+  //   id: 563, // EXACT
+  //   // firstName: "m", // LIKE
+  //   // lastName: "ra", // LIKE
+  //   // email: "ish", // LIKE
+  //   // uniqueId: "2653b39d-85f0-45cf-e1a2-38fbd811872c", // EXACT
+  //   // q: "m" // LIKE in firstName, lastName, email
   // }, function(result){
   //   if (!result.hasError) {
+  //     console.log(result);
   //     console.log(result.result);
   //   }
   // });
@@ -310,7 +320,7 @@ chatAgent.on("chatReady", function() {
    * @param {int}      messageId
    * @param {boolean}  deleteForAll
    */
-  // deleteMessage(16802, true);
+  // deleteMessage(16877, true);
 
   /**
    * REPLY TO MESSAGE
@@ -361,6 +371,81 @@ chatAgent.on("chatReady", function() {
    */
   // getFile(344, '196CHI61NUROW8S1', true);
 
+  /*******************************************************
+   *                 N E S H A N   M A P                 *
+   *******************************************************/
+
+  /**
+   * Get Address of a GeoLocation point
+   *
+   * @param  {float}   lat     Latitute of the Location
+   * @param  {float}   lng     Longtitute of the Location
+   */
+  // chatAgent.mapReverse({
+  //   lat: 35.7003508,
+  //   lng: 51.3376460
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * Get nearby places names as "term" keyword
+   * around the given GeoLocation
+   *
+   * @param  {float}   lat     Latitute of the Location
+   * @param  {float}   lng     Longtitute of the Location
+   * @param  {string}  term    Search term to be searched
+   */
+  // chatAgent.mapSearch({
+  //   lat: 35.7003508,
+  //   lng: 51.3376460,
+  //   term: "فروشگاه"
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * Get routing between two given GeoLocations
+   *
+   * @param  {object}   origin         Lat & Lng of Origin as a JSON
+   * @param  {object}   destination    Lat & Lng of Destination as a JSON
+   * @param  {boolean}  alternative    Give Alternative Routs too
+   */
+  // chatAgent.mapRouting({
+  //   origin: {
+  //     lat: 35.7003508,
+  //     lng: 51.3376460
+  //   },
+  //   destination: {
+  //     lat: 35.7343510,
+  //     lng: 50.3376472
+  //   },
+  //   alternative: true
+  // }, function(result) {
+  //   console.log(result);
+  // });
+
+  /**
+   * Get Static Image of a GeoLocation
+   *
+   * @param  {string}   type           Map style (default standard-night)
+   * @param  {int}      zoom           Map zoom (default 15)
+   * @param  {object}   center         Lat & Lng of Map center as a JSON
+   * @param  {int}      width          width of image in pixels (default 800px)
+   * @param  {int}      height         height of image in pixels (default 600px)
+   */
+  // chatAgent.mapStaticImage({
+  //   type: "standard-night",
+  //   zoom: 15,
+  //   center: {
+  //     lat: 35.7003508,
+  //     lng: 51.3376462
+  //   },
+  //   width: 800,
+  //   height: 500
+  // }, function(result) {
+  //   console.log(result);
+  // });
 });
 
 /**
@@ -374,7 +459,9 @@ chatAgent.on("error", function(error) {
 /**
  * Listen to Chat State Changes
  */
-chatAgent.on("chatState", function(chatState) {});
+chatAgent.on("chatState", function(chatState) {
+  // console.log(chatState);
+});
 
 /**
  * Listen to File Upload Events
@@ -389,6 +476,7 @@ chatAgent.on("fileUploadEvents", function(event) {
  */
 chatAgent.on("threadEvents", function(event) {
   var type = event.type;
+
   console.log(event);
 
   switch (type) {
@@ -469,6 +557,14 @@ chatAgent.on("messageEvents", function(event) {
 });
 
 /**
+ * Listen to Disconnection Error Events
+ */
+chatAgent.on("disconnect", function(event) {
+  console.log("Socket Disconnected");
+  console.log(event);
+});
+
+/**
  * Local Functions
  */
 
@@ -481,12 +577,11 @@ function getUserInfo() {
 function getThreads(params) {
   var instantResult = chatAgent.getThreads(params, function(threadsResult) {
     if (!threadsResult.hasError) {
-      var threadsCount = threadsResult.result.contentCount;
-      var threads = threadsResult.result.threads;
-      console.log(threads);
+      console.log(threadsResult);
+      console.log(threadsResult.result.threads);
     }
   });
-  console.log(instantResult);
+  // console.log(instantResult);
 }
 
 function getThreadParticipants(threadId) {
@@ -500,7 +595,7 @@ function getThreadParticipants(threadId) {
     if (!participantsResult.hasError) {
       var participantsCount = participantsResult.result.contentCount;
       var participants = participantsResult.result.participants;
-      console.log(participants);
+      console.log(participantsResult);
     }
   });
 }
@@ -535,7 +630,7 @@ function leaveThread(threadId) {
 
 function getContacts(params) {
   var getContactsParams = {
-    count: 2,
+    count: 5,
     offset: 0
   };
 
@@ -546,9 +641,8 @@ function getContacts(params) {
   }
   chatAgent.getContacts(getContactsParams, function(contactsResult) {
     if (!contactsResult.hasError) {
-      var contactsCount = contactsResult.result.contentCount;
-      var contacts = contactsResult.result.contacts;
-      console.log(contacts);
+      console.log(contactsResult);
+      console.log(contactsResult.result);
     }
   });
 }
@@ -568,10 +662,11 @@ function getSingleMessage(threadId, messageId) {
 function getHistory(params) {
   var test = chatAgent.getHistory(params, function(historyResult) {
     if (!historyResult.hasError) {
+      console.log(historyResult);
       console.log(historyResult.result.history);
     }
   });
-  console.log(test);
+  // console.log(test);
 }
 
 function sendMessage(threadId, message, metaData) {

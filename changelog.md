@@ -8,9 +8,19 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 -   Cache
 -   Message Delivered / Seen Info
 
-## [1.6.1] - 2018-10-21
+## [1.7.0] - 2018-11-06
 
 ### Added
+
+-   Full cache support with local encryption for both Node and Browser Environments. In order to enable caching, you can set `enableCache: true` while you start a chat application
+-   Embedded map services including
+    -   `mapReverse()` which takes a Geo Location and returns its address back
+    -   `mapSearch()` which takes a Geo Location and a Search term and returns an array of Nearby places containing that search term
+    -   `mapRouting()` which takes two Geo Locations and returns the route between them
+    -   `mapStaticImage()` which takes a Geo Locations and returns the link of static map image related that area
+
+<details><summary>[1.6.1] - 2018-10-21</summary>
+-   Added
 
 -   Early version of Load Test are up now
 -   `MESSAGE_DELETE` has been added to `messageEvents` listener, and whenever a message gets delete, you'll have an event announcing you that action. The result is like below:
@@ -25,6 +35,9 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
   }
 }
 ```
+
+</details>
+
 
 <details><summary>[1.6.0] - 2018-10-20</summary>
 -   Changes

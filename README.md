@@ -9,12 +9,21 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 ## [Unreleased]
 
--   Cache
 -   Message Delivered / Seen Info
 
-## [1.6.1] - 2018-10-21
+## [1.7.0] - 2018-11-06
 
 ### Added
+
+-   Full cache support with local encryption for both Node and Browser Environments. In order to enable caching, you can set `enableCache: true` while you start a chat application
+-   Embedded map services including
+    -   `mapReverse()` which takes a Geo Location and returns its address back
+    -   `mapSearch()` which takes a Geo Location and a Search term and returns an array of Nearby places containing that search term
+    -   `mapRouting()` which takes two Geo Locations and returns the route between them
+    -   `mapStaticImage()` which takes a Geo Locations and returns the static map image of that area
+
+<details><summary>[1.6.1] - 2018-10-21</summary>
+-   Added
 
 -   Early version of Load Test are up now
 -   `MESSAGE_DELETE` has been added to `messageEvents` listener, and whenever a message gets delete, you'll have an event announcing you that action. The result is like below:
@@ -30,6 +39,8 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 }
 ```
 
+</details>
+
 <details><summary>[1.6.0] - 2018-10-20</summary>
 -   Changes
 
@@ -43,7 +54,7 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 -   Added
 
 -   If you want to grant device id from SSO you can set `grantDeviceIdFromSSO` as `TRUE` in initializing parameters
-</details>
+    </details>
 
 ## Code Example
 
@@ -53,7 +64,10 @@ Create an Javascript file e.x `index.js` and put following code there:
 var Chat = require('podchat');
 
 var params = {
+  appId: new Date().getTime(),
   grantDeviceIdFromSSO: false,
+  enableCache: true, // Enable Client side caching
+  mapApiKey: "API_KEY_OF_NESHAN_MAP", //  {**REQUIRED**} API Key of Neshan Map
   socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
   ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
@@ -63,7 +77,7 @@ var params = {
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
-  messageTtl: 86400000, // Message time to live
+  messageTtl: 24 * 60 * 60, // Message time to live (1 day in seonds)
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
@@ -760,6 +774,104 @@ chatAgent.getImage({
   if (!result.hasError) {
     var image = result.result;
   }
+});
+```
+
+## Embedded Map Service functions
+
+### mapReverse
+
+This function takes a Geo Location and returns its address back
+
+```javascript
+/**
+ * Get Address of a GeoLocation point
+ *
+ * @param  {float}   lat     Latitute of the Location
+ * @param  {float}   lng     Longtitute of the Location
+ */
+chatAgent.mapReverse({
+  lat: 35.7003508,
+  lng: 51.3376460
+}, function(result) {
+  console.log(result);
+});
+```
+
+### mapSearch
+
+This function takes a Geo Location and a Search term and returns an array of Nearby places containing that search term
+
+```javascript
+/**
+ * Get nearby places names as "term" keyword
+ * around the given GeoLocation
+ *
+ * @param  {float}   lat     Latitute of the Location
+ * @param  {float}   lng     Longtitute of the Location
+ * @param  {string}  term    Search term to be searched
+ */
+chatAgent.mapSearch({
+  lat: 35.7003508,
+  lng: 51.3376460,
+  term: "فروشگاه"
+}, function(result) {
+  console.log(result);
+});
+```
+
+### mapRouting
+
+This function takes two Geo Locations and returns the route between them
+
+```javascript
+/**
+ * Get routing between two given GeoLocations
+ *
+ * @param  {object}   origin         Lat & Lng of Origin as a JSON
+ * @param  {object}   destination    Lat & Lng of Destination as a JSON
+ * @param  {boolean}  alternative    Give Alternative Routs too
+ */
+chatAgent.mapRouting({
+  origin: {
+    lat: 35.7003508,
+    lng: 51.3376460
+  },
+  destination: {
+    lat: 35.7343510,
+    lng: 50.3376472
+  },
+  alternative: true
+}, function(result) {
+  console.log(result);
+});
+```
+
+### mapStaticImage
+
+This function takes a Geo Locations and returns the link of static map image related that area
+
+```javascript
+/**
+ * Get Static Image of a GeoLocation
+ *
+ * @param  {string}   type           Map style (default standard-night)
+ * @param  {int}      zoom           Map zoom (default 15)
+ * @param  {object}   center         Lat & Lng of Map center as a JSON
+ * @param  {int}      width          width of image in pixels (default 800px)
+ * @param  {int}      height         height of image in pixels (default 600px)
+ */
+chatAgent.mapStaticImage({
+  type: "standard-night",
+  zoom: 15,
+  center: {
+    lat: 35.7003508,
+    lng: 51.3376462
+  },
+  width: 800,
+  height: 500
+}, function(result) {
+  console.log(result);
 });
 ```
 
