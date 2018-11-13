@@ -53,7 +53,7 @@ chatAgent.on("chatReady", function() {
    * @param name
    */
   // getThreads({
-  //   count: 1,
+  //   count: 5,
   //   offset: 0,
   //   // threadIds: [312, 293, 528],
   //   // name: "Pooria"
@@ -89,14 +89,14 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param contacts {Array}  CONTACT ID
    */
-  // addParticipants(3, [583]);
+  // addParticipants(312, [583]);
 
   /**
    * REMOVE PARTICIPANTS
    * @param threadId
    * @param participants {Array}  USER ID
    */
-  // removeParticipants(3, [4]);
+  // removeParticipants(312, [4]);
 
   /**
    * LEAVE THREAD
@@ -186,7 +186,11 @@ chatAgent.on("chatReady", function() {
   /**
    * GET CONTACTS
    */
-  // getContacts();
+  // getContacts({
+  //   // count: 5,
+  //   offset: 0,
+  //   // query: "masodi"
+  // });
 
   /**
    * BLOCK CONTACT
@@ -292,7 +296,7 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(293, __dirname + "/test/test.jpeg", "Sample file description", {
+  // sendFileMessage(293, __dirname + "/test/test.jpg", "Sample file description", {
   //   custom_name: "John Doe"
   // });
 
@@ -588,7 +592,8 @@ function getThreadParticipants(threadId) {
   var getParticipantsParams = {
     count: 50,
     offset: 0,
-    threadId: threadId
+    threadId: threadId,
+    // name: "gmail"
   };
 
   chatAgent.getThreadParticipants(getParticipantsParams, function(participantsResult) {
@@ -596,6 +601,7 @@ function getThreadParticipants(threadId) {
       var participantsCount = participantsResult.result.contentCount;
       var participants = participantsResult.result.participants;
       console.log(participantsResult);
+      console.log(participants);
     }
   });
 }
@@ -635,8 +641,8 @@ function getContacts(params) {
   };
 
   if (params) {
-    if (typeof params.name === "string") {
-      getContactsParams.name = params.name;
+    if (typeof params.query === "string") {
+      getContactsParams.query = params.query;
     }
   }
   chatAgent.getContacts(getContactsParams, function(contactsResult) {
@@ -654,6 +660,7 @@ function getSingleMessage(threadId, messageId) {
     id: messageId
   }, function(historyResult) {
     if (!historyResult.hasError) {
+      console.log(historyResult);
       console.log(historyResult.result.history);
     }
   });
@@ -673,7 +680,7 @@ function sendMessage(threadId, message, metaData) {
   sendChatParams = {
     threadId: threadId,
     content: message,
-    metaData: metaData
+    systemMetadata: metaData
   };
 
   var sentMesageUniqueId = chatAgent.sendTextMessage(sendChatParams, {
@@ -696,7 +703,7 @@ function sendFileMessage(threadId, file, caption, metaData) {
     threadId: threadId,
     file: file,
     content: caption,
-    metaData: metaData
+    systemMetadata: metaData
   }, {
     onSent: function(result) {
       console.log(result.uniqueId + " \t has been Sent!");

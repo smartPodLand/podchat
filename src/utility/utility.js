@@ -9,9 +9,15 @@
     }
 
     /**
+     * Generate UUID
+     *
      * Generates Random String
-     * @param   {int}     sectionCount
-     * @return  {string}
+     *
+     * @access public
+     *
+     * @param {int}     sectionCount    Sections of created unique code
+     *
+     * @return {string}
      */
     this.generateUUID = function(sectionCount) {
       var d = new Date().getTime();
@@ -46,12 +52,16 @@
     };
 
     /**
+     * Create Return data
+     *
      * Returns data in ordered structure
-     * @param   {boolean}     hasError
-     * @param   {string}      errorMessage
-     * @param   {string}      errorCode
-     * @param   {object}      result
-     * @param   {int}         contentCount
+     *
+     * @param {boolean}     hasError
+     * @param {string}      errorMessage
+     * @param {string}      errorCode
+     * @param {object}      result
+     * @param {int}         contentCount
+     *
      * @return  {object}
      */
     this.createReturnData = function(hasError, errorMessage, errorCode, result, contentCount) {
@@ -72,10 +82,14 @@
     };
 
     /**
+     * Chat Step Logger
+     *
      * Prints Custom Message in console
-     * @param {string} title Title of message to be logged in terminal
-     * @param {string} message Message to be logged in terminal
-     * @return
+     *
+     * @param {string}    title      Title of message to be logged in terminal
+     * @param {string}    message    Message to be logged in terminal
+     *
+     * @return {undefined}
      */
     this.chatStepLogger = function(title, message) {
       if (typeof navigator == "undefined") {
@@ -86,12 +100,14 @@
     }
 
     /**
-     *
      * MD5 (Message-Digest Algorithm)
-     * http://www.webtoolkit.info
-     * @param  {string}   String to be digested
-     * @return {string}  hash
-     **/
+     *
+     * @param {string}  string    String to be digested
+     *
+     * @link  http://www.webtoolkit.info
+     *
+     * @return {string}  Digested hash string
+     */
     this.MD5 = function(string) {
       function RotateLeft(lValue, iShiftBits) {
         return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
@@ -322,14 +338,14 @@
     }
 
     /**
-     *
      * RC4 (Encryption/Decryption Algorithm)
      *
-     * @param  {string} key   key fo encryption/decryption
-     * @param  {string} str   String to be encrypted/decrypted
-     * @return {string}       hash
-     **/
-    this.RC4 = function (key, str) {
+     * @param {string}  key     key fo encryption/decryption
+     * @param {string}  str     String to be encrypted/decrypted
+     *
+     * @return {string}  Encrypted String
+     */
+    this.RC4 = function(key, str) {
       var s = [],
         j = 0,
         x, res = '';

@@ -10,10 +10,25 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 ## [Unreleased]
 
 -   Message Delivered / Seen Info
+-   Create thread by sending first Message
+-   Search in threads metadata
 
-## [1.7.0] - 2018-11-06
+## [2.1.0] - 2018-11-13
 
 ### Added
+
+-   `typeCode` attribute has been added to primary chat options. This attribute indicates which contact group you are willing to work with
+-   `typeCode` is also available in every function separately and you can send this parameter along side others
+-   You can declare type of message you are sending by setting `messageType` attribute. It takes an Integer value and you will get it on `getHistory()` results too.
+
+### Changes
+
+-   `notSeenDuration` attribute of `participants` will no longer save in cache, and you will get `undefined` in return
+
+
+<details><summary>[1.7.0] - 2018-11-06</summary>
+
+-   Added
 
 -   Full cache support with local encryption for both Node and Browser Environments. In order to enable caching, you can set `enableCache: true` while you start a chat application
 -   Embedded map services including
@@ -21,6 +36,8 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
     -   `mapSearch()` which takes a Geo Location and a Search term and returns an array of Nearby places containing that search term
     -   `mapRouting()` which takes two Geo Locations and returns the route between them
     -   `mapStaticImage()` which takes a Geo Locations and returns the static map image of that area
+
+</details>
 
 <details><summary>[1.6.1] - 2018-10-21</summary>
 -   Added
@@ -49,12 +66,6 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 -   `contactId`, `contactName`, `contactFirstname`, `contactLastname` and `blocked` have been added to `PARTICIPANT` model
 
 </details>
-
-<details><summary>[1.5.0] - 2018-10-10</summary>
--   Added
-
--   If you want to grant device id from SSO you can set `grantDeviceIdFromSSO` as `TRUE` in initializing parameters
-    </details>
 
 ## Code Example
 

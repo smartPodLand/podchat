@@ -57,6 +57,7 @@
       oldPeerId,
       userInfo,
       token = params.token,
+      generalTypeCode = params.typeCode,
       mapApiKey = params.mapApiKey || "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
       deviceId,
       isNode = Utility.isNode(),
@@ -66,8 +67,7 @@
       params.enableCache :
       false,
       cacheDb = hasCache && enableCache,
-      // cacheSecret = "urlLyxCdr1dzj6dl4TAJyNS00mZD2RIc", // This should be replaced with SSO key
-      cacheSecret = params.token, // This should be replaced with SSO key
+      cacheSecret = "urlLyxCdr1dzj6dl4TAJyNS00mZD2RIc", // This should be replaced with SSO key
       ssoGrantDevicesAddress = params.ssoGrantDevicesAddress,
       ssoHost = params.ssoHost,
       grantDeviceIdFromSSO = (params.grantDeviceIdFromSSO && typeof params.grantDeviceIdFromSSO === "boolean") ?
@@ -242,6 +242,16 @@
       params.asyncLogging.actualTiming :
       false;
 
+    /**
+     * Initialize Cache Database
+     *
+     * if client's environement is capable of supporting indexedDB
+     * and the hasCache attribute set to be true, we created
+     * a indexedDB instance based on DexieDb and Initialize
+     * client sde caching
+     *
+     * @return {undefined}
+     */
     if (hasCache) {
       if (enableCache) {
         db = new Dexie('podChat');
@@ -256,7 +266,7 @@
           users: "&id, name, cellphoneNumber",
           contacts: "[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName",
           threads: "[owner+id] ,id, owner, title, time, [owner+time]",
-          participants: "[owner+id], id, owner, threadId, notSeenDuration",
+          participants: "[owner+id], id, owner, threadId, notSeenDuration, name, contactName, email",
           messages: "[owner+id], id, owner, threadId, time, [threadId+id]"
         });
       }
@@ -290,6 +300,15 @@
         }
       },
 
+      /**
+       * Initialize Async
+       *
+       * Initializes Async module and sets proper callbacks
+       *
+       * @access private
+       *
+       * @return {undefined}
+       */
       initAsync = function() {
         var asyncGetReadyTime = new Date().getTime();
 
@@ -376,7 +395,7 @@
             }
           }, chatPingMessageInterval * 1.5);
 
-          pushMessageHandler(params);
+          receivedAsyncMessageHandler(params);
           ack && ack();
         });
 
@@ -389,6 +408,18 @@
         });
       },
 
+      /**
+       * Get Device Id With Token
+       *
+       * If ssoGrantDevicesAddress set as TRUE, chat agent gets Device ID
+       * from SSO server and passes it to Async Module
+       *
+       * @access private
+       *
+       * @param {function}  callback    The callback function to run after getting Device Id
+       *
+       * @return {undefined}
+       */
       getDeviceIdWithToken = function(callback) {
         var deviceId;
 
@@ -437,6 +468,18 @@
         });
       },
 
+      /**
+       * HTTP Request class
+       *
+       * Manages all HTTP Requests
+       *
+       * @access private
+       *
+       * @param {object}    params      Given parameters including (Headers, ...)
+       * @param {function}  callback    The callback function to run after
+       *
+       * @return {undefined}
+       */
       httpRequest = function(params, callback) {
         var url = params.url,
           fileSize,
@@ -924,14 +967,27 @@
         }
       },
 
+      /**
+       * Get User Info
+       *
+       * This functions gets user info from chat serverName.
+       * If info is not retrived the function will attemp
+       * 5 more times to get info from erver
+       *
+       * @recursive
+       * @access private
+       *
+       * @param {function}    callback    The callback function to call after
+       *
+       * @return {object} Instant function return
+       */
       getUserInfo = function getUserInfoRecursive(callback) {
         getUserInfoRetryCount++;
 
-        var sendMessageParams = {
-          chatMessageVOType: chatMessageVOTypes.USER_INFO
-        };
-
-        return sendMessage(sendMessageParams, {
+        return sendMessage({
+          chatMessageVOType: chatMessageVOTypes.USER_INFO,
+          typeCode: params.typeCode
+        }, {
           onResult: function(result) {
             var returnData = {
               hasError: result.hasError,
@@ -1023,12 +1079,37 @@
         });
       },
 
+      /**
+       * Send Message
+       *
+       * All socket messages go through this function
+       *
+       * @access private
+       *
+       * @param {string}    token           SSO Token of current user
+       * @param {string}    tokenIssuer     Issuer of token (default : 1)
+       * @param {int}       type            Type of message (object : chatMessageVOTypes)
+       * @param {string}    typeCode        Type of contact who is going to receive the message
+       * @param {int}       messageType     Type of Message, in order to filter messages
+       * @param {long}      subjectId       Id of chat thread
+       * @param {string}    uniqueId        Tracker id for client
+       * @param {string}    content         Content of message
+       * @param {long}      time            Time of message, filled by chat server
+       * @param {string}    medadata        Metadata for message (Will use when needed)
+       * @param {string}    systemMedadata  Metadata for message (To be Set by client)
+       * @param {long}      repliedTo       Id of message to reply to (Should be filled by client)
+       * @param {function}  callback        The callback function to run after
+       *
+       * @return {object} Instant Function Return
+       */
       sendMessage = function(params, callbacks) {
         /**
          * + ChatMessage        {object}
          *    - token           {string}
          *    - tokenIssuer     {string}
          *    - type            {int}
+         *    - typeCode        {string}
+         *    - messageType     {int}
          *    - subjectId       {long}
          *    - uniqueId        {string}
          *    - content         {string}
@@ -1046,12 +1127,18 @@
 
         var threadId = params.subjectId;
 
-        if (params.subjectId) {
-          messageVO.subjectId = params.subjectId;
+        if (params.typeCode) {
+          messageVO.typeCode = params.typeCode;
+        } else if (generalTypeCode) {
+          messageVO.typeCode = generalTypeCode;
         }
 
-        if (params.repliedTo) {
-          messageVO.repliedTo = params.repliedTo;
+        if (params.messageType) {
+          messageVO.messageType = params.messageType;
+        }
+
+        if (params.subjectId) {
+          messageVO.subjectId = params.subjectId;
         }
 
         if (params.content) {
@@ -1068,6 +1155,10 @@
 
         if (params.systemMetadata) {
           messageVO.systemMetadata = params.systemMetadata;
+        }
+
+        if (params.repliedTo) {
+          messageVO.repliedTo = params.repliedTo;
         }
 
         var uniqueId;
@@ -1174,6 +1265,16 @@
         }
       },
 
+      /**
+       * Ping
+       *
+       * This Function sends ping message to keep user connected to
+       * chat server and updates its status
+       *
+       * @access private
+       *
+       * @return {undefined}
+       */
       ping = function() {
         if (chatState && peerId !== undefined && userInfo !== undefined) {
           sendMessage({
@@ -1185,6 +1286,15 @@
         }
       },
 
+      /**
+       * Clear Cache
+       *
+       * Clears Async queue so that all the remained messages will be ignored
+       *
+       * @access private
+       *
+       * @return {undefined}
+       */
       clearCache = function() {
         sendMessage({
           chatMessageVOType: chatMessageVOTypes.LOGOUT,
@@ -1192,7 +1302,19 @@
         });
       },
 
-      pushMessageHandler = function(params) {
+      /**
+       * Received Async Message Handler
+       *
+       * This functions sets lastReceivedMessageTime as now and
+       * parses received messafe from async
+       *
+       * @access private
+       *
+       * @param {object}    asyncMessage    Received Message from Async
+       *
+       * @return {undefined}
+       */
+      receivedAsyncMessageHandler = function(asyncMessage) {
         /**
          * + Message Received From Async      {object}
          *    - id                            {long}
@@ -1205,35 +1327,53 @@
 
         lastReceivedMessageTime = new Date();
 
-        var content = JSON.parse(params.content);
-        receivedMessageHandler(content);
+        var content = JSON.parse(asyncMessage.content);
+        chatMessageHandler(content);
       },
 
-      receivedMessageHandler = function(params) {
-        var threadId = params.subjectId,
-          type = params.type,
-          messageContent = (typeof params.content === 'string') ?
-          JSON.parse(params.content) : {},
-          contentCount = params.contentCount,
-          uniqueId = params.uniqueId;
+      /**
+       * Chat Message Handler
+       *
+       * Manages received chat messages and do the job
+       *
+       * @access private
+       *
+       * @param {object}    chatMessage     Content of Async Message which is considered as Chat Message
+       *
+       * @return {undefined}
+       */
+      chatMessageHandler = function(chatMessage) {
+        var threadId = chatMessage.subjectId,
+          type = chatMessage.type,
+          messageContent = (typeof chatMessage.content === 'string') ?
+          JSON.parse(chatMessage.content) : {},
+          contentCount = chatMessage.contentCount,
+          uniqueId = chatMessage.uniqueId;
 
         switch (type) {
-          // 1
+          /**
+           * Type 1    Get Threads
+           */
           case chatMessageVOTypes.CREATE_THREAD:
             messageContent.uniqueId = uniqueId;
             createThread(messageContent, true);
 
-            if (messagesCallbacks[uniqueId])
+            if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
+            }
 
             break;
 
-            // 2
+            /**
+             * Type 2    Message
+             */
           case chatMessageVOTypes.MESSAGE:
-            chatMessageHandler(threadId, messageContent);
+            newMessageHandler(threadId, messageContent);
             break;
 
-            // 3
+            /**
+             * Type 3    Message Sent
+             */
           case chatMessageVOTypes.SENT:
             if (sendMessageCallbacks[uniqueId] && sendMessageCallbacks[uniqueId].onSent) {
               sendMessageCallbacks[uniqueId].onSent({
@@ -1244,7 +1384,9 @@
             }
             break;
 
-            // 4
+            /**
+             * Type 4    Message Delivery
+             */
           case chatMessageVOTypes.DELIVERY:
             // TODO: CACHE
 
@@ -1264,10 +1406,13 @@
                 });
               }
             });
+
             sendMessageCallbacksHandler(chatMessageVOTypes.DELIVERY, threadId, uniqueId);
             break;
 
-            // 5
+            /**
+             * Type 5    Message Seen
+             */
           case chatMessageVOTypes.SEEN:
             // TODO: CACHE
 
@@ -1291,25 +1436,33 @@
             sendMessageCallbacksHandler(chatMessageVOTypes.SEEN, threadId, uniqueId);
             break;
 
-            // 6
+            /**
+             * Type 6    Chat Ping
+             */
           case chatMessageVOTypes.PING:
             break;
 
-            // 7
+            /**
+             * Type 7    Block Contact
+             */
           case chatMessageVOTypes.BLOCK:
             if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
             }
             break;
 
-            // 8
+            /**
+             * Type 8    Unblock Blocked User
+             */
           case chatMessageVOTypes.UNBLOCK:
             if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
             }
             break;
 
-            // 9
+            /**
+             * Type 9   Leave Thread
+             */
           case chatMessageVOTypes.LEAVE_THREAD:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
@@ -1343,7 +1496,9 @@
             });
             break;
 
-            // 11
+            /**
+             * Type 11    Add Participant to Thread
+             */
           case chatMessageVOTypes.ADD_PARTICIPANT:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
@@ -1369,25 +1524,33 @@
             });
             break;
 
-            //13
+            /**
+             * Type 13    Get Contacts List
+             */
           case chatMessageVOTypes.GET_CONTACTS:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
-            // 14
+            /**
+             * Type 14    Get Threads List
+             */
           case chatMessageVOTypes.GET_THREADS:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
-            // 15
+            /**
+             * Type 15    Get Message History of an Thread
+             */
           case chatMessageVOTypes.GET_HISTORY:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
-            // 17
+            /**
+             * Type 17    Remove sb from thread
+             */
           case chatMessageVOTypes.REMOVED_FROM_THREAD:
             fireEvent("threadEvents", {
               type: "THREAD_REMOVED_FROM",
@@ -1397,7 +1560,9 @@
             });
             break;
 
-            // 18
+            /**
+             * Type 18    Remove a /participant from Thread
+             */
           case chatMessageVOTypes.REMOVE_PARTICIPANT:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
@@ -1423,7 +1588,9 @@
             });
             break;
 
-            // 19
+            /**
+             * Type 19    Mute Thread
+             */
           case chatMessageVOTypes.MUTE_THREAD:
             if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
@@ -1444,7 +1611,9 @@
 
             break;
 
-            // 20
+            /**
+             * Type 20    Unmute muted Thread
+             */
           case chatMessageVOTypes.UNMUTE_THREAD:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
@@ -1464,7 +1633,9 @@
 
             break;
 
-            // 21
+            /**
+             * Type 21    Update Thread Info
+             */
           case chatMessageVOTypes.UPDATE_THREAD_INFO:
             if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
@@ -1484,19 +1655,24 @@
             });
             break;
 
-            // 22
+            /**
+             * Type 22    Forward Multiple Messages
+             */
           case chatMessageVOTypes.FORWARD_MESSAGE:
-            chatMessageHandler(threadId, messageContent);
+            newMessageHandler(threadId, messageContent);
             break;
 
-            // 23
+            /**
+             * Type 23    User Info
+             */
           case chatMessageVOTypes.USER_INFO:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
             break;
 
-
-            // 25
+            /**
+             * Type 25    Get Blocked List
+             */
           case chatMessageVOTypes.GET_BLOCKED:
             if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
@@ -1504,24 +1680,29 @@
             break;
 
 
-            // 27
+            /**
+             * Type 27    Thread Participants List
+             */
           case chatMessageVOTypes.THREAD_PARTICIPANTS:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             break;
 
-            // 28
+            /**
+             * Type 28    Edit Message
+             */
           case chatMessageVOTypes.EDIT_MESSAGE:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
             chatEditMessageHandler(threadId, messageContent);
             break;
 
-            // 29
+            /**
+             * Type 29    Delete Message
+             */
           case chatMessageVOTypes.DELETE_MESSAGE:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent, contentCount));
-
 
             fireEvent("messageEvents", {
               type: "MESSAGE_DELETE",
@@ -1534,7 +1715,10 @@
             });
             break;
 
-            // 30
+
+            /**
+             * Type 30    Thread Info Updated
+             */
           case chatMessageVOTypes.THREAD_INFO_UPDATED:
             fireEvent("threadEvents", {
               type: "THREAD_INFO_UPDATED",
@@ -1544,7 +1728,9 @@
             });
             break;
 
-            // 31
+            /**
+             * Type 31    Thread Last Seen Updated
+             */
           case chatMessageVOTypes.LAST_SEEN_UPDATED:
             getThreads({
               threadIds: [messageContent.conversationId]
@@ -1572,7 +1758,9 @@
 
             break;
 
-            //40
+            /**
+             * Type 40    Bot Messages
+             */
           case chatMessageVOTypes.BOT_MESSAGE:
             fireEvent("botEvents", {
               type: "BOT_MESSAGE",
@@ -1582,18 +1770,26 @@
             });
             break;
 
-            // 41
+            /**
+             * Type 41    Spam P2P Thread
+             */
           case chatMessageVOTypes.SPAM_PV_THREAD:
             if (messagesCallbacks[uniqueId]) {
               messagesCallbacks[uniqueId](Utility.createReturnData(false, "", 0, messageContent));
             }
             break;
 
-            // 999
+            /**
+             * Type 999   All unknown errors
+             */
           case chatMessageVOTypes.ERROR:
             if (messagesCallbacks[uniqueId])
               messagesCallbacks[uniqueId](Utility.createReturnData(true, messageContent.message, messageContent.code, messageContent, 0));
 
+            /**
+             * If error code is 21 threrfore Token is invalid &
+             * user should be logged put
+             */
             if (messageContent.code == 21) {
               chatState = false;
               asyncClient.logout();
@@ -1609,6 +1805,22 @@
         }
       },
 
+      /**
+       * Send Message Callbacks Handler
+       *
+       * When you send Delivery or Seen Acknowledgements of a message
+       * You should send Delivery and Seen for all the Messages before
+       * that message so that you wont have un delivered/unseen messages
+       * after seeing the last message of a thread
+       *
+       * @access private
+       *
+       * @param {int}     actionType      Switch between Delivery or Seen
+       * @param {long}    threadId        Id of thread
+       * @param {string}  uniqueId        uniqueId of message
+       *
+       * @return {undefined}
+       */
       sendMessageCallbacksHandler = function(actionType, threadId, uniqueId) {
         switch (actionType) {
 
@@ -1676,7 +1888,19 @@
         }
       },
 
-      chatMessageHandler = function(threadId, messageContent) {
+      /**
+       * New Message Handler
+       *
+       * Handles Event Emitter of a newley received Chat Message
+       *
+       * @access private
+       *
+       * @param {long}    threadId         ID of image
+       * @param {object}  messageContent   Json Content of the message
+       *
+       * @return {undefined}
+       */
+      newMessageHandler = function(threadId, messageContent) {
 
         var message = formatDataToMakeMessage(threadId, messageContent);
         deliver({
@@ -1718,6 +1942,18 @@
         });
       },
 
+      /**
+       * Chat Edit Message Handler
+       *
+       * Handles Event Emitter of an edited Chat Message
+       *
+       * @access private
+       *
+       * @param {long}    threadId         ID of image
+       * @param {object}  messageContent   Json Content of the message
+       *
+       * @return {undefined}
+       */
       chatEditMessageHandler = function(threadId, messageContent) {
         var message = formatDataToMakeMessage(threadId, messageContent);
 
@@ -1729,6 +1965,20 @@
         });
       },
 
+      /**
+       * Create Thread
+       *
+       * Makes formatted Thread Object out of given contentCount,
+       * If Thread has been newely created, a THREAD_NEW event
+       * will be emitted
+       *
+       * @access private
+       *
+       * @param {object}    messageContent    Json object of thread taken from chat server
+       * @param {boolean}   addFromService    if this is a newely created Thread, addFromService should be True
+       *
+       * @return {object} Formatted Thread Object
+       */
       createThread = function(messageContent, addFromService) {
         var threadData = formatDataToMakeConversation(messageContent);
         if (addFromService) {
@@ -1742,6 +1992,622 @@
         return threadData;
       },
 
+      /**
+       * Format Data To Make Linked User
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} linkedUser Object
+       */
+      formatdataToMakeLinkedUser = function(messageContent) {
+        /**
+         * + RelatedUserVO                 {object}
+         *   - username                    {string}
+         *   - nickname                    {string}
+         *   - name                        {string}
+         *   - image                       {string}
+         */
+
+        var linkedUser = {
+          username: messageContent.username,
+          nickname: messageContent.nickname,
+          name: messageContent.name,
+          image: messageContent.image
+        };
+
+        return linkedUser;
+      },
+
+      /**
+       * Format Data To Make Contact
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} contact Object
+       */
+      formatDataToMakeContact = function(messageContent) {
+        /**
+         * + ContactVO                        {object}
+         *    - id                            {long}
+         *    - userId                        {long}
+         *    - firstName                     {string}
+         *    - lastName                      {string}
+         *    - image                         {string}
+         *    - email                         {string}
+         *    - cellphoneNumber               {string}
+         *    - uniqueId                      {string}
+         *    - notSeenDuration               {long}
+         *    - hasUser                       {boolean}
+         *    - linkedUser                    {object : RelatedUserVO}
+         */
+
+        var contact = {
+          id: messageContent.id,
+          userId: messageContent.userId,
+          firstName: messageContent.firstName,
+          lastName: messageContent.lastName,
+          image: messageContent.profileImage,
+          email: messageContent.email,
+          cellphoneNumber: messageContent.cellphoneNumber,
+          uniqueId: messageContent.uniqueId,
+          notSeenDuration: messageContent.notSeenDuration,
+          hasUser: messageContent.hasUser,
+          linkedUser: undefined
+        };
+
+        if (messageContent.linkedUser !== undefined) {
+          contact.linkedUser = formatdataToMakeLinkedUser(messageContent.linkedUser);
+        }
+
+        return contact;
+      },
+
+      /**
+       * Format Data To Make User
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} user Object
+       */
+      formatDataToMakeUser = function(messageContent) {
+        /**
+         * + User                     {object}
+         *    - id                    {long}
+         *    - name                  {string}
+         *    - email                 {string}
+         *    - cellphoneNumber       {string}
+         *    - image                 {string}
+         *    - lastSeen              {long}
+         *    - sendEnable            {boolean}
+         *    - receiveEnable         {boolean}
+         */
+
+        var user = {
+          id: messageContent.id,
+          name: messageContent.name,
+          email: messageContent.email,
+          cellphoneNumber: messageContent.cellphoneNumber,
+          image: messageContent.image,
+          lastSeen: messageContent.lastSeen,
+          sendEnable: messageContent.sendEnable,
+          receiveEnable: messageContent.receiveEnable
+        };
+
+        return user;
+      },
+
+      /**
+       * Format Data To Make Blocked User
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} blockedUser Object
+       */
+      formatDataToMakeBlockedUser = function(messageContent) {
+        /**
+         * + BlockedUser              {object}
+         *    - id                    {long}
+         *    - firstName             {string}
+         *    - lastName              {string}
+         *    - nickName              {string}
+         */
+
+        var blockedUser = {
+          blockId: messageContent.id,
+          firstName: messageContent.firstName,
+          lastName: messageContent.lastName,
+          nickName: messageContent.nickName
+        };
+
+        return blockedUser;
+      },
+
+      /**
+       * Format Data To Make Invitee
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} inviteeData Object
+       */
+      formatDataToMakeInvitee = function(messageContent) {
+        /**
+         * + InviteeVO       {object}
+         *    - id           {string}
+         *    - idType       {int}
+         */
+
+        var inviteeData = {
+          id: messageContent.id,
+          idType: inviteeVOidTypes[messageContent.idType]
+        };
+
+        return inviteeData;
+      },
+
+      /**
+       * Format Data To Make Participant
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} participant Object
+       */
+      formatDataToMakeParticipant = function(messageContent, threadId) {
+        /**
+         * + ParticipantVO                   {object}
+         *    - id                           {long}
+         *    - threadId                     {long}
+         *    - sendEnable                   {boolean}
+         *    - receiveEnable                {boolean}
+         *    - firstName                    {string}
+         *    - lastName                     {string}
+         *    - name                         {string}
+         *    - cellphoneNumber              {string}
+         *    - email                        {string}
+         *    - myFriend                     {boolean}
+         *    - online                       {boolean}
+         *    - blocked                      {boolean}
+         *    - notSeenDuration              {long}
+         *    - contactId                    {long}
+         *    - image                        {string}
+         *    - contactName                  {string}
+         *    - contactFirstName             {string}
+         *    - contactLastName              {string}
+         */
+
+        var participant = {
+          id: messageContent.id,
+          threadId: threadId,
+          sendEnable: messageContent.sendEnable,
+          receiveEnable: messageContent.receiveEnable,
+          firstName: messageContent.firstName,
+          lastName: messageContent.lastName,
+          name: messageContent.name,
+          cellphoneNumber: messageContent.cellphoneNumber,
+          email: messageContent.email,
+          myFriend: messageContent.myFriend,
+          online: messageContent.online,
+          blocked: messageContent.blocked,
+          notSeenDuration: messageContent.notSeenDuration,
+          contactId: messageContent.contactId,
+          image: messageContent.image,
+          contactName: messageContent.contactName,
+          contactFirstName: messageContent.contactFirstName,
+          contactLastName: messageContent.contactLastName
+        };
+
+        return participant;
+      },
+
+      /**
+       * Format Data To Make Conversation
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} concersation Object
+       */
+      formatDataToMakeConversation = function(messageContent) {
+
+        /**
+         * + Conversation                     {object}
+         *    - id                            {long}
+         *    - joinDate                      {long}
+         *    - title                         {string}
+         *    - inviter                       {object : ParticipantVO}
+         *    - participants                  {list : ParticipantVO}
+         *    - time                          {long}
+         *    - lastMessage                   {string}
+         *    - lastParticipantName           {string}
+         *    - group                         {boolean}
+         *    - partner                       {long}
+         *    - lastParticipantImage          {string}
+         *    - image                         {string}
+         *    - description                   {string}
+         *    - unreadCount                   {long}
+         *    - lastSeenMessageId             {long}
+         *    - lastMessageVO                 {object : ChatMessageVO}
+         *    - partnerLastSeenMessageId      {long}
+         *    - partnerLastDeliveredMessageId {long}
+         *    - type                          {int}
+         *    - metadata                      {string}
+         *    - mute                          {boolean}
+         *    - participantCount              {long}
+         *    - canEditInfo                   {boolean}
+         *    - canSpam                       {boolean}
+         *    - admin                         {boolean}
+         */
+
+        var conversation = {
+          id: messageContent.id,
+          joinDate: messageContent.joinDate,
+          title: messageContent.title,
+          inviter: undefined,
+          participants: undefined,
+          time: messageContent.time,
+          lastMessage: messageContent.lastMessage,
+          lastParticipantName: messageContent.lastParticipantName,
+          group: messageContent.group,
+          partner: messageContent.partner,
+          lastParticipantImage: messageContent.lastParticipantImage,
+          image: messageContent.image,
+          description: messageContent.description,
+          unreadCount: messageContent.unreadCount,
+          lastSeenMessageId: messageContent.lastSeenMessageId,
+          lastMessageVO: undefined,
+          partnerLastSeenMessageId: messageContent.partnerLastSeenMessageId,
+          partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
+          type: messageContent.type,
+          metadata: messageContent.metadata,
+          mute: messageContent.mute,
+          participantCount: messageContent.participantCount,
+          canEditInfo: messageContent.canEditInfo,
+          canSpam: messageContent.canSpam,
+          admin: messageContent.admin
+        };
+
+        // Add inviter if exist
+        if (messageContent.inviter) {
+          conversation.inviter = formatDataToMakeParticipant(messageContent.inviter, messageContent.id);
+        }
+
+        // Add participants list if exist
+        if (messageContent.participants && Array.isArray(messageContent.participants)) {
+          conversation.participants = [];
+
+          for (var i = 0; i < messageContent.participants.length; i++) {
+            var participantData = formatDataToMakeParticipant(messageContent.participants[i], messageContent.id);
+            if (participantData) {
+              conversation.participants.push(participantData);
+            }
+          }
+        }
+
+        // Add lastMessageVO if exist
+        if (messageContent.lastMessageVO) {
+          conversation.lastMessageVO = formatDataToMakeMessage(messageContent.id, messageContent.lastMessageVO);
+        }
+
+        return conversation;
+      },
+
+      /**
+       * Format Data To Make Reply Info
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} replyInfo Object
+       */
+      formatDataToMakeReplyInfo = function(messageContent, threadId) {
+        /**
+         * + replyInfoVO                  {object : replyInfoVO}
+         *   - participant                {object : ParticipantVO}
+         *   - repliedToMessageId         {long}
+         *   - repliedToMessage           {string}
+         */
+
+        var replyInfo = {
+          participant: undefined,
+          repliedToMessageId: messageContent.repliedToMessageId,
+          repliedToMessage: messageContent.repliedToMessage
+        };
+
+        if (messageContent.participant) {
+          replyInfo.participant = formatDataToMakeParticipant(messageContent.participant, threadId);
+        }
+
+        return replyInfo;
+      },
+
+      /**
+       * Format Data To Make Forward Info
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} forwardInfo Object
+       */
+      formatDataToMakeForwardInfo = function(messageContent, threadId) {
+        /**
+         * + forwardInfo                  {object : forwardInfoVO}
+         *   - participant                {object : ParticipantVO}
+         *   - conversation               {object : ConversationSummary}
+         */
+
+        var forwardInfo = {
+          participant: undefined,
+          conversation: undefined
+        };
+
+        if (messageContent.conversation) {
+          forwardInfo.conversation = formatDataToMakeConversation(messageContent.conversation);
+        }
+
+        if (messageContent.participant) {
+          forwardInfo.participant = formatDataToMakeParticipant(messageContent.participant, threadId);
+        }
+
+        return forwardInfo;
+      },
+
+      /**
+       * Format Data To Make Message
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} message Object
+       */
+      formatDataToMakeMessage = function(threadId, pushMessageVO) {
+        /**
+         * + MessageVO                       {object}
+         *    - id                           {long}
+         *    - threadId                     {long}
+         *    - ownerId                      {long}
+         *    - uniqueId                     {string}
+         *    - previousId                   {long}
+         *    - message                      {string}
+         *    - messageType                  {int}
+         *    - edited                       {boolean}
+         *    - editable                     {boolean}
+         *    - delivered                    {boolean}
+         *    - seen                         {boolean}
+         *    - participant                  {object : ParticipantVO}
+         *    - conversation                 {object : ConversationVO}
+         *    - replyInfo                    {object : replyInfoVO}
+         *    - forwardInfo                  {object : forwardInfoVO}
+         *    - metadata                     {string}
+         *    - systemMetadata               {string}
+         *    - time                         {long}
+         */
+
+        var message = {
+          id: pushMessageVO.id,
+          threadId: threadId,
+          ownerId: undefined,
+          uniqueId: pushMessageVO.uniqueId,
+          previousId: pushMessageVO.previousId,
+          message: pushMessageVO.message,
+          messageType: pushMessageVO.messageType,
+          edited: pushMessageVO.edited,
+          editable: pushMessageVO.editable,
+          delivered: pushMessageVO.delivered,
+          seen: pushMessageVO.seen,
+          participant: undefined,
+          conversation: undefined,
+          replyInfo: undefined,
+          forwardInfo: undefined,
+          metaData: pushMessageVO.metadata,
+          systemMetadata: pushMessageVO.systemMetadata,
+          time: pushMessageVO.time
+        };
+
+        if (pushMessageVO.participant) {
+          message.ownerId = pushMessageVO.participant.id;
+        }
+
+        if (pushMessageVO.conversation) {
+          message.conversation = formatDataToMakeConversation(pushMessageVO.conversation);
+          message.threadId = pushMessageVO.conversation.id;
+        }
+
+        if (pushMessageVO.replyInfoVO) {
+          message.replyInfo = formatDataToMakeReplyInfo(pushMessageVO.replyInfoVO, threadId);
+        }
+
+        if (pushMessageVO.forwardInfo) {
+          message.forwardInfo = formatDataToMakeForwardInfo(pushMessageVO.forwardInfo, threadId);
+        }
+
+        if (pushMessageVO.participant) {
+          message.participant = formatDataToMakeParticipant(pushMessageVO.participant, threadId);
+        }
+
+        return message;
+      },
+
+      /**
+       * Format Data To Make Message Change State
+       *
+       * This functions reformats given JSON to proper Object
+       *
+       * @access private
+       *
+       * @param {object}  messageContent    Json object of thread taken from chat server
+       *
+       * @return {object} messageChangeState Object
+       */
+      formatDataToMakeMessageChangeState = function(messageContent) {
+        /**
+         * + MessageChangeStateVO       {object}
+         *    - messageId               {long}
+         *    - participantId           {long}
+         *    - conversationId          {long}
+         */
+
+        var MessageChangeState = {
+          messageId: messageContent.messageId,
+          senderId: messageContent.participantId,
+          threadId: messageContent.conversationId
+        };
+
+        return MessageChangeState;
+      },
+
+      /**
+       * Reformat Thread History
+       *
+       * This functions reformats given Array of thread Messages
+       * into proper chat message object
+       *
+       * @access private
+       *
+       * @param {long}    threadId         Id of Thread
+       * @param {object}  historyContent   Array of Thread History Messages
+       *
+       * @return {object} Formatted Thread History
+       */
+      reformatThreadHistory = function(threadId, historyContent) {
+        var returnData = [];
+
+        for (var i = 0; i < historyContent.length; i++) {
+          returnData.push(formatDataToMakeMessage(threadId, historyContent[i]));
+        }
+
+        return returnData;
+      },
+
+      /**
+       * Reformat Thread Participants
+       *
+       * This functions reformats given Array of thread Participants
+       * into proper thread participant
+       *
+       * @access private
+       *
+       * @param {object}  participantsContent   Array of Thread Participant Objects
+       * @param {long}    threadId              Id of Thread
+       *
+       * @return {object} Formatted Thread Participant Array
+       */
+      reformatThreadParticipants = function(participantsContent, threadId) {
+        var returnData = [];
+
+        for (var i = 0; i < participantsContent.length; i++) {
+          returnData.push(formatDataToMakeParticipant(participantsContent[i], threadId));
+        }
+
+        return returnData;
+      },
+
+      /**
+       * Unset Not Seen Duration
+       *
+       * This functions unsets notSeenDuration property of cached objects
+       *
+       * @access private
+       *
+       * @param {object}  content   Object or Array to be modified
+       *
+       * @return {object}
+       */
+      unsetNotSeenDuration = function(content) {
+        /**
+         * Make a copy from original object to modify it's
+         * attributes, because we don't want to change
+         * the original object
+         */
+        var temp = cloneObject(content);
+
+        if (temp.hasOwnProperty('notSeenDuration')) {
+          temp.notSeenDuration = undefined;
+        }
+
+        if (temp.hasOwnProperty('inviter')) {
+          temp.inviter.notSeenDuration = undefined;
+        }
+
+        if (temp.hasOwnProperty('participant')) {
+          temp.participant.notSeenDuration = undefined;
+        }
+
+        return temp;
+      },
+
+      /**
+       * Clone Object/Array
+       *
+       * This functions makes a deep clone of given object or array
+       *
+       * @access private
+       *
+       * @param {object}  original   Object or Array to be cloned
+       *
+       * @return {object} Cloned object
+       */
+      cloneObject = function(original) {
+        var out, value, key;
+        out = Array.isArray(original) ? [] : {};
+
+        for (key in original) {
+          value = original[key];
+          out[key] = (typeof value === "object" && value !== null) ? cloneObject(value) : value;
+        }
+
+        return out;
+      },
+
+      /**
+       * Get Treads.
+       *
+       * This functions gets threads list
+       *
+       * @access private
+       *
+       * @param {int}     count       count of threads to be received
+       * @param {int}     offset      offset of select query
+       * @param {array}   threadIds   An array of thread ids to be received
+       * @param {string}  name        Search term to look up in thread Titles
+       * @param {function}  callback  The callback function to call after
+       *
+       * @return {object} Instant sendMessage result
+       */
       getThreads = function(params, callback) {
         var count = 50,
           offset = 0,
@@ -1777,6 +2643,7 @@
 
         var sendMessageParams = {
           chatMessageVOType: chatMessageVOTypes.GET_THREADS,
+          typeCode: params.typeCode,
           content: content
         };
 
@@ -1808,7 +2675,7 @@
                   .equals(userInfo.id)
                   .filter(function(thread) {
                     var reg = new RegExp(whereClause.name);
-                    return reg.test(crypt(thread.title, thread.salt));
+                    return reg.test(crypt(thread.title, cacheSecret, thread.salt));
                   });
               }
             }
@@ -1830,7 +2697,7 @@
                         var tempData = {},
                           salt = threads[i].salt;
 
-                        cacheData.push(createThread(JSON.parse(crypt(threads[i].data, threads[i].salt)), false));
+                        cacheData.push(createThread(JSON.parse(crypt(threads[i].data, cacheSecret, threads[i].salt)), false));
                       } catch (error) {
                         fireEvent("error", {
                           code: error.code,
@@ -1940,9 +2807,9 @@
                             salt = Utility.generateUUID();
                           tempData.id = resultData.threads[i].id;
                           tempData.owner = userInfo.id;
-                          tempData.title = crypt(resultData.threads[i].title, salt);
+                          tempData.title = crypt(resultData.threads[i].title, cacheSecret, salt);
                           tempData.time = resultData.threads[i].time;
-                          tempData.data = crypt(JSON.stringify(resultData.threads[i]), salt);
+                          tempData.data = crypt(JSON.stringify(unsetNotSeenDuration(resultData.threads[i])), cacheSecret, salt);
                           tempData.salt = salt;
 
                           cacheData.push(tempData);
@@ -1995,9 +2862,31 @@
         });
       },
 
+      /**
+       * Get History.
+       *
+       * This functions gets history of a thread
+       *
+       * @access private
+       *
+       * @param {int}     count             count of threads to be received
+       * @param {int}     offset            offset of select query
+       * @param {long}    threadId          Id of thread to get its history
+       * @param {long}    id                Id of single message to get
+       * @param {int}     messageType       Type of messages to get (types should be set by client)
+       * @param {long}    firstMessageId    get messages which have higher Id than given firstMessageId
+       * @param {long}    lastMessageId     get messages which have lower Id than given lastMessageId
+       * @param {string}  order             Order of select query (default: DESC)
+       * @param {string}  query             Serch term to be looked up in messages content
+       * @param {object}  metadataCriteria  This JSON will be used to search in message metadata with GraphQL
+       * @param {function}  callback        The callback function to call after
+       *
+       * @return {object} Instant sendMessage result
+       */
       getHistory = function(params, callback) {
         var sendMessageParams = {
             chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
+            typeCode: params.typeCode,
             content: {},
             subjectId: params.threadId
           },
@@ -2041,12 +2930,23 @@
           if (db) {
             var thenAble,
               table = db.messages,
+              collection;
+
+            if (whereClause.hasOwnProperty("id") && whereClause.id > 0) {
+              collection = table.where("id")
+                .equals(params.id)
+                .and(function(message) {
+                  return message.owner == userInfo.id;
+                })
+                .reverse();
+            } else {
               collection = table.where("[threadId+id]")
-              .between([params.threadId, Dexie.minKey], [params.threadId, Dexie.maxKey])
-              .and(function(message) {
-                return message.owner == userInfo.id;
-              })
-              .reverse();
+                .between([params.threadId, Dexie.minKey], [params.threadId, Dexie.maxKey])
+                .and(function(message) {
+                  return message.owner == userInfo.id;
+                })
+                .reverse();
+            }
 
             collection
               .toArray()
@@ -2068,7 +2968,7 @@
                 if (whereClause.hasOwnProperty("query") && typeof whereClause.query == "string") {
                   messages = messages.filter(function(message) {
                     var reg = new RegExp(whereClause.query);
-                    return reg.test(crypt(message.message, message.salt));
+                    return reg.test(crypt(message.message, cacheSecret, message.salt));
                   });
                 }
 
@@ -2082,7 +2982,7 @@
                       var tempData = {},
                         salt = messages[i].salt;
 
-                      cacheData.push(formatDataToMakeMessage(messages[i].threadId, JSON.parse(crypt(messages[i].data, messages[i].salt))));
+                      cacheData.push(formatDataToMakeMessage(messages[i].threadId, JSON.parse(crypt(messages[i].data, cacheSecret, messages[i].salt))));
                     } catch (error) {
                       fireEvent("error", {
                         code: error.code,
@@ -2201,8 +3101,8 @@
                           tempData.owner = userInfo.id;
                           tempData.threadId = resultData.history[i].threadId;
                           tempData.time = resultData.history[i].time;
-                          tempData.message = crypt(resultData.history[i].message, salt);
-                          tempData.data = crypt(JSON.stringify(resultData.history[i]), salt);
+                          tempData.message = crypt(resultData.history[i].message, cacheSecret, salt);
+                          tempData.data = crypt(JSON.stringify(unsetNotSeenDuration(resultData.history[i])), cacheSecret, salt);
                           tempData.salt = salt;
 
                           cacheData.push(tempData);
@@ -2254,9 +3154,26 @@
         });
       },
 
+      /**
+       * Update Thread Info
+       *
+       * This functions updates metadata of thread
+       *
+       * @access private
+       *
+       * @param {int}       threadId      Id of thread
+       * @param {string}    image         URL og thread image to be set
+       * @param {string}    description   Description for thread
+       * @param {string}    title         New Title for thread
+       * @param {object}    metadata      New Metadata to be set on thread
+       * @param {function}  callback      The callback function to call after
+       *
+       * @return {object} Instant sendMessage result
+       */
       updateThreadInfo = function(params, callback) {
         var updateThreadInfoData = {
           chatMessageVOType: chatMessageVOTypes.UPDATE_THREAD_INFO,
+          typeCode: params.typeCode,
           subjectId: params.threadId,
           content: {},
           pushMsgType: 4,
@@ -2299,407 +3216,23 @@
         });
       },
 
-      formatdataToMakeLinkedUser = function(messageContent) {
-        /**
-         * + RelatedUserVO                 {object}
-         *   - username                    {string}
-         *   - nickname                    {string}
-         *   - name                        {string}
-         *   - image                       {string}
-         */
-
-        var linkedUser = {
-          username: messageContent.username,
-          nickname: messageContent.nickname,
-          name: messageContent.name,
-          image: messageContent.image
-        };
-
-        return linkedUser;
-      },
-
-      formatDataToMakeContact = function(messageContent) {
-        /**
-         * + ContactVO                        {object}
-         *    - id                            {long}
-         *    - userId                        {long}
-         *    - firstName                     {string}
-         *    - lastName                      {string}
-         *    - image                         {string}
-         *    - email                         {string}
-         *    - cellphoneNumber               {string}
-         *    - uniqueId                      {string}
-         *    - notSeenDuration               {long}
-         *    - hasUser                       {boolean}
-         *    - linkedUser                    {object : RelatedUserVO}
-         */
-
-        var contact = {
-          id: messageContent.id,
-          userId: messageContent.userId,
-          firstName: messageContent.firstName,
-          lastName: messageContent.lastName,
-          image: messageContent.profileImage,
-          email: messageContent.email,
-          cellphoneNumber: messageContent.cellphoneNumber,
-          uniqueId: messageContent.uniqueId,
-          notSeenDuration: messageContent.notSeenDuration,
-          hasUser: messageContent.hasUser,
-          linkedUser: undefined
-        };
-
-        if (messageContent.linkedUser !== undefined) {
-          contact.linkedUser = formatdataToMakeLinkedUser(messageContent.linkedUser);
-        }
-
-        return contact;
-      },
-
-      formatDataToMakeUser = function(messageContent) {
-        /**
-         * + User                     {object}
-         *    - id                    {long}
-         *    - name                  {string}
-         *    - email                 {string}
-         *    - cellphoneNumber       {string}
-         *    - image                 {string}
-         *    - lastSeen              {long}
-         *    - sendEnable            {boolean}
-         *    - receiveEnable         {boolean}
-         */
-
-        var user = {
-          id: messageContent.id,
-          name: messageContent.name,
-          email: messageContent.email,
-          cellphoneNumber: messageContent.cellphoneNumber,
-          image: messageContent.image,
-          lastSeen: messageContent.lastSeen,
-          sendEnable: messageContent.sendEnable,
-          receiveEnable: messageContent.receiveEnable
-        };
-
-        return user;
-      },
-
-      formatDataToMakeBlockedUser = function(messageContent) {
-        /**
-         * + BlockedUser              {object}
-         *    - id                    {long}
-         *    - firstName             {string}
-         *    - lastName              {string}
-         *    - nickName              {string}
-         */
-
-        var blockedUser = {
-          blockId: messageContent.id,
-          firstName: messageContent.firstName,
-          lastName: messageContent.lastName,
-          nickName: messageContent.nickName
-        };
-
-        return blockedUser;
-      },
-
-      formatDataToMakeInvitee = function(messageContent) {
-        /**
-         * + InviteeVO       {object}
-         *    - id           {string}
-         *    - idType       {int}
-         */
-
-        var inviteeData = {
-          id: messageContent.id,
-          idType: inviteeVOidTypes[messageContent.idType]
-        };
-
-        return inviteeData;
-      },
-
-      formatDataToMakeParticipant = function(messageContent, threadId) {
-        /**
-         * + ParticipantVO                   {object}
-         *    - id                           {long}
-         *    - threadId                     {long}
-         *    - sendEnable                   {boolean}
-         *    - receiveEnable                {boolean}
-         *    - firstName                    {string}
-         *    - lastName                     {string}
-         *    - name                         {string}
-         *    - cellphoneNumber              {string}
-         *    - email                        {string}
-         *    - myFriend                     {boolean}
-         *    - online                       {boolean}
-         *    - blocked                      {boolean}
-         *    - notSeenDuration              {long}
-         *    - contactId                    {long}
-         *    - image                        {string}
-         *    - contactName                  {string}
-         *    - contactFirstName             {string}
-         *    - contactLastName              {string}
-         */
-
-        var participant = {
-          id: messageContent.id,
-          threadId: threadId,
-          sendEnable: messageContent.sendEnable,
-          receiveEnable: messageContent.receiveEnable,
-          firstName: messageContent.firstName,
-          lastName: messageContent.lastName,
-          name: messageContent.name,
-          cellphoneNumber: messageContent.cellphoneNumber,
-          email: messageContent.email,
-          myFriend: messageContent.myFriend,
-          online: messageContent.online,
-          blocked: messageContent.blocked,
-          notSeenDuration: messageContent.notSeenDuration,
-          contactId: messageContent.contactId,
-          image: messageContent.image,
-          contactName: messageContent.contactName,
-          contactFirstname: messageContent.contactFirstName,
-          contactLastname: messageContent.contactLastName
-        };
-
-        return participant;
-      },
-
-      formatDataToMakeConversation = function(messageContent) {
-
-        /**
-         * + Conversation                     {object}
-         *    - id                            {long}
-         *    - joinDate                      {long}
-         *    - title                         {string}
-         *    - inviter                       {object : ParticipantVO}
-         *    - participants                  {list : ParticipantVO}
-         *    - time                          {long}
-         *    - lastMessage                   {string}
-         *    - lastParticipantName           {string}
-         *    - group                         {boolean}
-         *    - partner                       {long}
-         *    - lastParticipantImage          {string}
-         *    - image                         {string}
-         *    - description                   {string}
-         *    - unreadCount                   {long}
-         *    - lastSeenMessageId             {long}
-         *    - lastMessageVO                 {object : ChatMessageVO}
-         *    - partnerLastSeenMessageId      {long}
-         *    - partnerLastDeliveredMessageId {long}
-         *    - type                          {int}
-         *    - metadata                      {string}
-         *    - mute                          {boolean}
-         *    - participantCount              {long}
-         *    - canEditInfo                   {boolean}
-         *    - canSpam                       {boolean}
-         *    - admin                         {boolean}
-         */
-
-        var conversation = {
-          id: messageContent.id,
-          joinDate: messageContent.joinDate,
-          title: messageContent.title,
-          inviter: undefined,
-          participants: undefined,
-          time: messageContent.time,
-          lastMessage: messageContent.lastMessage,
-          lastParticipantName: messageContent.lastParticipantName,
-          group: messageContent.group,
-          partner: messageContent.partner,
-          lastParticipantImage: messageContent.lastParticipantImage,
-          image: messageContent.image,
-          description: messageContent.description,
-          unreadCount: messageContent.unreadCount,
-          lastSeenMessageId: messageContent.lastSeenMessageId,
-          lastMessageVO: undefined,
-          partnerLastSeenMessageId: messageContent.partnerLastSeenMessageId,
-          partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
-          type: messageContent.type,
-          metadata: messageContent.metadata,
-          mute: messageContent.mute,
-          participantCount: messageContent.participantCount,
-          canEditInfo: messageContent.canEditInfo,
-          canSpam: messageContent.canSpam,
-          admin: messageContent.admin
-        };
-
-        // Add inviter if exist
-        if (messageContent.inviter) {
-          conversation.inviter = formatDataToMakeParticipant(messageContent.inviter, messageContent.id);
-        }
-
-        // Add participants list if exist
-        if (messageContent.participants && Array.isArray(messageContent.participants)) {
-          conversation.participants = [];
-
-          for (var i = 0; i < messageContent.participants.length; i++) {
-            var participantData = formatDataToMakeParticipant(messageContent.participants[i], messageContent.id);
-            if (participantData) {
-              conversation.participants.push(participantData);
-            }
-          }
-        }
-
-        // Add lastMessageVO if exist
-        if (messageContent.lastMessageVO) {
-          conversation.lastMessageVO = formatDataToMakeMessage(messageContent.id, messageContent.lastMessageVO);
-        }
-
-        return conversation;
-      },
-
-      formatDataToMakeReplyInfo = function(messageContent, threadId) {
-        /**
-         * + replyInfoVO                  {object : replyInfoVO}
-         *   - participant                {object : ParticipantVO}
-         *   - repliedToMessageId         {long}
-         *   - repliedToMessage           {string}
-         */
-
-        var replyInfo = {
-          participant: undefined,
-          repliedToMessageId: messageContent.repliedToMessageId,
-          repliedToMessage: messageContent.repliedToMessage
-        };
-
-        if (messageContent.participant) {
-          replyInfo.participant = formatDataToMakeParticipant(messageContent.participant, threadId);
-        }
-
-        return replyInfo;
-      },
-
-      formatDataToMakeForwardInfo = function(messageContent, threadId) {
-        /**
-         * + forwardInfo                  {object : forwardInfoVO}
-         *   - participant                {object : ParticipantVO}
-         *   - conversation               {object : ConversationSummary}
-         */
-
-        var forwardInfo = {
-          participant: undefined,
-          conversation: undefined
-        };
-
-        if (messageContent.conversation) {
-          forwardInfo.conversation = formatDataToMakeConversation(messageContent.conversation);
-        }
-
-        if (messageContent.participant) {
-          forwardInfo.participant = formatDataToMakeParticipant(messageContent.participant, threadId);
-        }
-
-        return forwardInfo;
-      },
-
-      formatDataToMakeMessage = function(threadId, pushMessageVO) {
-        /**
-         * + MessageVO                       {object}
-         *    - id                           {long}
-         *    - threadId                     {long}
-         *    - ownerId                      {long}
-         *    - uniqueId                     {string}
-         *    - previousId                   {long}
-         *    - message                      {string}
-         *    - messageType                  {int}
-         *    - edited                       {boolean}
-         *    - editable                     {boolean}
-         *    - delivered                    {boolean}
-         *    - seen                         {boolean}
-         *    - participant                  {object : ParticipantVO}
-         *    - conversation                 {object : ConversationVO}
-         *    - replyInfo                    {object : replyInfoVO}
-         *    - forwardInfo                  {object : forwardInfoVO}
-         *    - metadata                     {string}
-         *    - systemMetadata               {string}
-         *    - time                         {long}
-         */
-
-        var message = {
-          id: pushMessageVO.id,
-          threadId: threadId,
-          ownerId: undefined,
-          uniqueId: pushMessageVO.uniqueId,
-          previousId: pushMessageVO.previousId,
-          message: pushMessageVO.message,
-          messageType: pushMessageVO.messageType,
-          edited: pushMessageVO.edited,
-          editable: pushMessageVO.editable,
-          delivered: pushMessageVO.delivered,
-          seen: pushMessageVO.seen,
-          participant: undefined,
-          conversation: undefined,
-          replyInfo: undefined,
-          forwardInfo: undefined,
-          metaData: pushMessageVO.metadata,
-          systemMetadata: pushMessageVO.systemMetadata,
-          time: pushMessageVO.time
-        };
-
-        if (pushMessageVO.participant) {
-          message.ownerId = pushMessageVO.participant.id;
-        }
-
-        if (pushMessageVO.conversation) {
-          message.conversation = formatDataToMakeConversation(pushMessageVO.conversation);
-          message.threadId = pushMessageVO.conversation.id;
-        }
-
-        if (pushMessageVO.replyInfoVO) {
-          message.replyInfo = formatDataToMakeReplyInfo(pushMessageVO.replyInfoVO, threadId);
-        }
-
-        if (pushMessageVO.forwardInfo) {
-          message.forwardInfo = formatDataToMakeForwardInfo(pushMessageVO.forwardInfo, threadId);
-        }
-
-        if (pushMessageVO.participant) {
-          message.participant = formatDataToMakeParticipant(pushMessageVO.participant, threadId);
-        }
-
-        return message;
-      },
-
-      formatDataToMakeMessageChangeState = function(messageContent) {
-        /**
-         * + MessageChangeStateVO       {object}
-         *    - messageId               {long}
-         *    - participantId           {long}
-         *    - conversationId          {long}
-         */
-
-        var MessageChangeState = {
-          messageId: messageContent.messageId,
-          senderId: messageContent.participantId,
-          threadId: messageContent.conversationId
-        };
-
-        return MessageChangeState;
-      },
-
-      reformatThreadHistory = function(threadId, historyContent) {
-        var returnData = [];
-
-        for (var i = 0; i < historyContent.length; i++) {
-          returnData.push(formatDataToMakeMessage(threadId, historyContent[i]));
-        }
-
-        return returnData;
-      },
-
-      reformatThreadParticipants = function(participantsContent, threadId) {
-        var returnData = [];
-
-        for (var i = 0; i < participantsContent.length; i++) {
-          returnData.push(formatDataToMakeParticipant(participantsContent[i], threadId));
-        }
-
-        return returnData;
-      },
-
+      /**
+       * Deliver
+       *
+       * This functions sends delivery messages for a message
+       *
+       * @access private
+       *
+       * @param {int}    ownerId    Id of Message owner
+       * @param {long}   messageId  Id of Message
+       *
+       * @return {object} Instant sendMessage result
+       */
       deliver = function(params) {
         if (userInfo && params.ownerId !== userInfo.id) {
           return sendMessage({
             chatMessageVOType: chatMessageVOTypes.DELIVERY,
+            typeCode: params.typeCode,
             content: params.messageId,
             pushMsgType: 3
           });
@@ -2712,7 +3245,7 @@
        * This functions gets an uploaded image from File Server.
        *
        * @since 3.9.9
-       * @access public
+       * @access private
        *
        * @param {long}    imageId         ID of image
        * @param {int}     width           Required width to get
@@ -2782,7 +3315,7 @@
        * This functions gets an uploaded file from File Server.
        *
        * @since 3.9.9
-       * @access public
+       * @access private
        *
        * @param {long}    fileId          ID of file
        * @param {boolean} downloadable    TRUE to be downloadable / False to not
@@ -2837,7 +3370,7 @@
        * Upload files to File Server
        *
        * @since 3.9.9
-       * @access public
+       * @access private
        *
        * @param {string}  fileName        A name for the file
        * @param {file}    file            FILE: the file
@@ -2960,7 +3493,7 @@
        * Upload images to Image Server
        *
        * @since 3.9.9
-       * @access public
+       * @access private
        *
        * @param {string}  fileName        A name for the file
        * @param {file}    image           FILE: the image file  (if its an image file)
@@ -3113,12 +3646,36 @@
         }
       },
 
+      /**
+       * Fire Event
+       *
+       * Fires given Event with given parameters
+       *
+       * @access private
+       *
+       * @param {string}  eventName       name of event to be fired
+       * @param {object}  param           params to be sent to the event function
+       *
+       * @return {undefined}
+       */
       fireEvent = function(eventName, param) {
         for (var id in eventCallbacks[eventName]) {
           eventCallbacks[eventName][id](param);
         }
       },
 
+      /**
+       * Dynamic Sort
+       *
+       * Dynamically sorts given Array in given order
+       *
+       * @access private
+       *
+       * @param {object}    property    Given array to be sorted
+       * @param {boolean}   reverse     Default order is ASC, if reverse is true, Array will be sorted in DESC
+       *
+       * @return {object}   Sorted Array
+       */
       dynamicSort = function(property, reverse) {
         var sortOrder = 1;
         if (reverse) {
@@ -3130,7 +3687,22 @@
         }
       },
 
-      crypt = function(str, salt) {
+      /**
+       * Crypt
+       *
+       * This function uses RC4 Algorithm to encrypt given string with
+       * encryption key and in order to avoid generating same hash
+       * for same given strings, it uses a random salt everytime
+       *
+       * @access private
+       *
+       * @param {string}  str        Given string to be encrypted
+       * @param {string}  key        Secret Encryption Key
+       * @param {string}  salt       Encryption salt
+       *
+       * @return {string} Encrypted string
+       */
+      crypt = function(str, key, salt) {
         if (typeof str !== 'string') {
           str = JSON.stringify(str);
         }
@@ -3139,13 +3711,12 @@
           str = "";
         }
 
-        var encryptionKey = cacheSecret;
-        return Utility.RC4(encryptionKey + salt, str);
+        return Utility.RC4(key + salt, str);
       };
 
     /******************************************************
-     *             P U B L I C   M E T H O D S             *
-     *******************************************************/
+     *             P U B L I C   M E T H O D S            *
+     ******************************************************/
 
     this.on = function(eventName, callback) {
       if (eventCallbacks[eventName]) {
@@ -3165,10 +3736,28 @@
 
     this.getUserInfo = getUserInfo;
 
+    this.getThreads = getThreads;
+
+    this.getHistory = getHistory;
+
+    /**
+     * Get Contacts
+     *
+     * Gets contacts list from chat server
+     *
+     * @access pubic
+     *
+     * @param {int}     count           Count of objects to get
+     * @param {int}     offset          Offset of select Query
+     * @param {string}  query           Search in contacts list to get (search LIKE firatName, lastName, email)
+     *
+     * @return {object} Instant Response
+     */
     this.getContacts = function(params, callback) {
       var count = 50,
         offset = 0,
         content = {},
+        whereClause = {},
         cacheDigest,
         serverDigest;
 
@@ -3181,8 +3770,8 @@
           offset = params.offset;
         }
 
-        if (typeof params.name === "string") {
-          content.name = params.name;
+        if (typeof params.query === "string") {
+          content.query = whereClause.query = params.query;
         }
       }
 
@@ -3191,6 +3780,7 @@
 
       var sendMessageParams = {
         chatMessageVOType: chatMessageVOTypes.GET_CONTACTS,
+        typeCode: params.typeCode,
         content: content
       };
 
@@ -3199,9 +3789,25 @@
        */
       if (cacheDb) {
         if (db) {
-          db.contacts
-            .where("owner")
-            .equals(userInfo.id)
+          var thenAble;
+
+          if (Object.keys(whereClause).length === 0) {
+            thenAble = db.contacts
+              .where("owner")
+              .equals(userInfo.id);
+          } else {
+            if (whereClause.hasOwnProperty("query")) {
+              thenAble = db.contacts
+                .where("owner")
+                .equals(userInfo.id)
+                .filter(function(contact) {
+                  var reg = new RegExp(whereClause.query);
+                  return reg.test(crypt(contact.firstName, cacheSecret, contact.salt) + " " + crypt(contact.lastName, cacheSecret, contact.salt) + " " + crypt(contact.email, cacheSecret, contact.salt));
+                });
+            }
+          }
+
+          thenAble
             .reverse()
             .offset(offset)
             .limit(count)
@@ -3219,7 +3825,7 @@
                       var tempData = {},
                         salt = contacts[i].salt;
 
-                      cacheData.push(formatDataToMakeContact(JSON.parse(crypt(contacts[i].data, contacts[i].salt))));
+                      cacheData.push(formatDataToMakeContact(JSON.parse(crypt(contacts[i].data, cacheSecret, contacts[i].salt))));
                     } catch (error) {
                       fireEvent("error", {
                         code: error.code,
@@ -3330,12 +3936,12 @@
                         tempData.id = resultData.contacts[i].id;
                         tempData.owner = userInfo.id;
                         tempData.uniqueId = resultData.contacts[i].uniqueId;
-                        tempData.userId = crypt(resultData.contacts[i].userId, salt);
-                        tempData.cellphoneNumber = crypt(resultData.contacts[i].cellphoneNumber, salt);
-                        tempData.email = crypt(resultData.contacts[i].email, salt);
-                        tempData.firstName = crypt(resultData.contacts[i].firstName, salt);
-                        tempData.lastName = crypt(resultData.contacts[i].lastName, salt);
-                        tempData.data = crypt(JSON.stringify(resultData.contacts[i]), salt);
+                        tempData.userId = crypt(resultData.contacts[i].userId, cacheSecret, salt);
+                        tempData.cellphoneNumber = crypt(resultData.contacts[i].cellphoneNumber, cacheSecret, salt);
+                        tempData.email = crypt(resultData.contacts[i].email, cacheSecret, salt);
+                        tempData.firstName = crypt(resultData.contacts[i].firstName, cacheSecret, salt);
+                        tempData.lastName = crypt(resultData.contacts[i].lastName, cacheSecret, salt);
+                        tempData.data = crypt(JSON.stringify(unsetNotSeenDuration(resultData.contacts[i])), cacheSecret, salt);
                         tempData.salt = salt;
 
                         cacheData.push(tempData);
@@ -3388,16 +3994,28 @@
       });
     };
 
-    this.getThreads = getThreads;
-
-    this.getHistory = getHistory;
-
+    /**
+     * Get Thread Participants
+     *
+     * Gets participants list of given thread
+     *
+     * @access pubic
+     *
+     * @param {int}     threadId        Id of thread which you want to get participants of
+     * @param {int}     count           Count of objects to get
+     * @param {int}     offset          Offset of select Query
+     * @param {string}  name            Search in Participants list (LIKE in name, contactName, email)
+     *
+     * @return {object} Instant Response
+     */
     this.getThreadParticipants = function(params, callback) {
       var sendMessageParams = {
           chatMessageVOType: chatMessageVOTypes.THREAD_PARTICIPANTS,
+          typeCode: params.typeCode,
           content: {},
           subjectId: params.threadId
         },
+        whereClause = {},
         cacheDigest,
         serverDigest;
 
@@ -3407,15 +4025,8 @@
       sendMessageParams.content.count = count;
       sendMessageParams.content.offset = offset;
 
-      if (parseInt(params.firstMessageId) > 0) {
-        sendMessageParams.content.firstMessageId = params.firstMessageId;
-      }
-      if (parseInt(params.lastMessageId) > 0) {
-        sendMessageParams.content.lastMessageId = params.lastMessageId;
-      }
-
       if (typeof params.name === "string") {
-        content.name = params.name;
+        sendMessageParams.content.name = whereClause.name = params.name;
       }
 
       /**
@@ -3423,27 +4034,77 @@
        */
       if (cacheDb) {
         if (db) {
-          db.participants
-            .where("threadId")
-            .equals(params.threadId)
-            .and(function(participant) {
-              return participant.owner == userInfo.id;
-            })
+          var thenAble;
+
+          if (Object.keys(whereClause).length === 0) {
+            thenAble = db.participants
+              .where("threadId")
+              .equals(params.threadId)
+              .and(function(participant) {
+                return participant.owner == userInfo.id;
+              });
+          } else {
+            if (whereClause.hasOwnProperty("name")) {
+              thenAble = db.participants
+                .where("threadId")
+                .equals(params.threadId)
+                .and(function(participant) {
+                  return participant.owner == userInfo.id;
+                })
+                .filter(function(contact) {
+                  var reg = new RegExp(whereClause.name);
+                  return reg.test(crypt(contact.contactName, cacheSecret, contact.salt) + " " + crypt(contact.name, cacheSecret, contact.salt) + " " + crypt(contact.email, cacheSecret, contact.salt));
+                });
+            }
+          }
+
+          thenAble
             .offset(offset)
             .limit(count)
             .reverse()
             .toArray()
             .then(function(participants) {
-              db.participants.count().then(function(participantsCount) {
+              db.participants
+                .where("threadId")
+                .equals(params.threadId)
+                .count()
+                .then(function(participantsCount) {
 
-                var cacheData = [];
+                  var cacheData = [];
 
-                for (var i = 0; i < participants.length; i++) {
+                  for (var i = 0; i < participants.length; i++) {
+                    try {
+                      var tempData = {},
+                        salt = participants[i].salt;
+
+                      cacheData.push(formatDataToMakeParticipant(JSON.parse(crypt(participants[i].data, cacheSecret, participants[i].salt)), participants[i].threadId));
+                    } catch (error) {
+                      fireEvent("error", {
+                        code: error.code,
+                        message: error.message,
+                        error: error
+                      });
+                    }
+                  }
+
+                  var returnData = {
+                    hasError: false,
+                    cache: true,
+                    errorCode: 0,
+                    errorMessage: '',
+                    result: {
+                      participants: cacheData,
+                      contentCount: participantsCount,
+                      hasNext: (offset + count < participantsCount && participants.length > 0),
+                      nextOffset: offset + participants.length
+                    }
+                  };
+
+                  /**
+                   * Calculate checksum hash of cache response
+                   */
                   try {
-                    var tempData = {},
-                      salt = participants[i].salt;
-
-                    cacheData.push(formatDataToMakeParticipant(JSON.parse(crypt(participants[i].data, participants[i].salt)), participants[i].threadId));
+                    cacheDigest = Utility.MD5(JSON.stringify(cacheData));
                   } catch (error) {
                     fireEvent("error", {
                       code: error.code,
@@ -3451,36 +4112,9 @@
                       error: error
                     });
                   }
-                }
 
-                var returnData = {
-                  hasError: false,
-                  cache: true,
-                  errorCode: 0,
-                  errorMessage: '',
-                  result: {
-                    participants: cacheData,
-                    contentCount: participantsCount,
-                    hasNext: (offset + count < participantsCount && participants.length > 0),
-                    nextOffset: offset + participants.length
-                  }
-                };
-
-                /**
-                 * Calculate checksum hash of cache response
-                 */
-                try {
-                  cacheDigest = Utility.MD5(JSON.stringify(cacheData));
-                } catch (error) {
-                  fireEvent("error", {
-                    code: error.code,
-                    message: error.message,
-                    error: error
-                  });
-                }
-
-                callback && callback(returnData);
-              });
+                  callback && callback(returnData);
+                });
             }).catch(function(error) {
               fireEvent("error", {
                 code: error.code,
@@ -3545,7 +4179,10 @@
                         tempData.owner = userInfo.id;
                         tempData.threadId = resultData.participants[i].threadId;
                         tempData.notSeenDuration = resultData.participants[i].notSeenDuration;
-                        tempData.data = crypt(JSON.stringify(resultData.participants[i]), salt);
+                        tempData.name = crypt(resultData.participants[i].name, cacheSecret, salt);
+                        tempData.contactName = crypt(resultData.participants[i].contactName, cacheSecret, salt);
+                        tempData.email = crypt(resultData.participants[i].email, cacheSecret, salt);
+                        tempData.data = crypt(JSON.stringify(unsetNotSeenDuration(resultData.participants[i])), cacheSecret, salt);
                         tempData.salt = salt;
 
                         cacheData.push(tempData);
@@ -3609,7 +4246,8 @@
        */
 
       var sendMessageParams = {
-        chatMessageVOType: chatMessageVOTypes.ADD_PARTICIPANT
+        chatMessageVOType: chatMessageVOTypes.ADD_PARTICIPANT,
+        typeCode: params.typeCode
       };
 
       if (params) {
@@ -3656,7 +4294,8 @@
        */
 
       var sendMessageParams = {
-        chatMessageVOType: chatMessageVOTypes.REMOVE_PARTICIPANT
+        chatMessageVOType: chatMessageVOTypes.REMOVE_PARTICIPANT,
+        typeCode: params.typeCodes
       };
 
       if (params) {
@@ -3701,7 +4340,8 @@
        */
 
       var sendMessageParams = {
-        chatMessageVOType: chatMessageVOTypes.LEAVE_THREAD
+        chatMessageVOType: chatMessageVOTypes.LEAVE_THREAD,
+        typeCode: params.typeCode
       };
 
       if (params) {
@@ -3803,11 +4443,13 @@
 
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.MESSAGE,
+        typeCode: params.typeCode,
+        messageType: params.messageType,
         subjectId: params.threadId,
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
-        systemMetadata: JSON.stringify(params.metaData),
+        systemMetadata: JSON.stringify(params.systemMetadata),
         metaData: JSON.stringify(metaData),
         pushMsgType: 4
       }, callbacks);
@@ -3818,12 +4460,13 @@
 
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.BOT_MESSAGE,
+        typeCode: params.typeCode,
         subjectId: params.messageId,
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
         receiver: params.receiver,
-        systemMetadata: JSON.stringify(params.metaData),
+        systemMetadata: JSON.stringify(params.systemMetadata),
         metaData: JSON.stringify(metaData),
         pushMsgType: 4
       }, callbacks);
@@ -3925,6 +4568,8 @@
 
                 sendMessage({
                   chatMessageVOType: chatMessageVOTypes.MESSAGE,
+                  typeCode: params.typeCode,
+                  messageType: params.messageType,
                   subjectId: params.threadId,
                   repliedTo: params.repliedTo,
                   content: params.content,
@@ -3932,7 +4577,7 @@
                   repliedTo: params.repliedTo,
                   content: params.content,
                   metaData: JSON.stringify(metaData),
-                  systemMetadata: JSON.stringify(params.metaData),
+                  systemMetadata: JSON.stringify(params.systemMetadata),
                   uniqueId: customeUniqueId,
                   pushMsgType: 4
                 }, callbacks);
@@ -3948,6 +4593,8 @@
 
                 sendMessage({
                   chatMessageVOType: chatMessageVOTypes.MESSAGE,
+                  typeCode: params.typeCode,
+                  messageType: params.messageType,
                   subjectId: params.threadId,
                   repliedTo: params.repliedTo,
                   content: params.content,
@@ -3955,7 +4602,7 @@
                   repliedTo: params.repliedTo,
                   content: params.content,
                   metaData: JSON.stringify(metaData),
-                  systemMetadata: JSON.stringify(params.metaData),
+                  systemMetadata: JSON.stringify(params.systemMetadata),
                   uniqueId: customeUniqueId,
                   pushMsgType: 4
                 }, callbacks);
@@ -4010,11 +4657,14 @@
     this.editMessage = function(params, callback) {
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.EDIT_MESSAGE,
+        typeCode: params.typeCode,
+        messageType: params.messageType,
         subjectId: params.messageId,
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
         metaData: params.metaData,
+        systemMetadata: params.systemMetadata,
         pushMsgType: 4
       }, {
         onResult: function(result) {
@@ -4042,6 +4692,7 @@
     this.deleteMessage = function(params, callback) {
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.DELETE_MESSAGE,
+        typeCode: params.typeCode,
         subjectId: params.messageId,
         uniqueId: params.uniqueId,
         content: JSON.stringify({
@@ -4076,11 +4727,14 @@
     this.replyMessage = function(params, callbacks) {
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.MESSAGE,
+        typeCode: params.typeCode,
+        messageType: params.messageType,
         subjectId: params.threadId,
         repliedTo: params.repliedTo,
         content: params.content,
         uniqueId: params.uniqueId,
         metaData: params.metaData,
+        systemMetadata: params.systemMetadata,
         pushMsgType: 4
       }, callbacks);
     };
@@ -4123,6 +4777,7 @@
 
       return sendMessage({
         chatMessageVOType: chatMessageVOTypes.FORWARD_MESSAGE,
+        typeCode: params.typeCode,
         subjectId: params.subjectId,
         repliedTo: params.repliedTo,
         content: params.content,
@@ -4138,6 +4793,7 @@
       if (userInfo && params.ownerId !== userInfo.id) {
         return sendMessage({
           chatMessageVOType: chatMessageVOTypes.SEEN,
+          typeCode: params.typeCode,
           content: params.messageId,
           pushMsgType: 3
         });
@@ -4147,16 +4803,15 @@
     this.updateThreadInfo = updateThreadInfo;
 
     this.muteThread = function(params, callback) {
-      var muteData = {
+      return sendMessage({
         chatMessageVOType: chatMessageVOTypes.MUTE_THREAD,
+        typeCode: params.typeCode,
         subjectId: params.subjectId,
         content: {},
         pushMsgType: 4,
         token: token,
         timeout: params.timeout
-      };
-
-      return sendMessage(muteData, {
+      }, {
         onResult: function(result) {
           callback && callback(result);
         }
@@ -4164,16 +4819,15 @@
     }
 
     this.unMuteThread = function(params, callback) {
-      var muteData = {
+      return sendMessage({
         chatMessageVOType: chatMessageVOTypes.UNMUTE_THREAD,
+        typeCode: params.typeCode,
         subjectId: params.subjectId,
         content: {},
         pushMsgType: 4,
         token: token,
         timeout: params.timeout
-      };
-
-      return sendMessage(muteData, {
+      }, {
         onResult: function(result) {
           callback && callback(result);
         }
@@ -4183,6 +4837,7 @@
     this.spamPvThread = function(params, callback) {
       var spamData = {
         chatMessageVOType: chatMessageVOTypes.SPAM_PV_THREAD,
+        typeCode: params.typeCode,
         pushMsgType: 4,
         token: token,
         timeout: params.timeout
@@ -4205,6 +4860,7 @@
 
       var blockData = {
         chatMessageVOType: chatMessageVOTypes.BLOCK,
+        typeCode: params.typeCode,
         content: {},
         pushMsgType: 4,
         token: token,
@@ -4230,6 +4886,7 @@
     this.unblock = function(params, callback) {
       var unblockData = {
         chatMessageVOType: chatMessageVOTypes.UNBLOCK,
+        typeCode: params.typeCode,
         pushMsgType: 4,
         token: token,
         timeout: params.timeout
@@ -4272,6 +4929,7 @@
 
       var getBlockedData = {
         chatMessageVOType: chatMessageVOTypes.GET_BLOCKED,
+        typeCode: params.typeCode,
         content: content,
         pushMsgType: 4,
         token: token,
@@ -4647,7 +5305,7 @@
                   .equals(userInfo.id)
                   .filter(function(contact) {
                     var reg = new RegExp(whereClause.firstName);
-                    return reg.test(crypt(contact.firstName, contact.salt));
+                    return reg.test(crypt(contact.firstName, cacheSecret, contact.salt));
                   });
               }
 
@@ -4657,7 +5315,7 @@
                   .equals(userInfo.id)
                   .filter(function(contact) {
                     var reg = new RegExp(whereClause.lastName);
-                    return reg.test(crypt(contact.lastName, contact.salt));
+                    return reg.test(crypt(contact.lastName, cacheSecret, contact.salt));
                   });
               }
 
@@ -4667,7 +5325,7 @@
                   .equals(userInfo.id)
                   .filter(function(contact) {
                     var reg = new RegExp(whereClause.email);
-                    return reg.test(crypt(contact.email, contact.salt));
+                    return reg.test(crypt(contact.email, cacheSecret, contact.salt));
                   });
               }
 
@@ -4677,7 +5335,7 @@
                   .equals(userInfo.id)
                   .filter(function(contact) {
                     var reg = new RegExp(whereClause.q);
-                    return reg.test(crypt(contact.firstName, contact.salt) + " " + crypt(contact.lastName, contact.salt) + " " + crypt(contact.email, contact.salt));
+                    return reg.test(crypt(contact.firstName, cacheSecret, contact.salt) + " " + crypt(contact.lastName, cacheSecret, contact.salt) + " " + crypt(contact.email, cacheSecret, contact.salt));
                   });
               }
             }
@@ -4700,7 +5358,7 @@
                       var tempData = {},
                         salt = contacts[i].salt;
 
-                      cacheData.push(formatDataToMakeContact(JSON.parse(crypt(contacts[i].data, contacts[i].salt))));
+                      cacheData.push(formatDataToMakeContact(JSON.parse(crypt(contacts[i].data, cacheSecret, contacts[i].salt))));
                     } catch (error) {
                       fireEvent("error", {
                         code: error.code,
@@ -4817,12 +5475,12 @@
                         tempData.id = resultData.contacts[i].id;
                         tempData.owner = userInfo.id;
                         tempData.uniqueId = resultData.contacts[i].uniqueId;
-                        tempData.userId = crypt(resultData.contacts[i].userId, salt);
-                        tempData.cellphoneNumber = crypt(resultData.contacts[i].cellphoneNumber, salt);
-                        tempData.email = crypt(resultData.contacts[i].email, salt);
-                        tempData.firstName = crypt(resultData.contacts[i].firstName, salt);
-                        tempData.lastName = crypt(resultData.contacts[i].lastName, salt);
-                        tempData.data = crypt(JSON.stringify(resultData.contacts[i]), salt);
+                        tempData.userId = crypt(resultData.contacts[i].userId, cacheSecret, salt);
+                        tempData.cellphoneNumber = crypt(resultData.contacts[i].cellphoneNumber, cacheSecret, salt);
+                        tempData.email = crypt(resultData.contacts[i].email, cacheSecret, salt);
+                        tempData.firstName = crypt(resultData.contacts[i].firstName, cacheSecret, salt);
+                        tempData.lastName = crypt(resultData.contacts[i].lastName, cacheSecret, salt);
+                        tempData.data = crypt(JSON.stringify(unsetNotSeenDuration(resultData.contacts[i])), cacheSecret, salt);
                         tempData.salt = salt;
 
                         cacheData.push(tempData);
@@ -5114,7 +5772,7 @@
         hasError: hasError,
         cache: false,
         errorMessage: (hasError) ? CHAT_ERRORS[6700] : "",
-        errorCode:  (hasError) ? 6700 : undefined,
+        errorCode: (hasError) ? 6700 : undefined,
         result: {
           link: (!hasError) ? url : ""
         }

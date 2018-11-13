@@ -619,7 +619,7 @@ function sendMessage(threadId, message, metaData) {
   sendChatParams = {
     threadId: threadId,
     content: message,
-    metaData: metaData
+    systemMetadata: metaData
   };
 
   chatAgent.sendTextMessage(sendChatParams, {
@@ -640,7 +640,7 @@ function sendFileMessage(threadId, file, caption, metaData) {
     threadId: threadId,
     file: file,
     content: caption,
-    metaData: metaData
+    systemMetadata: metaData
   }, {
     onSent: function(result) {
       console.log(result.uniqueId + " \t has been Sent!");

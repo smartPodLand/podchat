@@ -78,7 +78,7 @@
       //   count: 5,
       //   offset: 0,
       //   // threadIds: [312, 1210],
-      //   name: "flower"
+      //   // name: "flower"
       // });
 
       /**
@@ -813,7 +813,7 @@
       sendChatParams = {
         threadId: threadId,
         content: message,
-        metaData: metaData
+        systemMetadata: metaData
       };
 
       var sentMesageUniqueId = chatAgent.sendTextMessage(sendChatParams, {
@@ -836,7 +836,7 @@
         threadId: threadId,
         file: file,
         content: caption,
-        metaData: metaData
+        systemMetadata: metaData
       }, {
         onSent: function(result) {
           console.log(result.uniqueId + " \t has been Sent!");
@@ -857,7 +857,7 @@
         messageId: messageId,
         content: message,
         receiver: receiverId,
-        metaData: metaData
+        systemMetadata: metaData
       };
 
       var mim = chatAgent.sendBotMessage(sendChatParams, {
@@ -1128,8 +1128,8 @@
       <hr><br> -->
       <br>
       <a class="btn" href="#" onclick="getContacts()">Get Contacts</a>
-      <a class="btn" href="#" onclick="getThreads({count:10, offset: 0})">Get Threads</a>
-      <a class="btn" href="#" onclick="getHistory({count:10, offset: 0, threadId: document.getElementById('g-p2p').value})">Get History</a>
+      <a class="btn" href="#" onclick="getThreads({count:5, offset: 0})">Get Threads</a>
+      <a class="btn" href="#" onclick="getHistory({count:5, offset: 0, threadId: document.getElementById('g-p2p').value})">Get History</a>
       <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread Participants</a>
       <br>
     </fieldset>

@@ -9,8 +9,8 @@ var TOKENS = {
     TOKEN_1: "7cba09ff83554fc98726430c30afcfc6", // Masoud
     TOKEN_2: "fbd4ecedb898426394646e65c6b1d5d1" // Pooria
   },
-  P2P_THREAD = 293, //1
-  GROUP_THREAD = 312, //3
+  P2P_THREAD = 293,
+  GROUP_THREAD = 312,
   timingLog = true,
   params1 = {
     // Sandbox
