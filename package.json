@@ -31,7 +31,7 @@
     "form-data": "^2.3.3",
     "indexeddbshim": "^3.10.0",
     "mime": "^2.3.1",
-    "podasync": "^2.5.1",
+    "podasync": "^2.5.2",
     "query-string": "^6.2.0",
     "request": "^2.88.0"
   },
