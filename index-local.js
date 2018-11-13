@@ -352,7 +352,7 @@ chatAgent.on("chatReady", function() {
    * @param  {int}     hC        Crop height
    * @param  {int}     wC        Crop width
    */
-  // uploadImage(__dirname + "/test/test.jpeg", 0, 0, 400, 400);
+  // uploadImage(__dirname + "/test/test.jpg", 0, 0, 400, 400);
 
   /**
    * GET IMAGE
