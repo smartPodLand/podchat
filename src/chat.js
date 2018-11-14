@@ -17,10 +17,9 @@
         ChatUtility = require('./utility/utility.js'),
         FormData = require('form-data'),
         Request = require('request'),
-        Dexie = require('dexie');
+        Dexie = require('dexie') || require('dexie').default;
 
-      var setGlobalVars = require('indexeddbshim'),
-        http = require('http'),
+      var http = require('http'),
         QueryString = require('querystring'),
         FS = require('fs'),
         Mime = require('mime'),
@@ -30,7 +29,8 @@
        * Defining global variables for dexie to work in Node ENV
        */
       if (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]') {
-        var shim = {};
+        var setGlobalVars = require('indexeddbshim'),
+          shim = {};
         setGlobalVars(shim, {
           checkOrigin: false
         });
@@ -2735,7 +2735,9 @@
                       });
                     }
 
-                    callback && callback(returnData);
+                    if (cacheData.length > 0) {
+                      callback && callback(returnData);
+                    }
                   });
               }).catch(function(error) {
                 fireEvent("error", {
@@ -3020,7 +3022,9 @@
                     });
                   }
 
-                  callback && callback(returnData);
+                  if (cacheData.length > 0) {
+                    callback && callback(returnData);
+                  }
                 }).catch((error) => {
                   fireEvent("error", {
                     code: error.code,
@@ -3863,7 +3867,9 @@
                     });
                   }
 
-                  callback && callback(returnData);
+                  if (cacheData.length > 0) {
+                    callback && callback(returnData);
+                  }
                 });
             }).catch(function(error) {
               fireEvent("error", {
@@ -4115,7 +4121,9 @@
                     });
                   }
 
-                  callback && callback(returnData);
+                  if (cacheData.length > 0) {
+                    callback && callback(returnData);
+                  }
                 });
             }).catch(function(error) {
               fireEvent("error", {
@@ -5396,7 +5404,9 @@
                     });
                   }
 
-                  callback && callback(returnData);
+                  if (cacheData.length > 0) {
+                    callback && callback(returnData);
+                  }
                 }).catch((error) => {
                   fireEvent("error", {
                     code: error.code,
