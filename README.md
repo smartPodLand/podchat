@@ -84,7 +84,7 @@ var params = {
   platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
   fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
-  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token
+  token: "SSO_TOKEN", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -137,7 +137,7 @@ You'll get all the Message Events here
 
 ```javascript
 /**
- * Listen to Message Emitter
+ * Listen to Message Events Listener
  */
 chatAgent.on("messageEvents", function(event) {
   var type = event.type,
@@ -223,7 +223,7 @@ You'll get all the Events which are related to File Uploads in fileUploadEvents 
 
 ```javascript
 /**
- * Listen to Thread Events
+ * Listen to File Uploads Event Listener
  */
 chatAgent.on("fileUploadEvents", function(event) {
   console.log(event);

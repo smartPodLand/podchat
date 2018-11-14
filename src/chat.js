@@ -29,16 +29,18 @@
       /**
        * Defining global variables for dexie to work in Node ENV
        */
-      var shim = {};
-      setGlobalVars(shim, {
-        checkOrigin: false
-      });
-      var {
-        indexedDB,
-        IDBKeyRange
-      } = shim;
-      Dexie.dependencies.indexedDB = indexedDB;
-      Dexie.dependencies.IDBKeyRange = IDBKeyRange;
+      if (typeof global !== "undefined" && ({}).toString.call(global) === '[object global]') {
+        var shim = {};
+        setGlobalVars(shim, {
+          checkOrigin: false
+        });
+        var {
+          indexedDB,
+          IDBKeyRange
+        } = shim;
+        Dexie.dependencies.indexedDB = indexedDB;
+        Dexie.dependencies.IDBKeyRange = IDBKeyRange;
+      }
     } else {
       Async = POD.Async,
         ChatUtility = POD.ChatUtility,
