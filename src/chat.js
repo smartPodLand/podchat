@@ -17,7 +17,7 @@
         ChatUtility = require('./utility/utility.js'),
         FormData = require('form-data'),
         Request = require('request'),
-        Dexie = require('dexie') || require('dexie').default;
+        Dexie = require('dexie').default || require('dexie');
 
       var http = require('http'),
         QueryString = require('querystring'),
