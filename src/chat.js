@@ -2339,9 +2339,13 @@
          */
 
         var replyInfo = {
+          deleted: messageContent.deleted,
           participant: undefined,
           repliedToMessageId: messageContent.repliedToMessageId,
-          repliedToMessage: messageContent.repliedToMessage
+          message: messageContent.message,
+          messageType: messageContent.messageType,
+          metadata: messageContent.metadata,
+          systemMetadata: messageContent.systemMetadata
         };
 
         if (messageContent.participant) {

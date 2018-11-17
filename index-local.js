@@ -22,9 +22,9 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    // onMessageReceive: true, // log received messages on console
-    // onMessageSend: true, // log sent messaged on console
-    // actualTiming: true // log actual functions running time
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true, // log sent messaged on console
+    actualTiming: true // log actual functions running time
   }
 };
 
@@ -331,14 +331,14 @@ chatAgent.on("chatReady", function() {
    * @param threadId
    * @param messageId
    */
-  // replyMessage(1, 1, "This is a reply to message #1 at " + new Date());
+  // replyMessage(293, 15750, "This is a reply to message #15750 at " + new Date());
 
   /**
    * FORWARD MESSAGE
    * @param destination
    * @param messageIds
    */
-  // forwardMessage(3, [1, 10]);
+  // forwardMessage(312, [17259]);
 
   /*******************************************************
    *               F I L E   U P L O A D S               *

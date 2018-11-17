@@ -10,18 +10,37 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 -   Create thread by sending first Message
 -   Search in threads metadata
 
-## [2.1.0] - 2018-11-13
+## [2.1.5] - 2018-11-17
 
-### Added
+### Changes
+
+-   `replyInfo` has been changed as follow
+
+```javascript
+var replyInfo = {
+  deleted,              /* Delete state of Replied Message */
+  participant,          /* Sender of Replied Message */
+  repliedToMessageId,   /* Id of Replied Message */
+  message,              /* Content of Replied Message */
+  messageType,          /* Type of Replied Message */
+  metadata,             /* metadata of Replied Message */
+  systemMetadata,       /* systemMetadata of Replied Message */
+};
+```
+
+<details><summary>[2.1.0] - 2018-11-13</summary>
+
+- Added
 
 -   `typeCode` attribute has been added to primary chat options. This attribute indicates which contact group you are willing to work with
 -   `typeCode` is also available in every function separately and you can send this parameter along side others
 -   You can declare type of message you are sending by setting `messageType` attribute. It takes an Integer value and you will get it on `getHistory()` results too.
 
-### Changes
+- Changes
 
 -   `notSeenDuration` attribute of `participants` will no longer save in cache, and you will get `undefined` in return
 
+</details>
 
 <details><summary>[1.7.0] - 2018-11-06</summary>
 
