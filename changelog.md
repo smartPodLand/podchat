@@ -8,6 +8,30 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 -   Search in threads metadata
 
+## [3.5.3] - 2019-01-15
+
+### Added
+
+-   Cache synchronization with server to delete and update old cache data
+    -   Update Cache on Message Delete/Edit
+    -   Update Participants Cache
+    -   Update Contacts Cache
+    -   Update Threads Cache
+-   Reply with file Message `replyFileMessage()`
+-   Creating thread by sending or forwarding a message to someone
+-   Set `image`, `description` and `metadata` parameters on thread creation so there would be no need for `updateThreadInfo()`
+-   Implementing `UploadQueue`, `SendingQueue` and `WaitQueue` for chat messages
+-   Resend `resendMessage()` / `cancelMessage()` Cancel function to handle failed messages
+-   Cancel uploading and sending file messages with `cancelFileUpload()`
+-   Get Message Delivered List `getMessageDeliveredList()`
+-   Get Message Seen List `getMessageSeenList()`
+
+### Changes
+
+-   Update Chat ping mechanism
+-   Replacing `RC4` with `AES` as encryption method
+
+
 <details><summary>[2.1.5] - 2018-11-17</summary>
 
 - Changes

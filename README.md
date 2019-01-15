@@ -5,105 +5,36 @@
 # Recent Changelog
 
 All notable changes to this project will be documented here.
-to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
+In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 
 ## [Unreleased]
 
 -   Search in threads metadata
 
-## [2.1.5] - 2018-11-17
+## [3.5.3] - 2019-01-15
+
+### Added
+
+-   Cache synchronization with server to delete and update old cache data
+    -   Update Cache on Message Delete/Edit
+    -   Update Participants Cache
+    -   Update Contacts Cache
+    -   Update Threads Cache
+-   Reply with file Message `replyFileMessage()`
+-   Creating thread by sending or forwarding a message to someone
+-   Set `image`, `description` and `metadata` parameters on thread creation so there would be no need for `updateThreadInfo()`
+-   Implementing `UploadQueue`, `SendingQueue` and `WaitQueue` for chat messages
+-   Resend `resendMessage()` / `cancelMessage()` Cancel function to handle failed messages
+-   Cancel uploading and sending file messages with `cancelFileUpload()`
+-   Get Message Delivered List `getMessageDeliveredList()`
+-   Get Message Seen List `getMessageSeenList()`
 
 ### Changes
 
--   `replyInfo` has been changed as follow
+-   Update Chat ping mechanism
+-   Replacing `RC4` with `AES` as encryption method
 
-```javascript
-var replyInfo = {
-  deleted,              /* Delete state of Replied Message */
-  participant,          /* Sender of Replied Message */
-  repliedToMessageId,   /* Id of Replied Message */
-  message,              /* Content of Replied Message */
-  messageType,          /* Type of Replied Message */
-  metadata,             /* metadata of Replied Message */
-  systemMetadata,       /* systemMetadata of Replied Message */
-};
-```
-
-
-<details><summary>[2.1.5] - 2018-11-17</summary>
-
-- Changes
-
--   `replyInfo` has been changed as follow
-
-```javascript
-var replyInfo = {
-  deleted,              /* Delete state of Replied Message */
-  participant,          /* Sender of Replied Message */
-  repliedToMessageId,   /* Id of Replied Message */
-  message,              /* Content of Replied Message */
-  messageType,          /* Type of Replied Message */
-  metadata,             /* metadata of Replied Message */
-  systemMetadata,       /* systemMetadata of Replied Message */
-};
-```
-</details>
-
-
-<details><summary>[2.1.0] - 2018-11-13</summary>
-
-- Added
-
--   `typeCode` attribute has been added to primary chat options. This attribute indicates which contact group you are willing to work with
--   `typeCode` is also available in every function separately and you can send this parameter along side others
--   You can declare type of message you are sending by setting `messageType` attribute. It takes an Integer value and you will get it on `getHistory()` results too.
-
-- Changes
-
--   `notSeenDuration` attribute of `participants` will no longer save in cache, and you will get `undefined` in return
-
-</details>
-
-<details><summary>[1.7.0] - 2018-11-06</summary>
-
--   Added
-
--   Full cache support with local encryption for both Node and Browser Environments. In order to enable caching, you can set `enableCache: true` while you start a chat application
--   Embedded map services including
-    -   `mapReverse()` which takes a Geo Location and returns its address back
-    -   `mapSearch()` which takes a Geo Location and a Search term and returns an array of Nearby places containing that search term
-    -   `mapRouting()` which takes two Geo Locations and returns the route between them
-    -   `mapStaticImage()` which takes a Geo Locations and returns the static map image of that area
-
-</details>
-
-<details><summary>[1.6.1] - 2018-10-21</summary>
--   Added
-
--   Early version of Load Test are up now
--   `MESSAGE_DELETE` has been added to `messageEvents` listener, and whenever a message gets delete, you'll have an event announcing you that action. The result is like below:
-
-```javascript
-{ type: 'MESSAGE_DELETE',
-  result: {
-    message: {
-      id: id_of_deleted_message,
-      threadId: id_of_message_thread
-    }
-  }
-}
-```
-
-</details>
-
-<details><summary>[1.6.0] - 2018-10-20</summary>
--   Changes
-
--   `messageType` has been added to `MESSAGE` model
--   `admin` attribute has been added to `CONVERSATOIN` model
--   `contactId`, `contactName`, `contactFirstname`, `contactLastname` and `blocked` have been added to `PARTICIPANT` model
-
-</details>
+In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 
 ## Code Example
 
@@ -296,7 +227,12 @@ var createThreadTypes = {
 chatAgent.createThread({
     title: "Thread Title Sample",
     type: "NORMAL",
-    invitees: []
+    invitees: [],
+    image: "http://yoursite.com/image.jpg",
+    description: "Thread Description",
+    metadata: {
+      key: value
+    }
   }, function(createThreadResult) {
     console.log(createThreadResult);
   }
@@ -558,10 +494,10 @@ chatAgent.searchContacts({
 
 ## Message Functions
 
-### sendMessage
+### sendTextMessage
 
 ```javascript
-chatAgent.send({
+chatAgent.sendTextMessage({
     threadId: threadId,
     content: messageText
   }, {
@@ -577,6 +513,34 @@ chatAgent.send({
     console.log("\nYour message has been Seen!\n");
     console.log(result);
   }
+});
+```
+
+### resendMessage
+
+```javascript
+chatAgent.resendMessage(uniqueId); // unique id of message to be resent
+```
+
+### cancelMessage
+
+```javascript
+chatAgent.cancelMessage(uniqueId); // unique id of message to be canceled
+```
+
+### getMessageDeliveredList
+
+```javascript
+chatAgent.getMessageDeliveredList({
+  messageId: 19623
+});
+```
+
+### getMessageSeenList
+
+```javascript
+chatAgent.getMessageSeenList({
+  messageId: 19623
 });
 ```
 
@@ -626,6 +590,30 @@ chatAgent.deleteMessage({
 chatAgent.replyMessage({
     threadId: threadId,
     repliedTo: messageId,
+    content: message
+  }, {
+  onSent: function(result) {
+    console.log("Your reply message has been Sent!");
+    console.log(result);
+  },
+  onDeliver: function(result) {
+    console.log("Your reply message has been Delivered!");
+    console.log(result);
+  },
+  onSeen: function(result) {
+    console.log("Your reply message has been Seen!");
+    console.log(result);
+  }
+});
+```
+
+### replyFileMessage
+
+```javascript
+chatAgent.replyFileMessage({
+    threadId: threadId,
+    repliedTo: messageId,
+    file: file,
     content: message
   }, {
   onSent: function(result) {
