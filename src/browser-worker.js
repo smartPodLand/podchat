@@ -35,7 +35,7 @@
           userId = parseInt(data.userId);
 
         for (var i = 0; i < content.length; i++) {
-          var lastMessageTime = content[i].lastMessageVO.time,
+          var lastMessageTime = (content[i].lastMessageVO) ? content[i].lastMessageVO.time : 0,
             threadId = parseInt(content[i].id);
 
           db.messages

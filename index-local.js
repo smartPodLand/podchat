@@ -23,9 +23,9 @@ var params = {
   reconnectOnClose: true, // auto connect to socket after socket close
   asyncLogging: {
     onFunction: true, // log main actions on console
-    // onMessageReceive: true, // log received messages on console
-    // onMessageSend: true, // log sent messaged on console
-    // actualTiming: true // log actual functions running time
+    onMessageReceive: true, // log received messages on console
+    onMessageSend: true, // log sent messaged on console
+    actualTiming: true // log actual functions running time
   }
 };
 
