@@ -1,5 +1,18 @@
 (function() {
+
+  /**
+   * Global Variables
+   */
+  var CryptoJS;
+
   function ChatUtility() {
+
+    if (typeof(require) !== "undefined" && typeof(exports) !== "undefined") {
+      CryptoJS = require('crypto-js');
+    } else {
+      CryptoJS = window.CryptoJS;
+    }
+
     /**
      * Checks if Client is using NodeJS or not
      * @return  {boolean}
@@ -369,6 +382,97 @@
         res += String.fromCharCode(str.charCodeAt(y) ^ s[(s[i] + s[j]) % 256]);
       }
       return res;
+    }
+
+    /**
+     * Dynamic Sort
+     *
+     * Dynamically sorts given Array in given order
+     *
+     * @param {object}    property    Given array to be sorted
+     * @param {boolean}   reverse     Default order is ASC, if reverse is true, Array will be sorted in DESC
+     *
+     * @return {object}   Sorted Array
+     */
+    this.dynamicSort = function(property, reverse) {
+      var sortOrder = 1;
+      if (reverse) {
+        sortOrder = -1;
+      }
+      return function(a, b) {
+        var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+        return result * sortOrder;
+      }
+    }
+
+    /**
+     * Crypt
+     *
+     * This function uses AES Algorithm to encrypt given string with
+     * encryption key and in order to avoid generating same hash
+     * for same given strings, it uses a random salt everytime
+     *
+     * @param {string}  str        Given string to be encrypted
+     * @param {string}  key        Secret Encryption Key
+     * @param {string}  salt       Encryption salt
+     *
+     * @return {string} Encrypted string
+     */
+    this.crypt = function(str, key, salt) {
+      if (typeof str !== 'string') {
+        str = JSON.stringify(str);
+      }
+
+      if (str == undefined || str == "undefined") {
+        str = "";
+      }
+
+      return CryptoJS.AES.encrypt(str, key + salt).toString();
+    }
+
+    /**
+     * Decrypt
+     *
+     * This function uses AES Algorithm to decrypt given string with
+     * encryption key
+     *
+     * @param {string}  str        Given string to be decrypted
+     * @param {string}  key        Secret Encryption Key
+     * @param {string}  salt       Encryption salt
+     *
+     * @return {string} Decrypted string
+     */
+    this.decrypt = function(str, key, salt) {
+      var bytes = CryptoJS.AES.decrypt(str, key + salt);
+      return bytes.toString(CryptoJS.enc.Utf8);
+    }
+
+    /**
+     * Json Stringify
+     *
+     * This function takes a Json object including functions
+     * and etc. and returns a string containing all of that
+     *
+     * @param {object}  json   Given JSON to be strigified
+     *
+     * @return {string} Stringified object
+     */
+    this.jsonStringify = function(json) {
+      return JSON.stringify(json, (k, v) => typeof v === "function" ? "" + v : v);
+    }
+
+    /**
+     * Json Parser
+     *
+     * This function takes a stringified json object including functions
+     * and etc. and returns equaled object containing all of main jsons attributes
+     *
+     * @param {string}  json   Given Json String to be parsed
+     *
+     * @return {object} Parsed JSON object
+     */
+    this.jsonParser = function(string) {
+      return JSON.parse(string, (k, v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v) : v);
     }
   }
 

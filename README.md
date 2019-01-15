@@ -9,8 +9,6 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 ## [Unreleased]
 
--   Message Delivered / Seen Info
--   Create thread by sending first Message
 -   Search in threads metadata
 
 ## [2.1.5] - 2018-11-17
@@ -30,6 +28,27 @@ var replyInfo = {
   systemMetadata,       /* systemMetadata of Replied Message */
 };
 ```
+
+
+<details><summary>[2.1.5] - 2018-11-17</summary>
+
+- Changes
+
+-   `replyInfo` has been changed as follow
+
+```javascript
+var replyInfo = {
+  deleted,              /* Delete state of Replied Message */
+  participant,          /* Sender of Replied Message */
+  repliedToMessageId,   /* Id of Replied Message */
+  message,              /* Content of Replied Message */
+  messageType,          /* Type of Replied Message */
+  metadata,             /* metadata of Replied Message */
+  systemMetadata,       /* systemMetadata of Replied Message */
+};
+```
+</details>
+
 
 <details><summary>[2.1.0] - 2018-11-13</summary>
 

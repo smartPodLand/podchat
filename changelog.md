@@ -6,13 +6,11 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 ## [Unreleased]
 
--   Message Delivered / Seen Info
--   Create thread by sending first Message
 -   Search in threads metadata
 
-## [2.1.5] - 2018-11-17
+<details><summary>[2.1.5] - 2018-11-17</summary>
 
-### Changes
+- Changes
 
 -   `replyInfo` has been changed as follow
 
@@ -27,6 +25,7 @@ var replyInfo = {
   systemMetadata,       /* systemMetadata of Replied Message */
 };
 ```
+</details>
 
 <details><summary>[2.1.0] - 2018-11-13</summary>
 
