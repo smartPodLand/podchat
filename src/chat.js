@@ -390,8 +390,6 @@
             case 1: // CONNECTED
               if (state.deviceRegister && state.serverRegister) {
                 chatState = true;
-                // TODO: Is it necessary???
-                // chatSendQueueHandler();
               }
               break;
             case 0: // CONNECTING
@@ -1499,8 +1497,6 @@
              * Type 4    Message Delivery
              */
           case chatMessageVOTypes.DELIVERY:
-            // TODO: CACHE
-
             getHistory({
               offset: 0,
               threadId: threadId,
@@ -1525,8 +1521,6 @@
              * Type 5    Message Seen
              */
           case chatMessageVOTypes.SEEN:
-            // TODO: CACHE
-
             getHistory({
               offset: 0,
               threadId: threadId,
@@ -2152,7 +2146,7 @@
             fireEvent("botEvents", {
               type: "BOT_MESSAGE",
               result: {
-                bot: messageContent // todo: data will be formated
+                bot: messageContent
               }
             });
             break;
@@ -3114,8 +3108,6 @@
             content.creatorCoreUserId = whereClause.creatorCoreUserId = params.creatorCoreUserId;
           }
 
-          // TODO: wHAT ABOUT CACHE?!
-
           if (parseInt(params.partnerCoreUserId) > 0) {
             content.partnerCoreUserId = whereClause.partnerCoreUserId = params.partnerCoreUserId;
           }
@@ -3275,7 +3267,7 @@
                * thread's last section
                *
                * This option works on browser only - no Node support
-               * // TODO: Implement Node Version
+               * TODO: Implement Node Version
                */
               if (typeof Worker !== "undefined") {
                 if (typeof(cacheSyncWorker) == "undefined") {
@@ -3479,7 +3471,6 @@
                 }
 
                 if (whereClause.hasOwnProperty("toTime")) {
-                  // TODO: Check toTimeNanos with Server (For now we used +1)
                   var toTime = (whereClause.hasOwnProperty("toTimeNanos")) ? (((whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos : (whereClause.toTime + 1) * 1000000;
                   messages = messages.filter(function(message) {
                     return message.time <= toTime;
@@ -6103,22 +6094,22 @@
                 }
               });
             }
+          });
 
-            return {
-              uniqueId: fileUniqueId,
-              threadId: params.threadId,
-              participant: userInfo,
-              content: {
-                caption: params.content,
-                file: {
-                  uniqueId: fileUniqueId,
-                  fileName: fileName,
-                  fileSize: fileSize,
-                  fileObject: params.file
-                }
+          return {
+            uniqueId: fileUniqueId,
+            threadId: params.threadId,
+            participant: userInfo,
+            content: {
+              caption: params.content,
+              file: {
+                uniqueId: fileUniqueId,
+                fileName: fileName,
+                fileSize: fileSize,
+                fileObject: params.file
               }
             }
-          });
+          }
         } else {
           fireEvent("error", {
             code: 6302,
@@ -6497,22 +6488,22 @@
                 }
               });
             }
+          });
 
-            return {
-              uniqueId: fileUniqueId,
-              threadId: params.threadId,
-              participant: userInfo,
-              content: {
-                caption: params.content,
-                file: {
-                  uniqueId: fileUniqueId,
-                  fileName: fileName,
-                  fileSize: fileSize,
-                  fileObject: params.file
-                }
+          return {
+            uniqueId: fileUniqueId,
+            threadId: params.threadId,
+            participant: userInfo,
+            content: {
+              caption: params.content,
+              file: {
+                uniqueId: fileUniqueId,
+                fileName: fileName,
+                fileSize: fileSize,
+                fileObject: params.file
               }
             }
-          });
+          }
         } else {
           fireEvent("error", {
             code: 6302,
@@ -6520,33 +6511,6 @@
           });
         }
       }
-
-
-      // var uniqueId;
-      //
-      // if (typeof params.uniqueId != "undefined") {
-      //   uniqueId = params.uniqueId;
-      // } else {
-      //   uniqueId = Utility.generateUUID();
-      // }
-      //
-      // putInChatSendQueue({
-      //   message: {
-      //     chatMessageVOType: chatMessageVOTypes.MESSAGE,
-      //     typeCode: params.typeCode,
-      //     messageType: params.messageType,
-      //     subjectId: params.threadId,
-      //     repliedTo: params.repliedTo,
-      //     content: params.content,
-      //     uniqueId: uniqueId,
-      //     systemMetadata: JSON.stringify(params.systemMetadata),
-      //     metaData: JSON.stringify(params.metaData),
-      //     pushMsgType: 5
-      //   },
-      //   callbacks: callbacks
-      // }, function() {
-      //   chatSendQueueHandler();
-      // });
     };
 
     this.forwardMessage = function(params, callbacks) {
