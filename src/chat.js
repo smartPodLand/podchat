@@ -3464,14 +3464,14 @@
                 messages = resultMessages.sort(Utility.dynamicSort("time", !(order === "asc")));
 
                 if (whereClause.hasOwnProperty("fromTime")) {
-                  var fromTime = (whereClause.hasOwnProperty("fromTimeNanos")) ? ((whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos : whereClause.fromTime * 1000000;
+                  var fromTime = (whereClause.hasOwnProperty("fromTimeNanos")) ? (Math.floor(whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos : whereClause.fromTime * 1000000;
                   messages = messages.filter(function(message) {
                     return message.time >= fromTime;
                   });
                 }
 
                 if (whereClause.hasOwnProperty("toTime")) {
-                  var toTime = (whereClause.hasOwnProperty("toTimeNanos")) ? (((whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos : (whereClause.toTime + 1) * 1000000;
+                  var toTime = (whereClause.hasOwnProperty("toTimeNanos")) ? ((Math.floor(whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos : (whereClause.toTime + 1) * 1000000;
                   messages = messages.filter(function(message) {
                     return message.time <= toTime;
                   });
