@@ -127,14 +127,14 @@ chatAgent.on("chatReady", function() {
   //   // fromTimeNanos: 254500875,
   //   // toTime: 1524565569025,
   //   // toTimeNanos: 652148002,
-  //   // metadataCriteria: {
-  //   //   "field": "type",
-  //   //   "has": "BOT_",
-  //   //   "and": [{
-  //   //     "field": "id",
-  //   //     "is": "1534835339446"
-  //   //   }]
-  //   // }
+  //   metadataCriteria: {
+  //     "field": "type",
+  //     "has": "message",
+  //     // "and": [{
+  //     //   "field": "id",
+  //     //   "is": "1534835339446"
+  //     // }]
+  //   }
   // });
 
   // chatAgent.resendMessage("0c00552d-c291-4c0c-bec9-81f870edf170");
@@ -199,7 +199,8 @@ chatAgent.on("chatReady", function() {
   // setInterval(() => {
   // sendMessage(1431, "Message at " + new Date(), {
   //   id: new Date().getTime(),
-  //   type: "message"
+  //   type: "message",
+  //   senderMark: "⁞⁞⁞⁞ ϟϟ ⁞⁞⁞⁞"
   // });
   // }, 1000);
 

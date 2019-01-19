@@ -27,6 +27,7 @@ var TOKENS = {
     fileServer: "http://172.16.106.26:8080/hamsam",
     serverName: "chat-server",
 
+    enableCache: false,
     token: TOKENS.TOKEN_1,
     asyncLogging: {
       // onFunction: true,
@@ -561,7 +562,7 @@ describe("Working with threads", function(done) {
                     console.log("\x1b[90m    ☰ Get Thread Participants \x1b[0m \x1b[90m(%sms)\x1b[0m", new Date().getTime() - time4);
                   var time5 = new Date().getTime();
 
-                  var userId = participantsResult.result.participants[participantsResult.result.participants.length-1];
+                  var userId = participantsResult.result.participants[0];//participantsResult.result.participants.length-1];
                   chatAgent.removeParticipants({
                     threadId: newGroupThreadId,
                     participants: [userId.id]
@@ -703,6 +704,7 @@ describe("Working with threads", function(done) {
           "has": "BOT_"
         }
       }, function(historyResult) {
+        console.log(historyResult);
         if (!historyResult.hasError) {
           if (timingLog)
             console.log("\x1b[33m    ★ Search in Messages MetaData \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time1);
