@@ -8,6 +8,14 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 -   Search in threads metadata
 
+## [3.5.6] - 2019-01-19
+
+### Changes
+
+-   Refactoring Chat Send Queue and Upload Queue
+-   `resendMessage()` now requires callbacks too.
+
+
 ## [3.5.3] - 2019-01-15
 
 ### Added
