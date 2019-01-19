@@ -11,28 +11,12 @@ In order to see complete list of changelog please visit [ChangeLog](https://gith
 
 -   Search in threads metadata
 
-## [3.5.3] - 2019-01-15
-
-### Added
-
--   Cache synchronization with server to delete and update old cache data
-    -   Update Cache on Message Delete/Edit
-    -   Update Participants Cache
-    -   Update Contacts Cache
-    -   Update Threads Cache
--   Reply with file Message `replyFileMessage()`
--   Creating thread by sending or forwarding a message to someone
--   Set `image`, `description` and `metadata` parameters on thread creation so there would be no need for `updateThreadInfo()`
--   Implementing `UploadQueue`, `SendingQueue` and `WaitQueue` for chat messages
--   Resend `resendMessage()` / `cancelMessage()` Cancel function to handle failed messages
--   Cancel uploading and sending file messages with `cancelFileUpload()`
--   Get Message Delivered List `getMessageDeliveredList()`
--   Get Message Seen List `getMessageSeenList()`
+## [3.5.6] - 2019-01-19
 
 ### Changes
 
--   Update Chat ping mechanism
--   Replacing `RC4` with `AES` as encryption method
+-   Refactoring Chat Send Queue and Upload Queue
+-   `resendMessage()` now requires callbacks too.
 
 In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 
@@ -519,7 +503,20 @@ chatAgent.sendTextMessage({
 ### resendMessage
 
 ```javascript
-chatAgent.resendMessage(uniqueId); // unique id of message to be resent
+chatAgent.resendMessage(uniqueId, {
+  onSent: function(result) {
+    console.log("\nYour message has been Sent!\n");
+    console.log(result);
+  },
+  onDeliver: function(result) {
+    console.log("\nYour message has been Delivered!\n");
+    console.log(result);
+  },
+  onSeen: function(result) {
+    console.log("\nYour message has been Seen!\n");
+    console.log(result);
+  }
+}); // unique id of message to be resent
 ```
 
 ### cancelMessage

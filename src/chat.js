@@ -252,10 +252,10 @@
       chatUploadQueue = [],
       chatSendQueueHandlerTimeout;
 
-    chatSendQueue.push = function() {
-      Array.prototype.push.apply(this, arguments);
-      chatSendQueueHandler();
-    }
+    // chatSendQueue.push = function() {
+    //   Array.prototype.push.apply(this, arguments);
+    //   chatSendQueueHandler();
+    // }
 
     /**
      * Initialize Cache Database
@@ -271,9 +271,7 @@
       queueDb = new Dexie('podQueues');
 
       queueDb.version(1).stores({
-        sendQ: "[threadId+uniqueId], threadId, uniqueId, message, callbacks",
-        waitQ: "[threadId+uniqueId], threadId, uniqueId, message, callbacks",
-        uploadQ: "[threadId+uniqueId], threadId, uniqueId, message, callbacks"
+        waitQ: "[threadId+uniqueId], threadId, uniqueId, message"
       });
 
       // queueDb.delete().then(() => {
@@ -1321,53 +1319,38 @@
        */
       chatSendQueueHandler = function() {
         chatSendQueueHandlerTimeout && clearTimeout(chatSendQueueHandlerTimeout);
+        if (chatSendQueue.length) {
+          var messageToBeSend = chatSendQueue[0];
 
-        /**
-         * Getting chatSendQueue from either cache or
-         * memory and scrolling through the send queue
-         * to send all the messages which are waiting
-         * for chatState to become TRUE
-         *
-         * There is a small possibility that a Message
-         * wouldn't make it through network, so it Will
-         * not reach chat server. To avoid losing those
-         * messages, we put a clone of every message
-         * in waitQ, and when ack of the message comes,
-         * we delete that message from waitQ. otherwise
-         * we assume that these messagee have been failed to
-         * send and keep them to be either canceled or resent
-         * by user later. When user calls getHistory(), they
-         * will have failed messages alongside with typical
-         * messages history.
-         */
-        if (chatState) {
-          getChatSendQueue(0, function(chatSendQueue) {
-            if (chatSendQueue.length) {
-              var messageToBeSend = chatSendQueue.shift();
-
+          /**
+           * Getting chatSendQueue from either cache or
+           * memory and scrolling through the send queue
+           * to send all the messages which are waiting
+           * for chatState to become TRUE
+           *
+           * There is a small possibility that a Message
+           * wouldn't make it through network, so it Will
+           * not reach chat server. To avoid losing those
+           * messages, we put a clone of every message
+           * in waitQ, and when ack of the message comes,
+           * we delete that message from waitQ. otherwise
+           * we assume that these messagee have been failed to
+           * send and keep them to be either canceled or resent
+           * by user later. When user calls getHistory(), they
+           * will have failed messages alongside with typical
+           * messages history.
+           */
+          if (chatState) {
+            getChatSendQueue(0, function(chatSendQueue) {
               deleteFromChatSentQueue(messageToBeSend, function() {
-                putInChatWaitQueue(messageToBeSend, function() {
-                  /**
-                   * If mesage data is encrypted, decrypt it first
-                   */
-                  if (typeof messageToBeSend.message != "object") {
-                    try {
-                      messageToBeSend.message = Utility.jsonParser(Utility.decrypt(messageToBeSend.message, cacheSecret));
-                      messageToBeSend.callbacks = Utility.jsonParser(Utility.decrypt(messageToBeSend.callbacks, cacheSecret));
-                    } catch (e) {
-                      console.error(e);
-                    }
+                sendMessage(messageToBeSend.message, messageToBeSend.callbacks, function() {
+                  if (chatSendQueue.length) {
+                    chatSendQueueHandler();
                   }
-
-                  sendMessage(messageToBeSend.message, messageToBeSend.callbacks, function() {
-                    if (chatSendQueue.length) {
-                      chatSendQueueHandler();
-                    }
-                  });
                 });
               });
-            }
-          });
+            });
+          }
         }
       },
 
@@ -3527,7 +3510,6 @@
                    * didn't received.
                    */
                   getChatSendQueue(parseInt(params.threadId), function(sendQueueMessages) {
-
                     for (var i = 0; i < sendQueueMessages.length; i++) {
                       var decryptedEnqueuedMessage = Utility.jsonParser(Utility.decrypt(sendQueueMessages[i].message, cacheSecret));
                       sendQueueMessages[i] = formatDataToMakeMessage(sendQueueMessages[i].threadId, {
@@ -4665,49 +4647,24 @@
       /**
        * Get Chat Send Queue
        *
-       * This function checks if cache is enbled on client's
-       * machine, and if it is, retrieves sendQueue from
-       * cache. Otherwise returns sendQueue from RAM
+       * This function returns chat send queue
        *
        * @access private
        *
        * @return {array}  An array of messages on sendQueue
        */
       getChatSendQueue = function(threadId, callback) {
-        if (hasCache && typeof queueDb == "object") {
-          var collection;
+        if (threadId) {
+          var tempSendQueue = [];
 
-          if (threadId) {
-            collection = queueDb.sendQ.where("threadId").equals(threadId);
-          } else {
-            collection = queueDb.sendQ;
-          }
-
-          collection
-            .toArray()
-            .then(function(sendQueueOnCache) {
-              callback && callback(sendQueueOnCache);
-            })
-            .catch(function(error) {
-              fireEvent("error", {
-                code: error.code,
-                message: error.message,
-                error: error
-              });
-            });
-        } else {
-          if (threadId) {
-            var tempSendQueue = [];
-
-            for (var i = 0; i < chatSendQueue.length; i++) {
-              if (chatSendQueue[i].threadId == threadId) {
-                tempSendQueue.push(chatSendQueue[i]);
-              }
+          for (var i = 0; i < chatSendQueue.length; i++) {
+            if (chatSendQueue[i].threadId == threadId) {
+              tempSendQueue.push(chatSendQueue[i]);
             }
-            callback && callback(tempSendQueue);
-          } else {
-            callback && callback(chatSendQueue);
           }
+          callback && callback(tempSendQueue);
+        } else {
+          callback && callback(chatSendQueue);
         }
       },
 
@@ -4750,21 +4707,40 @@
                     if (!result.hasError) {
                       var messageContent = result.result;
 
+                      /**
+                       * Delete those messages from wait queue which
+                       * are already on the server databases
+                       */
                       for (var i = 0; i < messageContent.length; i++) {
                         for (var j = 0; j < uniqueIds.length; j++) {
                           if (uniqueIds[j] == messageContent[i].uniqueId) {
-                            deleteFromChatSentQueue(messageContent[i], function() {});
+                            deleteFromChatWaitQueue(messageContent[i], function() {});
                             uniqueIds.splice(j, 1);
                             waitQueueOnCache.splice(j, 1);
                           }
                         }
                       }
+
+                      /**
+                       * Delete those messages from wait queue which
+                       * are in the send queue and are going to be sent
+                       */
+                      for (var i = 0; i < chatSendQueue.length; i++) {
+                        for (var j = 0; j < uniqueIds.length; j++) {
+                          if (uniqueIds[j] == chatSendQueue[i].message.uniqueId) {
+                            deleteFromChatWaitQueue(chatSendQueue[i].message, function() {});
+                            uniqueIds.splice(j, 1);
+                            waitQueueOnCache.splice(j, 1);
+                          }
+                        }
+                      }
+
                       callback && callback(waitQueueOnCache);
                     }
                   }
                 });
               } else {
-                callback && callback([]);
+                callback && callback(waitQueueOnCache);
               }
             })
             .catch(function(error) {
@@ -4823,25 +4799,6 @@
        * @return {array}  An array of messages on uploadQueue
        */
       getChatUploadQueue = function(threadId, callback) {
-        // if (hasCache && typeof queueDb == "object") {
-        //   queueDb.uploadQ
-        //     .toArray()
-        //     .then(function(uploadQueueOnCache) {
-        //       callback && callback(uploadQueueOnCache);
-        //     })
-        //     .catch(function(error) {
-        //       fireEvent("error", {
-        //         code: error.code,
-        //         message: error.message,
-        //         error: error
-        //       });
-        //     });
-        // }
-        // else {
-        //   callback && callback(chatUploadQueue);
-        // }
-
-        // Temproray
         var uploadQ = [];
         for (var i = 0; i < chatUploadQueue.length; i++) {
           if (chatUploadQueue[i].threadId == threadId) {
@@ -4856,37 +4813,19 @@
        * Delete an Item from Chat Send Queue
        *
        * This function gets an item and deletes it
-       * from Chat Send Queue, from either cached
-       * queue or the queue on RAM memory
+       * from Chat Send Queue
        *
        * @access private
        *
        * @return {undefined}
        */
       deleteFromChatSentQueue = function(item, callback) {
-        if (hasCache && typeof queueDb == "object") {
-          queueDb.sendQ
-            .where("uniqueId")
-            .equals(item.uniqueId)
-            .delete()
-            .then(function() {
-              callback && callback();
-            })
-            .catch(function(error) {
-              fireEvent("error", {
-                code: error.code,
-                message: error.message,
-                error: error
-              });
-            });
-        } else {
-          for (var i = 0; i < chatSendQueue.length; i++) {
-            if (chatSendQueue[i].uniqueId == item.uniqueId) {
-              chatSendQueue.splice(i, 1);
-            }
+        for (var i = 0; i < chatSendQueue.length; i++) {
+          if (chatSendQueue[i].message.uniqueId == item.message.uniqueId) {
+            chatSendQueue.splice(i, 1);
           }
-          callback && callback();
         }
+        callback && callback();
       },
 
       /**
@@ -4930,41 +4869,15 @@
        * Delete an Item from Chat Upload Queue
        *
        * This function gets an item and deletes it
-       * from Chat Upload Queue, from either cached
-       * queue or the queue on RAM memory
+       * from Chat Upload Queue
        *
        * @access private
        *
        * @return {undefined}
        */
       deleteFromChatUploadQueue = function(item, callback) {
-        // if (hasCache && typeof queueDb == "object") {
-        //   queueDb.uploadQ
-        //     .where("uniqueId")
-        //     .equals(item.uniqueId)
-        //     .delete()
-        //     .then(function() {
-        //       callback && callback();
-        //     })
-        //     .catch(function(error) {
-        //       fireEvent("error", {
-        //         code: error.code,
-        //         message: error.message,
-        //         error: error
-        //       });
-        //     });
-        // } else {
-        //   for (var i = 0; i < chatUploadQueue.length; i++) {
-        //     if (chatUploadQueue[i].uniqueId == item.uniqueId) {
-        //       chatUploadQueue.splice(i, 1);
-        //     }
-        //   }
-        //   callback && callback();
-        // }
-
-        // Temproray
         for (var i = 0; i < chatUploadQueue.length; i++) {
-          if (chatUploadQueue[i].uniqueId == item.uniqueId) {
+          if (chatUploadQueue[i].message.uniqueId == item.message.uniqueId) {
             chatUploadQueue.splice(i, 1);
           }
         }
@@ -4975,9 +4888,7 @@
        * Push Message Into Send Queue
        *
        * This functions takes a message and puts it
-       * into chat's send queue, If cache is available
-       * on clients machine it uses cache for chat queues
-       * otherwise it uses a normal array as chat queue
+       * into chat's send queue
        *
        * @access private
        *
@@ -4986,37 +4897,10 @@
        * @return {undefined}
        */
       putInChatSendQueue = function(params, callback) {
-        /**
-         * If cache is available n clients machine
-         * we should use cache for chat queues
-         */
-        if (hasCache && typeof queueDb == "object") {
-          queueDb.sendQ.put({
-              threadId: parseInt(params.message.subjectId),
-              uniqueId: (typeof params.message.uniqueId == "string") ? params.message.uniqueId : (Array.isArray(params.message.uniqueId)) ? params.message.uniqueId[0] : "",
-              message: Utility.crypt(Utility.jsonStringify(params.message), cacheSecret),
-              callbacks: Utility.crypt(Utility.jsonStringify(params.callbacks), cacheSecret)
-            })
-            .then(function() {
-              callback && callback();
-            })
-            .catch(function(error) {
-              fireEvent("error", {
-                code: error.code,
-                message: error.message,
-                error: error
-              });
-            });
-        }
-
-        /**
-         * There is no cache option on clinets machine
-         * so we use aimple arrays as fallback
-         */
-        else {
-          chatSendQueue.push(params);
+        chatSendQueue.push(params);
+        putInChatWaitQueue(params.message, function() {
           callback && callback();
-        }
+        });
       },
 
       /**
@@ -5034,10 +4918,9 @@
         if (item.uniqueId != "") {
           if (hasCache && typeof queueDb == "object") {
             queueDb.waitQ.put({
-                threadId: parseInt(item.threadId),
+                threadId: parseInt(item.subjectId),
                 uniqueId: item.uniqueId,
-                message: item.message,
-                callbacks: item.callbacks
+                message: Utility.crypt(item, cacheSecret)
               })
               .then(function() {
                 callback && callback();
@@ -5060,48 +4943,13 @@
        * Put an Item inside Chat Upload Queue
        *
        * This function takes an item and puts it
-       * inside Chat upload Queue, either on cached
-       * wait queue or the wait queue on RAM memory
+       * inside Chat upload Queue
        *
        * @access private
        *
        * @return {undefined}
        */
       putInChatUploadQueue = function(params, callback) {
-
-        /**
-         * If cache is available n clients machine
-         * we should use cache for chat queues
-         */
-        // if (hasCache && typeof queueDb == "object") {
-        //   queueDb.uploadQ.put({
-        //       threadId: parseInt(params.message.subjectId),
-        //       uniqueId: params.message.uniqueId,
-        //       message: Utility.crypt(Utility.jsonStringify(params.message), cacheSecret),
-        //       callbacks: Utility.crypt(Utility.jsonStringify(params.callbacks), cacheSecret)
-        //     })
-        //     .then(function() {
-        //       callback && callback();
-        //     })
-        //     .catch(function(error) {
-        //       fireEvent("error", {
-        //         code: error.code,
-        //         message: error.message,
-        //         error: error
-        //       });
-        //     });
-        // }
-
-        /**
-         * There is no cache option on clinets machine
-         * so we use aimple arrays as fallback
-         */
-        // else {
-        // chatUploadQueue.push(params);
-        // callback && callback();
-        // }
-
-        // Temproray
         chatUploadQueue.push(params);
         callback && callback();
       },
@@ -6119,7 +5967,7 @@
       }
     };
 
-    this.resendMessage = function(uniqueId) {
+    this.resendMessage = function(uniqueId, callbacks) {
       if (hasCache && typeof queueDb == "object") {
         queueDb.waitQ
           .where("uniqueId")
@@ -6129,7 +5977,7 @@
             if (messages.length) {
               putInChatSendQueue({
                 message: Utility.jsonParser(Utility.decrypt(messages[0].message, cacheSecret)),
-                callbacks: Utility.jsonParser(Utility.decrypt(messages[0].callbacks, cacheSecret))
+                callbacks: callbacks
               }, function() {
                 chatSendQueueHandler();
               });
@@ -6147,7 +5995,7 @@
           if (chatWaitQueue[i].message.uniqueId == uniqueId) {
             putInChatSendQueue({
               message: chatWaitQueue[i].message,
-              callbacks: chatWaitQueue[i].callbacks
+              callbacks: callbacks
             }, function() {
               chatSendQueueHandler();
             });
@@ -6183,7 +6031,9 @@
           httpRequestObject[eval(`uniqueId`)] && delete(httpRequestObject[eval(`uniqueId`)]);
 
           deleteFromChatUploadQueue({
-            uniqueId: uniqueId
+            message: {
+              uniqueId: uniqueId
+            }
           }, callback);
         }
       }
