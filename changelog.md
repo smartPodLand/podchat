@@ -8,6 +8,25 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 -   Search in threads metadata
 
+## [3.5.9] - 2019-01-20
+
+### Added
+
+-   `fromTimeFull` and `toTimeFull` have been added to `getHistory()` parameters. You can either enter full time as a 19 length number or enter it as `fromTime (length 13)` with `fromTimeNanos (length 9)`
+
+```javascript
+// Enter times like this
+getHistoryParams = {
+  fromTime: 1547896931323,
+  fromTimeNanos: 323160000
+}
+
+// or like this
+getHistoryParams = {
+  fromTimeFull: 1547896931323160000
+}
+```
+
 ## [3.5.6] - 2019-01-19
 
 ### Changes
