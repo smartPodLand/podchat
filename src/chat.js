@@ -3390,20 +3390,30 @@
           sendMessageParams.content.uniqueIds = params.uniqueIds;
         }
 
-        if (parseInt(params.fromTime) > 0 && parseInt(params.fromTime) < 9999999999999) {
-          sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTime);
+        if (parseInt(params.fromTimeFull) > 0 && params.fromTimeFull.toString().length == 19) {
+          sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTimeFull.toString().substring(0, 13));
+          sendMessageParams.content.fromTimeNanos = whereClause.fromTimeNanos = parseInt(params.fromTimeFull.toString().substring(10, 19));
+        } else {
+          if (parseInt(params.fromTime) > 0 && parseInt(params.fromTime) < 9999999999999) {
+            sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTime);
+          }
+
+          if (parseInt(params.fromTimeNanos) > 0 && parseInt(params.fromTimeNanos) < 999999999) {
+            sendMessageParams.content.fromTimeNanos = whereClause.fromTimeNanos = parseInt(params.fromTimeNanos);
+          }
         }
 
-        if (parseInt(params.fromTimeNanos) > 0 && parseInt(params.fromTimeNanos) < 999999999) {
-          sendMessageParams.content.fromTimeNanos = whereClause.fromTimeNanos = parseInt(params.fromTimeNanos);
-        }
+        if (parseInt(params.toTimeFull) > 0 && params.toTimeFull.toString().length == 19) {
+          sendMessageParams.content.toTime = whereClause.toTime = parseInt(params.toTimeFull.toString().substring(0, 13));
+          sendMessageParams.content.toTimeNanos = whereClause.toTimeNanos = parseInt(params.toTimeFull.toString().substring(10, 19));
+        } else {
+          if (parseInt(params.toTime) > 0 && parseInt(params.toTime) < 9999999999999) {
+            sendMessageParams.content.toTime = whereClause.toTime = parseInt(params.toTime);
+          }
 
-        if (parseInt(params.toTime) > 0 && parseInt(params.toTime) < 9999999999999) {
-          sendMessageParams.content.toTime = whereClause.toTime = parseInt(params.toTime);
-        }
-
-        if (parseInt(params.toTimeNanos) > 0 && parseInt(params.toTimeNanos) < 999999999) {
-          sendMessageParams.content.toTimeNanos = whereClause.toTimeNanos = parseInt(params.toTimeNanos);
+          if (parseInt(params.toTimeNanos) > 0 && parseInt(params.toTimeNanos) < 999999999) {
+            sendMessageParams.content.toTimeNanos = whereClause.toTimeNanos = parseInt(params.toTimeNanos);
+          }
         }
 
         if (typeof params.query != "undefined") {
