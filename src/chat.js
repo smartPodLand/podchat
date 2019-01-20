@@ -271,7 +271,7 @@
       queueDb = new Dexie('podQueues');
 
       queueDb.version(1).stores({
-        waitQ: "[threadId+uniqueId], threadId, uniqueId, message"
+        waitQ: "[owner+threadId+uniqueId], owner, threadId, uniqueId, message"
       });
 
       // queueDb.delete().then(() => {
@@ -2312,6 +2312,9 @@
           queueDb.waitQ
             .where("uniqueId")
             .equals(message.uniqueId)
+            .and(function(item) {
+              return item.owner == parseInt(userInfo.id);
+            })
             .delete()
             .catch(function(error) {
               fireEvent("error", {
@@ -4697,6 +4700,9 @@
           queueDb.waitQ
             .where("threadId")
             .equals(threadId)
+            .and(function(item) {
+              return item.owner == parseInt(userInfo.id);
+            })
             .toArray()
             .then(function(waitQueueOnCache) {
               var uniqueIds = [];
@@ -4854,6 +4860,9 @@
           queueDb.waitQ
             .where("uniqueId")
             .equals(item.uniqueId)
+            .and(function(item) {
+              return item.owner == parseInt(userInfo.id);
+            })
             .delete()
             .then(function() {
               callback && callback();
@@ -4930,6 +4939,7 @@
             queueDb.waitQ.put({
                 threadId: parseInt(item.subjectId),
                 uniqueId: item.uniqueId,
+                owner: parseInt(userInfo.id),
                 message: Utility.crypt(item, cacheSecret)
               })
               .then(function() {
@@ -5982,6 +5992,9 @@
         queueDb.waitQ
           .where("uniqueId")
           .equals(uniqueId)
+          .and(function(item) {
+            return item.owner == parseInt(userInfo.id);
+          })
           .toArray()
           .then(function(messages) {
             if (messages.length) {
