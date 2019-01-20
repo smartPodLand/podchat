@@ -252,6 +252,23 @@ chatAgent.getThreads({
 
 ### getHistory
 
+To get messages list of a thread, you can use getHistory() function. Accepted parameters are listed below:
+
+-   threadId {number} ** Id of thread to get it's history ** `required`
+-   count {number} ** number of messages to get ** `default is 50`
+-   offset {number} ** offset of get query ** `default is 0`
+-   order {string} ** order of get query ** `default is DESC`
+-   id {string} ** ID of single message to get it's content **
+-   uniqueIds {array} ** Array of uniqueIds to get those messages from server **
+-   query {string} ** A string to search in messages content **
+-   metadataCriteria {json} ** A json object to use as entry for GraphQL seach on message's metaData **
+-   fromTime {number} ** Return messages those time is bigger than this ** `13 digits (like 1547972096473)`
+-   fromTimeNanos {number} ** Nano Second precision for fromTime ** `9 digits (like 473533000)`
+-   fromTimeFull {number} ** Instead of fromTme and fromTimeNanos you can send fromTimeFull ** `19 digits (like 1547972096473533000)`
+-   toTime {number} ** Return messages those time is smaller than this ** `13 digits (like 1547972096473)`
+-   toTimeNanos {number} ** Nano Second precision for toTime ** `9 digits (like 473533000)`
+-   toTimeFull {number} ** Instead of toTime and toTimeNanos you can send toTimeFull ** `19 digits (like 1547972096473533000)`
+
 ```javascript
 chatAgent.getHistory({
     count: 50,

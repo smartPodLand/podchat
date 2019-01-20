@@ -59,7 +59,7 @@
       oldPeerId,
       userInfo,
       token = params.token,
-      generalTypeCode = params.typeCode,
+      generalTypeCode = params.typeCode || "default",
       mapApiKey = params.mapApiKey || "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
       deviceId,
       isNode = Utility.isNode(),
