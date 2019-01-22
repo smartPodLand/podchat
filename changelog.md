@@ -8,6 +8,43 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 -   Search in threads metadata
 
+## [3.5.12] - 2019-01-22
+
+### Changes
+
+-   `block()` function has been changed and now you can block with `threadId`, `userId` alongside `contactId`
+
+```javascript
+chatAgent.block({
+  contactId: 2247,
+  // threadId: 1018,
+  // userId: 121
+}, function(result) {
+  if (!result.hasError)
+    console.log("Contact has been successfully Blocked!");
+});
+```
+
+-   `unBlock()` function has been changed and now you can unblock with `contactId`, `threadId`, `userId` alongside `blockId`
+
+```javascript
+chatAgent.unblock({
+  blockId: 425,
+  // contactId: 2247,
+  // threadId: 1018,
+  // userId: 122
+}, function(result) {
+  if (!result.hasError)
+    console.log("Contact has been successfully unBlocked!");
+});
+```
+
+-   Thread model has been changed. `lastSeenMessageId`, `partnerLastSeenMessageId` and `partnerLastDeliveredMessageId` are no longer available, instead you can use below times:
+    - `lastSeenMessageTime`
+    - `partnerLastSeenMessageTime`
+    - `partnerLastDeliveredMessageTime`
+
+
 ## [3.5.9] - 2019-01-20
 
 ### Added

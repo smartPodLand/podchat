@@ -252,11 +252,6 @@
       chatUploadQueue = [],
       chatSendQueueHandlerTimeout;
 
-    // chatSendQueue.push = function() {
-    //   Array.prototype.push.apply(this, arguments);
-    //   chatSendQueueHandler();
-    // }
-
     /**
      * Initialize Cache Database
      *
@@ -274,20 +269,8 @@
         waitQ: "[owner+threadId+uniqueId], owner, threadId, uniqueId, message"
       });
 
-      // queueDb.delete().then(() => {
-      //   console.log("podQueues Database successfully deleted");
-      // }).catch((err) => {
-      //   console.log(err);
-      // });
-
       if (enableCache) {
         db = new Dexie('podChat');
-
-        // db.delete().then(() => {
-        //   console.log("Database successfully deleted");
-        // }).catch((err) => {
-        //   console.log(err);
-        // });
 
         db.version(1).stores({
           users: "&id, name, cellphoneNumber",
@@ -2676,32 +2659,38 @@
       formatDataToMakeConversation = function(messageContent) {
 
         /**
-         * + Conversation                     {object}
-         *    - id                            {long}
-         *    - joinDate                      {long}
-         *    - title                         {string}
-         *    - inviter                       {object : ParticipantVO}
-         *    - participants                  {list : ParticipantVO}
-         *    - time                          {long}
-         *    - lastMessage                   {string}
-         *    - lastParticipantName           {string}
-         *    - group                         {boolean}
-         *    - partner                       {long}
-         *    - lastParticipantImage          {string}
-         *    - image                         {string}
-         *    - description                   {string}
-         *    - unreadCount                   {long}
-         *    - lastSeenMessageId             {long}
-         *    - lastMessageVO                 {object : ChatMessageVO}
-         *    - partnerLastSeenMessageId      {long}
-         *    - partnerLastDeliveredMessageId {long}
-         *    - type                          {int}
-         *    - metadata                      {string}
-         *    - mute                          {boolean}
-         *    - participantCount              {long}
-         *    - canEditInfo                   {boolean}
-         *    - canSpam                       {boolean}
-         *    - admin                         {boolean}
+         * + Conversation                           {object}
+         *    - id                                  {long}
+         *    - joinDate                            {long}
+         *    - title                               {string}
+         *    - inviter                             {object : ParticipantVO}
+         *    - participants                        {list : ParticipantVO}
+         *    - time                                {long}
+         *    - lastMessage                         {string}
+         *    - lastParticipantName                 {string}
+         *    - group                               {boolean}
+         *    - partner                             {long}
+         *    - lastParticipantImage                {string}
+         *    - image                               {string}
+         *    - description                         {string}
+         *    - unreadCount                         {long}
+         *    - lastSeenMessageId                   {long}
+         *    - lastSeenMessageTime                 {long}
+         *    - lastSeenMessageNanos                {integer}
+         *    - lastMessageVO                       {object : ChatMessageVO}
+         *    - partnerLastSeenMessageId            {long}
+         *    - partnerLastSeenMessageTime          {long}
+         *    - partnerLastSeenMessageNanos         {integer}
+         *    - partnerLastDeliveredMessageId       {long}
+         *    - partnerLastDeliveredMessageTime     {long}
+         *    - partnerLastDeliveredMessageNanos    {integer}
+         *    - type                                {int}
+         *    - metadata                            {string}
+         *    - mute                                {boolean}
+         *    - participantCount                    {long}
+         *    - canEditInfo                         {boolean}
+         *    - canSpam                             {boolean}
+         *    - admin                               {boolean}
          */
 
         var conversation = {
@@ -2720,9 +2709,12 @@
           description: messageContent.description,
           unreadCount: messageContent.unreadCount,
           lastSeenMessageId: messageContent.lastSeenMessageId,
+          lastSeenMessageTime: (messageContent.lastSeenMessageNanos) ? (parseInt(parseInt(messageContent.lastSeenMessageTime) / 1000) * 1000000000) + parseInt(messageContent.lastSeenMessageNanos) : (parseInt(messageContent.lastSeenMessageTime)),
           lastMessageVO: undefined,
           partnerLastSeenMessageId: messageContent.partnerLastSeenMessageId,
+          partnerLastSeenMessageTime: (messageContent.partnerLastSeenMessageNanos) ? (parseInt(parseInt(messageContent.partnerLastSeenMessageTime) / 1000) * 1000000000) + parseInt(messageContent.partnerLastSeenMessageNanos) : (parseInt(messageContent.partnerLastSeenMessageTime)),
           partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
+          partnerLastDeliveredMessageTime: (messageContent.partnerLastDeliveredMessageNanos) ? (parseInt(parseInt(messageContent.partnerLastDeliveredMessageTime) / 1000) * 1000000000) + parseInt(messageContent.partnerLastDeliveredMessageNanos) : (parseInt(messageContent.partnerLastDeliveredMessageTime)),
           type: messageContent.type,
           metadata: messageContent.metadata,
           mute: messageContent.mute,
@@ -6580,6 +6572,14 @@
         if (parseInt(params.contactId) > 0) {
           blockData.content.contactId = params.contactId;
         }
+
+        if (parseInt(params.threadId) > 0) {
+          blockData.content.threadId = params.threadId;
+        }
+
+        if (parseInt(params.userId) > 0) {
+          blockData.content.userId = params.userId;
+        }
       }
 
       return sendMessage(blockData, {
@@ -6598,12 +6598,25 @@
         typeCode: params.typeCode,
         pushMsgType: 4,
         token: token,
+        content: {},
         timeout: params.timeout
       };
 
       if (params) {
         if (parseInt(params.blockId) > 0) {
           unblockData.subjectId = params.blockId;
+        }
+
+        if (parseInt(params.contactId) > 0) {
+          unblockData.content.contactId = params.contactId;
+        }
+
+        if (parseInt(params.threadId) > 0) {
+          unblockData.content.threadId = params.threadId;
+        }
+
+        if (parseInt(params.userId) > 0) {
+          unblockData.content.userId = params.userId;
         }
       }
 

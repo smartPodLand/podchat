@@ -11,24 +11,42 @@ In order to see complete list of changelog please visit [ChangeLog](https://gith
 
 -   Search in threads metadata
 
-## [3.5.9] - 2019-01-20
+## [3.5.12] - 2019-01-22
 
-### Added
+### Changes
 
--   `fromTimeFull` and `toTimeFull` have been added to `getHistory()` parameters. You can either enter full time as a 19 length number or enter it as `fromTime (length 13)` with `fromTimeNanos (length 9)`
+-   `block()` function has been changed and now you can block with `threadId`, `userId` alongside `contactId`
 
 ```javascript
-// Enter times like this
-getHistoryParams = {
-  fromTime: 1547896931323,
-  fromTimeNanos: 323160000
-}
-
-// or like this
-getHistoryParams = {
-  fromTimeFull: 1547896931323160000
-}
+chatAgent.block({
+  contactId: 2247,
+  // threadId: 1018,
+  // userId: 121
+}, function(result) {
+  if (!result.hasError)
+    console.log("Contact has been successfully Blocked!");
+});
 ```
+
+-   `unBlock()` function has been changed and now you can unblock with `contactId`, `threadId`, `userId` alongside `blockId`
+
+```javascript
+chatAgent.unblock({
+  blockId: 425,
+  // contactId: 2247,
+  // threadId: 1018,
+  // userId: 122
+}, function(result) {
+  if (!result.hasError)
+    console.log("Contact has been successfully unBlocked!");
+});
+```
+
+-   Thread model has been changed. `lastSeenMessageId`, `partnerLastSeenMessageId` and `partnerLastDeliveredMessageId` are no longer available, instead you can use below times:
+    - `lastSeenMessageTime`
+    - `partnerLastSeenMessageTime`
+    - `partnerLastDeliveredMessageTime`
+
 
 In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 

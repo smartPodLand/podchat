@@ -11,8 +11,8 @@ var params = {
   enableCache: false, // Enable Client side caching
   mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
   // typeCode: "chattest",
-  // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-  token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
+  token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+  // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
   // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
   // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
   // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
@@ -77,7 +77,7 @@ chatAgent.on("chatReady", function() {
    * CREATE THREAD (Creates P2P Chat with a specific user)
    * @param contactId
    */
-  // createThread({id: 122, type: "TO_BE_USER_ID"});
+  // createThread({id: 2247, type: "TO_BE_USER_CONTACT_ID"});
 
   /**
    * GET THREAD PARTICIPANTS
@@ -301,7 +301,15 @@ chatAgent.on("chatReady", function() {
    * BLOCK CONTACT
    * @param contactId
    */
-  // blockContact(564);
+  // chatAgent.block({
+  //   contactId: 2247,
+  //   // threadId: 1018,
+  //   // userId: 121
+  // }, function(result) {
+  //   console.log(result);
+  //   if (!result.hasError)
+  //     console.log("Contact has been successfully Blocked!");
+  // });
 
   /**
    * GET BLOCKED CONTACTS LIST
@@ -314,7 +322,16 @@ chatAgent.on("chatReady", function() {
    * UNBLOCK CONTACT
    * @param blockId
    */
-  // unblockContact(83);
+  // chatAgent.unblock({
+  //   // blockId: 425,
+  //   contactId: 2247,
+  //   // threadId: 1018,
+  //   // userId: 122
+  // }, function(result) {
+  //   if (!result.hasError)
+  //     console.log("Contact has been successfully unBlocked!");
+  //   console.log(result);
+  // });
 
   /**
    * ADD CONTACTS
@@ -326,7 +343,7 @@ chatAgent.on("chatReady", function() {
   // var addContactInstantResult = chatAgent.addContacts({
   //   firstName: "Nigga",
   //   lastName: "Nigggga",
-  //   cellphoneNumber: "09044661263",
+  //   cellphoneNumber: "09148401824",
   //   email: "nigga666@gmail.com"
   // }, function(result) {
   //   console.log(result);
@@ -890,21 +907,20 @@ function createThread(invitees, threadType) {
     invitees: [],
     image: "http://aiesec.at/wp-content/uploads/2016/07/16-personalities-test.png",
     description: "This is some Description.",
-    metadata: {
-      time: new Date()
-    },
-    message: {
-      uniqueId: "9766b140-24a9-49fb-a02e-6aff708645a6",
-      text: "This is a new Mesage",
-      // type: 35,
-      metadata: {
-        messageTime: new Date()
-      },
-      systemMetadata: {
-        id: new Date().getTime()
-      },
-      forwardedMessageIds: [19633, 19632, 19631]
-    }
+    // metadata: {
+    //   time: new Date()
+    // },
+    // message: {
+    //   uniqueId: "9766b140-24a9-49fb-a02e-6aff708645a6",
+    //   text: "This is a new Mesage",
+    //   metadata: {
+    //     messageTime: new Date()
+    //   },
+    //   systemMetadata: {
+    //     id: new Date().getTime()
+    //   },
+    //   // forwardedMessageIds: [19633, 19632, 19631]
+    // }
   };
 
   if (Array.isArray(invitees)) {
@@ -926,6 +942,8 @@ function createThread(invitees, threadType) {
       createThreadParams.invitees.push(invitee);
     }
   }
+
+console.log(createThreadParams);
 
   chatAgent.createThread(createThreadParams, function(createThreadResult) {
     console.log(createThreadResult);
@@ -954,28 +972,6 @@ function muteThread(threadId) {
   });
 }
 
-function blockContact(contactId) {
-  var data = {
-    contactId: contactId
-  }
-  chatAgent.block(data, function(result) {
-    if (!result.hasError)
-      console.log("Contact has been successfully Blocked!");
-    console.log(result);
-  });
-}
-
-function unblockContact(blockId) {
-  var data = {
-    blockId: blockId
-  }
-  chatAgent.unblock(data, function(result) {
-    if (!result.hasError)
-      console.log("Contact has been successfully unBlocked!");
-    console.log(result);
-  });
-}
-
 function getBlockedList() {
   var data = {
     count: 50,
@@ -983,7 +979,7 @@ function getBlockedList() {
   }
   chatAgent.getBlocked(data, function(result) {
     if (!result.hasError)
-      console.log(result);
+      console.log(result.result.blockedUsers);
   });
 }
 
