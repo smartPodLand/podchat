@@ -442,10 +442,12 @@ In order to block a contact of yours, you can simply call block() function and g
 
 ```javascript
 chatAgent.block({
-  contactId: contactId
-  }, function(result) {
-    if (!result.hasError)
-      console.log("Contact has been successfully Blocked!");
+  contactId: 2247,
+  // threadId: 1018,
+  // userId: 121
+}, function(result) {
+  if (!result.hasError)
+    console.log("Contact has been successfully Blocked!");
 });
 ```
 
@@ -455,10 +457,13 @@ To unblock an already blocked contact, call unblock() function with block Id of 
 
 ```javascript
 chatAgent.unblock({
-    blockId: blockId
-  }, function(result) {
-    if (!result.hasError)
-      console.log("Contact has been successfully unBlocked!");
+  blockId: 425,
+  // contactId: 2247,
+  // threadId: 1018,
+  // userId: 122
+}, function(result) {
+  if (!result.hasError)
+    console.log("Contact has been successfully unBlocked!");
 });
 ```
 

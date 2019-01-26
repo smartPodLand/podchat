@@ -2,20 +2,11 @@
 <html>
 
 <head>
-  <!-- <meta charset="utf-8"> -->
   <title>podChat</title>
 
-  <script type="text/javascript" src="src/utility/utility.js"></script>
-  <script type="text/javascript" src="node_modules/podasync/src/utility/utility.js"></script>
-  <script type="text/javascript" src="node_modules/podasync/src/network/socket.js"></script>
-  <script type="text/javascript" src="node_modules/podasync/src/network/async.js"></script>
-  <script type="text/javascript" src="node_modules/crypto-js/crypto-js.js"></script>
-  <script type="text/javascript" src="node_modules/dexie/dist/dexie.min.js"></script>
-  <script type="text/javascript" src="src/chat.js"></script>
+  <script type="text/javascript" src="podchat.js"></script>
 
   <script type="text/javascript">
-    var Chat = POD.Chat;
-
     var params = {
       appId: new Date().getTime(),
       socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
@@ -44,7 +35,7 @@
       }
     };
 
-    var chatAgent = new Chat(params),
+    var chatAgent = new PodChat(params),
       PID,
       P2P_THREAD_ID = 293;
 
