@@ -145,6 +145,14 @@
         CHANNEL_GROUP: 4,
         CHANNEL: 8
       },
+      protocol = params.protocol || "websocket",
+      queueHost = params.queueHost,
+      queuePort = params.queuePort,
+      queueUsername = params.queueUsername,
+      queuePassword = params.queuePassword,
+      queueReceive = params.queueReceive,
+      queueSend = params.queueSend,
+      queueConnectionTimeout = params.queueConnectionTimeout,
       socketAddress = params.socketAddress,
       serverName = params.serverName || "",
       wsConnectionWaitTime = params.wsConnectionWaitTime,
@@ -323,6 +331,14 @@
         var asyncGetReadyTime = new Date().getTime();
 
         asyncClient = new Async({
+          protocol: protocol,
+          queueHost: queueHost,
+          queuePort: queuePort,
+          queueUsername: queueUsername,
+          queuePassword: queuePassword,
+          queueReceive: queueReceive,
+          queueSend: queueSend,
+          queueConnectionTimeout: queueConnectionTimeout,
           socketAddress: socketAddress,
           serverName: serverName,
           deviceId: deviceId,

@@ -11,42 +11,40 @@ In order to see complete list of changelog please visit [ChangeLog](https://gith
 
 -   Search in threads metadata
 
-## [3.5.12] - 2019-01-22
+## [3.5.16] - 2019-01-28
 
-### Changes
+### Added
 
--   `block()` function has been changed and now you can block with `threadId`, `userId` alongside `contactId`
+-   `ActiveMQ` support has been added to `PodAsync`
 
+In order to use `ActiveMQ` instead of `Websocket` you should send these parameters to `Chat()`
+
+### ActiveMQ Parameters
 ```javascript
-chatAgent.block({
-  contactId: 2247,
-  // threadId: 1018,
-  // userId: 121
-}, function(result) {
-  if (!result.hasError)
-    console.log("Contact has been successfully Blocked!");
-});
+var params = {  
+  protocol: "queue",
+  queueHost: "172.16.0.248",
+  queuePort: "61613",
+  queueUsername: "root",
+  queuePassword: "zalzalak",
+  queueReceive: "queue-in-amjadi-stomp",
+  queueSend: "queue-out-amjadi-stomp",
+  queueConnectionTimeout: 20000
+};
 ```
 
--   `unBlock()` function has been changed and now you can unblock with `contactId`, `threadId`, `userId` alongside `blockId`
+### Websockets Parameters
 
 ```javascript
-chatAgent.unblock({
-  blockId: 425,
-  // contactId: 2247,
-  // threadId: 1018,
-  // userId: 122
-}, function(result) {
-  if (!result.hasError)
-    console.log("Contact has been successfully unBlocked!");
-});
+var params = {
+  socketAddress: "ws://172.16.106.26:8003/ws",
+  serverName: "chat-server",
+  wsConnectionWaitTime: 500,
+  connectionRetryInterval: 5000,
+  connectionCheckTimeout: 10000,
+  reconnectOnClose: true
+};
 ```
-
--   Thread model has been changed. `lastSeenMessageId`, `partnerLastSeenMessageId` and `partnerLastDeliveredMessageId` are no longer available, instead you can use below times:
-    - `lastSeenMessageTime`
-    - `partnerLastSeenMessageTime`
-    - `partnerLastDeliveredMessageTime`
-
 
 In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 

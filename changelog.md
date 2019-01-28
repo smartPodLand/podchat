@@ -8,6 +8,41 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 
 -   Search in threads metadata
 
+## [3.5.16] - 2019-01-28
+
+### Added
+
+-   `ActiveMQ` support has been added to `PodAsync`
+
+In order to use `ActiveMQ` instead of `Websocket` you should send these parameters to `Chat()`
+
+### ActiveMQ Parameters
+```javascript
+var params = {  
+  protocol: "queue",
+  queueHost: "172.16.0.248",
+  queuePort: "61613",
+  queueUsername: "root",
+  queuePassword: "zalzalak",
+  queueReceive: "queue-in-amjadi-stomp",
+  queueSend: "queue-out-amjadi-stomp",
+  queueConnectionTimeout: 20000
+};
+```
+
+### Websockets Parameters
+
+```javascript
+var params = {
+  socketAddress: "ws://172.16.106.26:8003/ws",
+  serverName: "chat-server",
+  wsConnectionWaitTime: 500,
+  connectionRetryInterval: 5000,
+  connectionCheckTimeout: 10000,
+  reconnectOnClose: true
+};
+```
+
 ## [3.5.12] - 2019-01-22
 
 ### Changes
