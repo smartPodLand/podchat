@@ -7,7 +7,7 @@ var params = {
   fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   grantDeviceIdFromSSO: false,
-  token: "ffcc1573584e49ba883a3336d5aaca90", // {**REQUIRED**} SSO Token
+  token: "5b21346e69e74edfb605804211b4f00e", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
