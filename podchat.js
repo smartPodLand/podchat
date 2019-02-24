@@ -87126,10 +87126,10 @@ WError.prototype.cause = function we_cause(c)
             mapApiKey = params.mapApiKey || '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
             deviceId,
             isNode = Utility.isNode(),
+            productEnv = (typeof navigator != 'undefined') ? navigator.product : "undefined",
             db,
             queueDb,
-            hasCache = (typeof navigator != 'undefined') ? (navigator.product != 'ReactNative' &&
-            typeof Dexie != 'undefined') : (typeof Dexie != 'undefined'),
+            hasCache = productEnv != 'ReactNative' && typeof Dexie != 'undefined',
             enableCache = (params.enableCache &&
             typeof params.enableCache === 'boolean') ? params.enableCache : false,
             canUseCache = hasCache && enableCache,
@@ -87205,6 +87205,7 @@ WError.prototype.cause = function we_cause(c)
                 PUBLIC_GROUP: 2,
                 CHANNEL_GROUP: 4,
                 CHANNEL: 8,
+                NOTIFICATION_CHANNEL: 16
             },
             protocol = params.protocol || 'websocket',
             queueHost = params.queueHost,
@@ -87224,10 +87225,8 @@ WError.prototype.cause = function we_cause(c)
             asyncLogging = params.asyncLogging,
             chatPingMessageInterval = 20000,
             sendPingTimeout,
-            lastReceivedMessageTime,
             connectionCloseTimeout,
             getUserInfoTimeout,
-            JSTimeLatency = 100,
             config = {
                 getHistoryCount: 50,
             },
@@ -87324,6 +87323,7 @@ WError.prototype.cause = function we_cause(c)
             chatWaitQueue = [],
             chatUploadQueue = [],
             chatSendQueueHandlerTimeout;
+
         /**
          * Initialize Cache Database
          *
@@ -87354,7 +87354,7 @@ WError.prototype.cause = function we_cause(c)
             }
         }
         else {
-            console.error(CHAT_ERRORS[6600]);
+            console.log(CHAT_ERRORS[6600]);
         }
 
         /*******************************************************
@@ -87453,6 +87453,7 @@ WError.prototype.cause = function we_cause(c)
                         case 1: // CONNECTED
                             if (state.deviceRegister && state.serverRegister) {
                                 chatState = true;
+                                ping();
                             }
                             break;
                         case 0: // CONNECTING
@@ -87467,6 +87468,7 @@ WError.prototype.cause = function we_cause(c)
                     asyncGetReadyTime = new Date().getTime();
                     peerId = newPeerId;
                     fireEvent('connect');
+                    ping();
                 });
 
                 asyncClient.on('disconnect', function(event) {
@@ -87612,8 +87614,7 @@ WError.prototype.cause = function we_cause(c)
                     var headers = params.headers;
 
                     if (params.method == 'POST' && data) {
-                        if (data.hasOwnProperty('image') ||
-                            data.hasOwnProperty('file')) {
+                        if (data.hasOwnProperty('image') || data.hasOwnProperty('file')) {
                             headers['Content-Type'] = 'multipart/form-data';
                             var postFormData = {};
 
@@ -87632,8 +87633,7 @@ WError.prototype.cause = function we_cause(c)
                                 }
                             }
 
-                            var r = httpRequestObject[eval(
-                                'fileUploadUniqueId')] = Request.post({
+                            var r = httpRequestObject[eval('fileUploadUniqueId')] = Request.post({
                                 url: url,
                                 formData: postFormData,
                                 headers: headers,
@@ -89445,8 +89445,7 @@ WError.prototype.cause = function we_cause(c)
              *
              * @return {undefined}
              */
-            sendMessageCallbacksHandler = function(
-                actionType, threadId, uniqueId) {
+            sendMessageCallbacksHandler = function(actionType, threadId, uniqueId) {
                 switch (actionType) {
 
                     case chatMessageVOTypes.DELIVERY:
@@ -90321,8 +90320,7 @@ WError.prototype.cause = function we_cause(c)
              *
              * @return {object} Formatted Thread Participant Array
              */
-            reformatThreadParticipants = function(
-                participantsContent, threadId) {
+            reformatThreadParticipants = function(participantsContent, threadId) {
                 var returnData = [];
 
                 for (var i = 0; i < participantsContent.length; i++) {
@@ -90625,7 +90623,7 @@ WError.prototype.cause = function we_cause(c)
                              * This option works on browser only - no Node
                              * support TODO: Implement Node Version
                              */
-                            if (typeof Worker !== 'undefined') {
+                            if (typeof Worker !== 'undefined' && productEnv != "reactNative") {
                                 if (typeof(cacheSyncWorker) == 'undefined') {
                                     cacheSyncWorker = new Worker(
                                         'src/browser-worker.js');
@@ -92811,8 +92809,7 @@ WError.prototype.cause = function we_cause(c)
              *
              * @return {undefined}
              */
-            transferFromUploadQToSendQ = function(
-                threadId, uniqueId, metadata, callback) {
+            transferFromUploadQToSendQ = function(threadId, uniqueId, metadata, callback) {
                 getChatUploadQueue(threadId, function(uploadQueue) {
                     for (var i = 0; i < uploadQueue.length; i++) {
                         if (uploadQueue[i].message.uniqueId == uniqueId) {
@@ -92823,7 +92820,7 @@ WError.prototype.cause = function we_cause(c)
                                 message.metaData = metadata;
                             }
                             catch (e) {
-                                console.error(e);
+                                console.log(e);
                             }
 
                             deleteFromChatUploadQueue(uploadQueue[i],
@@ -93627,7 +93624,7 @@ WError.prototype.cause = function we_cause(c)
                         content.metadata = JSON.stringify(params.metadata);
                     }
                     catch (e) {
-                        console.error(e);
+                        console.log(e);
                     }
                 }
 
@@ -94179,7 +94176,6 @@ WError.prototype.cause = function we_cause(c)
                     content: params.content,
                     uniqueId: uniqueId,
                     systemMetadata: JSON.stringify(params.systemMetadata),
-                    metaData: JSON.stringify(params.metaData),
                     pushMsgType: 5,
                 },
                 callbacks: callbacks,
