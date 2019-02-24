@@ -83,7 +83,7 @@ chatAgent.on('chatReady', function() {
      * GET THREAD PARTICIPANTS
      * @param threadId
      */
-    // getThreadParticipants(312);
+    // getThreadParticipants(1744);
 
     /**
      * ADD PARTICIPANTS
@@ -97,7 +97,7 @@ chatAgent.on('chatReady', function() {
      * @param threadId
      * @param participants {Array}  USER ID
      */
-    // removeParticipants(312, [122]);
+    // removeParticipants(1744, [221]);
 
     /**
      * LEAVE THREAD
@@ -211,9 +211,9 @@ chatAgent.on('chatReady', function() {
      * @param caption
      * @param metaData
      */
-    sendFileMessage(293, __dirname + '/test/test.jpg', 'Sample file description', {
-        custom_name: 'John Doe',
-    });
+    // sendFileMessage(293, __dirname + '/test/test.jpg', 'Sample file description', {
+    //     custom_name: 'John Doe',
+    // });
 
     /**
      * SEND BOT MESSAGE IN THREAD

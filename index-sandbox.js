@@ -7,7 +7,8 @@ var params = {
   fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
   serverName: "chat-server", // {**REQUIRED**} Server to to register on
   grantDeviceIdFromSSO: false,
-  token: "5b21346e69e74edfb605804211b4f00e", // {**REQUIRED**} SSO Token
+  enableCache: true, // Enable Client side caching
+  token: "f0cc9b91760e4b9eb845cfb8dc98120a", // {**REQUIRED**} SSO Token
   wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
   connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
   connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -253,7 +254,7 @@ chatAgent.on("chatReady", function() {
    * @param caption
    * @param metaData
    */
-  // sendFileMessage(3, __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
+  sendFileMessage(1 , __dirname + "/test/test.jpg", "Sample file description", {custom_name: "John Doe"});
 
   /**
    * EDIT MESSAGE IN THREAD
