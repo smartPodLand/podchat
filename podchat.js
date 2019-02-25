@@ -90623,7 +90623,7 @@ WError.prototype.cause = function we_cause(c)
                              * This option works on browser only - no Node
                              * support TODO: Implement Node Version
                              */
-                            if (typeof Worker !== 'undefined' && productEnv != "reactNative") {
+                            if (typeof Worker !== 'undefined' && productEnv != "ReactNative") {
                                 if (typeof(cacheSyncWorker) == 'undefined') {
                                     cacheSyncWorker = new Worker(
                                         'src/browser-worker.js');
@@ -90635,8 +90635,7 @@ WError.prototype.cause = function we_cause(c)
                                     data: JSON.stringify(resultData.threads),
                                 };
 
-                                cacheSyncWorker.postMessage(
-                                    JSON.stringify(workerCommand));
+                                cacheSyncWorker.postMessage(JSON.stringify(workerCommand));
 
                                 cacheSyncWorker.onmessage = function(event) {
                                     if (event.data == 'terminate') {
