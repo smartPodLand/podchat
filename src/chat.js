@@ -1489,8 +1489,7 @@
              * @return {undefined}
              */
             ping = function() {
-                if (chatState && peerId !== undefined &&
-                    userInfo !== undefined) {
+                if (chatState && userInfo !== undefined) {
                     /**
                      * Ping messages should be sent ASAP, because
                      * we dont want to wait for send queue, we send them
@@ -1500,7 +1499,6 @@
                         chatMessageVOType: chatMessageVOTypes.PING,
                         pushMsgType: 5,
                     });
-
                 }
                 else {
                     sendPingTimeout && clearTimeout(sendPingTimeout);
@@ -2723,7 +2721,7 @@
                     },
                 });
 
-                if(fullResponseObject) {
+                if (fullResponseObject) {
                     getThreads({
                         threadIds: [threadId],
                     }, function(threadsResult) {
@@ -2749,7 +2747,8 @@
                             });
                         }
                     });
-                } else {
+                }
+                else {
                     fireEvent('threadEvents', {
                         type: 'THREAD_LAST_ACTIVITY_TIME',
                         result: {
