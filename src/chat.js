@@ -1629,11 +1629,11 @@
                             fireEvent('messageEvents', {
                                 type: 'MESSAGE_DELIVERY',
                                 result: {
-                                    message: messageContent.messageId,,
-                                threadId: threadId,
-                                senderId: messageContent.participantId,
-                            },
-                        })
+                                    message: messageContent.messageId,
+                                    threadId: threadId,
+                                    senderId: messageContent.participantId,
+                                },
+                            })
                             ;
                         }
 
