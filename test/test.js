@@ -272,7 +272,7 @@ describe("Working with contacts", function(done) {
  * THREADS FUNCTIONALITY
  */
 describe("Working with threads", function(done) {
-  this.timeout(20000);
+  this.timeout(60000);
 
   var chatAgent,
     p2pThreadId,
@@ -822,7 +822,6 @@ describe("Working with threads", function(done) {
               chatAgent.leaveThread({
                 threadId: newGroupThreadId
               }, function(result) {
-                  console.log(result);
                 if (!result.hasError) {
                   if (timingLog)
                     console.log("\x1b[33m    ★ Leave Thread \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time4);
@@ -886,22 +885,34 @@ describe("Working with threads", function(done) {
   });
 
   it("Should Search in Thread Messages METADATA", function(done) {
-    chatAgent.on("chatReady", function() {
-      var time1 = new Date().getTime();
-
-      chatAgent.getHistory({
+      chatAgent.on("chatReady", function() {
+      var time = new Date().getTime();
+      chatAgent.sendTextMessage({
         threadId: P2P_THREAD,
-        metadataCriteria: {
-          "field": "type",
-          "has": "BOT_"
+        content: faker.lorem.paragraph(),
+        metaData: {
+          type: "test"
         }
-      }, function(historyResult) {
-        console.log(historyResult);
-        if (!historyResult.hasError) {
+      }, {
+        onSent: function(result) {
           if (timingLog)
-            console.log("\x1b[33m    ★ Search in Messages MetaData \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time1);
-          done();
-          console.log("\n");
+            console.log("\x1b[90m    ☰ Send Text Message with metadata \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time);
+
+            var time1 = new Date().getTime();
+            chatAgent.getHistory({
+                threadId: GROUP_THREAD,
+                metadataCriteria: {
+                    "field": "type",
+                    "has": "test"
+                }
+            }, function(historyResult) {
+                if (!historyResult.hasError) {
+                    if (timingLog)
+                        console.log("\x1b[33m    ★ Search in Messages MetaData \x1b[0m \x1b[33m(%sms)\x1b[0m", new Date().getTime() - time1);
+                    done();
+                    console.log("\n");
+                }
+            });
         }
       });
     });

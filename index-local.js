@@ -54,7 +54,7 @@ chatAgent.on('chatReady', function() {
      * @param name
      */
     // getThreads({
-    //   count: 2,
+    //   count: 5,
     //   offset: 0,
     //   // threadIds: [1411],
     //   // name: "Pooria"
@@ -66,10 +66,10 @@ chatAgent.on('chatReady', function() {
      * @param threadType
      */
     // createThread([{
-    //   id: 1222,//563,
+    //   id: 2247,
     //   type: "TO_BE_USER_CONTACT_ID"
     // }, {
-    //   id: 1102, //1967,
+    //   id: 1967,
     //   type: "TO_BE_USER_CONTACT_ID"
     // }], "NORMAL");
 
@@ -103,7 +103,7 @@ chatAgent.on('chatReady', function() {
      * LEAVE THREAD
      * @param threadId
      */
-    // leaveThread(312);
+    // leaveThread(1862);
 
     /**
      * GET THREAD HISTORY
@@ -118,7 +118,7 @@ chatAgent.on('chatReady', function() {
     // getHistory({
     //   count: 5,
     //   offset: 0,
-    //   threadId: 1431,
+    //   threadId: 312,
     //   // uniqueIds: ["5fc5b138-498c-4da4-d440-5c8bfc7159ee", "93d7991c-add1-4227-d792-ad1bfb03e094", "ad0ae288-6e11-4621-fe50-ea1b634e80c7", "d9aa1833-5f27-4a1d-f5bd-5ae298d2bfa3", "f50fda14-ef88-4071-b3f2-248a18b4ffcf", "redsf233f23rfdsfsdfs"],
     //   // id: 17700,
     //   // order: "ASC",
@@ -292,7 +292,7 @@ chatAgent.on('chatReady', function() {
      * GET CONTACTS
      */
     // getContacts({
-    //   count: 50,
+    //   count: 2,
     //   // offset: 0,
     //   // query: "masodi"
     // });
@@ -302,9 +302,9 @@ chatAgent.on('chatReady', function() {
      * @param contactId
      */
     // chatAgent.block({
-    //   contactId: 2247,
-    //   // threadId: 1018,
-    //   // userId: 121
+    //   // contactId: 2247,
+    //   threadId: 293,
+    //   // userId: 221
     // }, function(result) {
     //   console.log(result);
     //   if (!result.hasError)
@@ -324,9 +324,9 @@ chatAgent.on('chatReady', function() {
      */
     // chatAgent.unblock({
     //   // blockId: 425,
-    //   contactId: 2247,
-    //   // threadId: 1018,
-    //   // userId: 122
+    //   // contactId: 2247,
+    //   threadId: 293,
+    //   // userId: 221
     // }, function(result) {
     //   if (!result.hasError)
     //     console.log("Contact has been successfully unBlocked!");
