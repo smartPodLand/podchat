@@ -424,13 +424,11 @@
                 });
 
                 asyncClient.on('message', function(params, ack) {
-
-                    // connectionCloseTimeout &&
-                    // clearTimeout(connectionCloseTimeout);
-                    // connectionCloseTimeout = setTimeout(function() { //
-                    // asyncClient.reconnectSocket(); // TODO: Check if its
-                    // needed to set chatState as FALSE or not?!  //
-                    // asyncClient.close(); }, chatPingMessageInterval * 2);
+                    // connectionCloseTimeout && clearTimeout(connectionCloseTimeout);
+                    // connectionCloseTimeout = setTimeout(function() {
+                    //     asyncClient.reconnectSocket(); // TODO: Check if its needed to set chatState as FALSE or not?!
+                    //     asyncClient.close();
+                    // }, chatPingMessageInterval * 2);
 
                     receivedAsyncMessageHandler(params);
                     ack && ack();
@@ -2532,8 +2530,8 @@
                          * user should be logged put
                          */
                         if (messageContent.code == 21) {
-                            chatState = false;
                             // TODO: Temporarily removed due to unknown activity
+                            // chatState = false;
                             // asyncClient.logout();
                             // clearChatServerCaches();
                         }
