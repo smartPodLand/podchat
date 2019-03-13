@@ -7,8 +7,7 @@
 
     function ChatUtility() {
 
-        if (typeof(require) !== 'undefined' &&
-            typeof(exports) !== 'undefined') {
+        if (typeof(require) !== 'undefined' && typeof(exports) !== 'undefined') {
             CryptoJS = require('crypto-js');
         }
         else {
@@ -20,8 +19,7 @@
          * @return  {boolean}
          */
         this.isNode = function() {
-            return (typeof global !== 'undefined' &&
-            ({}).toString.call(global) === '[object global]');
+            return (typeof global !== 'undefined' && ({}).toString.call(global) === '[object global]');
         };
 
         /**
@@ -78,15 +76,14 @@
          *
          * @return  {object}
          */
-        this.createReturnData = function(
-            hasError, errorMessage, errorCode, result, contentCount) {
+        this.createReturnData = function(hasError, errorMessage, errorCode, result, contentCount) {
             var returnData = {
                 hasError: hasError,
                 errorMessage: typeof errorMessage == 'string'
                     ? errorMessage
                     : '',
                 errorCode: typeof errorCode == 'number' ? errorCode : 0,
-                result: result,
+                result: result
             };
 
             if (typeof contentCount == 'number') {
@@ -446,7 +443,8 @@
                 str = '';
             }
 
-            return CryptoJS.AES.encrypt(str, key + salt).toString();
+            return CryptoJS.AES.encrypt(str, key + salt)
+                .toString();
         };
 
         /**
@@ -463,7 +461,21 @@
          */
         this.decrypt = function(str, key, salt) {
             var bytes = CryptoJS.AES.decrypt(str, key + salt);
-            return bytes.toString(CryptoJS.enc.Utf8);
+
+            try {
+                bytes = bytes.toString(CryptoJS.enc.Utf8);
+
+                return {
+                    hasError: false,
+                    result: bytes
+                };
+            }
+            catch (error) {
+                return {
+                    hasError: true,
+                    result: error
+                };
+            }
         };
 
         /**

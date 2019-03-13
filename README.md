@@ -11,41 +11,42 @@ In order to see complete list of changelog please visit [ChangeLog](https://gith
 
 -   Search in threads metadata
 
-## [3.5.16] - 2019-01-28
+## [3.5.25] - 2019-03-13
 
 ### Added
 
--   `ActiveMQ` support has been added to `PodAsync`
+-   Multi Tab IndexedDb CRUD management
+-   `replyInfo` object now comes with `repliedToMessageTime`, `repliedToMessageTimeMiliSeconds` and `repliedToMessageTimeNanos`
+-   `getHistory()` function now has 2 new parameters as below:
+    - `queues` : This parameter takes an object as its value and declares which queues to be in return result of getHistory(). Default value for all 3 options is `TRUE`. Sample value object can be like below:
+    ```javascript
+    queues: {
+        sending: true, 
+        failed: false,
+        uploading: true
+    }
+    ```
+    - `dynamicHistoryCount` : If you need the number of messages that `getHistory()` function returns from server to be dynamically updated according to count of messages in message queues, you can set this parameter as `TRUE`. Default value is `FALSE`. 
 
-In order to use `ActiveMQ` instead of `Websocket` you should send these parameters to `Chat()`
+### Changed
 
-### ActiveMQ Parameters
-```javascript
-var params = {  
-  protocol: "queue",
-  queueHost: "172.16.0.248",
-  queuePort: "61613",
-  queueUsername: "root",
-  queuePassword: "zalzalak",
-  queueReceive: "queue-in-amjadi-stomp",
-  queueSend: "queue-out-amjadi-stomp",
-  queueConnectionTimeout: 20000
-};
-```
-
-### Websockets Parameters
-
-```javascript
-var params = {
-  socketAddress: "ws://172.16.106.26:8003/ws",
-  serverName: "chat-server",
-  wsConnectionWaitTime: 500,
-  connectionRetryInterval: 5000,
-  connectionCheckTimeout: 10000,
-  reconnectOnClose: true
-};
-```
-
+-   Cache return mechanism has changed. Here are all the details of each method:
+    - `getThreads` : If there are some results for your request in cache, you'll get response from cache immediately. After receiving server's response, You'll get a new `threadEvents` event with `THREADS_LIST_CHANGE` type which gives you server's response. You can change your previous result with this one if you want to. Either way cache will update in background.
+    - `getContacts` : Mechanism is the same as `getThreads`, the only difference is the event. After receiving server's response, You'll get a new `contactEvents` event with `CONTACTS_LIST_CHANGE` type which gives you server's response.
+    - `getThreadParticipants` : Same as `getThreads`, but you will get a new `threadEvents` with `THREAD_PARTICIPANTS_LIST_CHANGE` type after server's response has received.
+    - `getHistory`: If there are some results in cache for the request you made, we check some conditions on cache response, and if all goes well, we return from cache. Conditions are as below:
+        - There should not be any GAPs between messages in cache result.
+        - There should not be a GAP before first message of result.   
+        
+        If all the conditions pass, you get immediate response from cache. Then we wait for server to return it's response. After getting response from server, we check for differences between cache and server results and there we could have three scenarios:<br/> 
+        -  There are some messages on server's result which were not in cache. in this case we emit a `MESSAGE_NEW` event to inform client of these new messages.
+        -  Some messages have been deleted from server but we have them on cache. in this case we emit a `MESSAGE_DELETE` event.
+        -  And if some messages have been edited on server, we simply return a `MESSAGE_EDIT` event.  
+        
+        If there are no messages on cache or one of conditions has failed, we will wait for server to return it's result and give it to client as callback result. <br/>  
+        
+-   The key for encrypting cache data now comes from server. If someone tries to decrypt user's cache with an invalid key, cache data will be automatically delete in order to keep user's data from being stolen. 
+        
 In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 
 ## Code Example

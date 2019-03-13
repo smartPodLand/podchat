@@ -194,7 +194,7 @@ chatAgent.on('chatReady', function() {
      * SEND MESSAGE IN THREAD
      * @param threadId
      * @param newMessage
-     * @param metaData
+     * @param metadata
      */
     // setInterval(() => {
     // sendMessage(1431, "Message at " + new Date(), {
@@ -209,10 +209,40 @@ chatAgent.on('chatReady', function() {
      * @param threadId
      * @param file
      * @param caption
-     * @param metaData
+     * @param metadata
      */
     // sendFileMessage(293, __dirname + '/test/test.jpg', 'Sample file description', {
     //     custom_name: 'John Doe',
+    // });
+
+    /**
+     * Send Location Message
+     *
+     * @param  {string}   type           Map style (default standard-night)
+     * @param  {int}      zoom           Map zoom (default 15)
+     * @param  {object}   center         Lat & Lng of Map center as a JSON
+     * @param  {int}      width          width of image in pixels (default 800px)
+     * @param  {int}      height         height of image in pixels (default 600px)
+     * @param  {int}      threadId       Thread Id
+     * @param  {string}   caption        Image Caption
+     * @param  {string}   metadata       Message MetaData
+     */
+    // chatAgent.sendLocationMessage({
+    //     type: "standard-night",
+    //     zoom: 15,
+    //     center: {
+    //         lat: 35.7003508,
+    //         lng: 51.3376462
+    //     },
+    //     width: 800,
+    //     height: 500,
+    //     threadId: 293,
+    //     caption: "This is the Address on map!",
+    //     systemMetadata: {
+    //         time: new Date()
+    //     }
+    // }, function(result) {
+    //     console.log(result);
     // });
 
     /**
@@ -232,14 +262,14 @@ chatAgent.on('chatReady', function() {
      * @param messageId  325 editable: false
      * @param newMessage
      */
-    // editMessage(17334, "*****************************************" + new Date());
+    // editMessage(31650, "*****************************************" + new Date());
 
     /**
      * DELETE MESSAGE IN THREAD
      * @param {int}      messageId
      * @param {boolean}  deleteForAll
      */
-    // deleteMessage(17752, true);
+    // deleteMessage(31651, true);
 
     /**
      * REPLY TO MESSAGE
@@ -248,14 +278,14 @@ chatAgent.on('chatReady', function() {
      * @param file
      * @param content
      */
-    // replyFileMessage(1431, 19671, __dirname + "/test/test.jpg", "This is a reply to message #19671 at " + new Date());
+    // replyMessage(1431, 31558, "This is a reply to message #31558 at " + new Date());
 
     /**
      * REPLY FILE MESSAGE
      * @param threadId
      * @param messageId
      */
-    // replyMessage(1431, 19671, "This is a reply to message #19671 at " + new Date());
+    // replyFileMessage(1431, 19671, __dirname + "/test/test.jpg", "This is a reply to message #19671 at " + new Date());
 
     /**
      * FORWARD MESSAGE
@@ -739,12 +769,12 @@ function getHistory(params) {
     // console.log(test);
 }
 
-function sendMessage(threadId, message, metaData) {
+function sendMessage(threadId, message, metadata) {
     sendChatParams = {
         threadId: threadId,
         content: message,
         messageType: 0,
-        systemMetadata: metaData,
+        systemMetadata: metadata,
     };
 
     var sentMesageUniqueId = chatAgent.sendTextMessage(sendChatParams, {
@@ -758,16 +788,14 @@ function sendMessage(threadId, message, metaData) {
             console.log(result.uniqueId + ' \t has been Seen!');
         },
     });
-
-    console.log(sentMesageUniqueId);
 }
 
-function sendFileMessage(threadId, file, caption, metaData) {
+function sendFileMessage(threadId, file, caption, metadata) {
     var instantResult = chatAgent.sendFileMessage({
         threadId: threadId,
         file: file,
         content: caption,
-        systemMetadata: metaData,
+        systemMetadata: metadata,
     }, {
         onSent: function(result) {
             console.log(result.uniqueId + ' \t has been Sent!');
@@ -792,12 +820,12 @@ function sendFileMessage(threadId, file, caption, metaData) {
     console.log('\nInstant Result For sendFileMessage:\n', instantResult);
 }
 
-function sendBotMessage(messageId, receiverId, message, metaData) {
+function sendBotMessage(messageId, receiverId, message, metadata) {
     sendChatParams = {
         messageId: messageId,
         content: message,
         receiver: receiverId,
-        metaData: metaData,
+        metadata: metadata,
     };
 
     var mim = chatAgent.sendBotMessage(sendChatParams, {

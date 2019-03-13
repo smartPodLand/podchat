@@ -187,7 +187,7 @@ chatAgent.on('chatReady', function() {
      * SEND MESSAGE IN THREAD
      * @param threadId
      * @param newMessage
-     * @param metaData
+     * @param metadata
      */
     // setInterval(() => {
     // sendMessage(1431, "Message at " + new Date(), {
@@ -202,7 +202,7 @@ chatAgent.on('chatReady', function() {
      * @param threadId
      * @param file
      * @param caption
-     * @param metaData
+     * @param metadata
      */
     // sendFileMessage(293, __dirname + '/test/test.jpg', 'Sample file description', {
     //     custom_name: 'John Doe',
@@ -732,12 +732,12 @@ function getHistory(params) {
     // console.log(test);
 }
 
-function sendMessage(threadId, message, metaData) {
+function sendMessage(threadId, message, metadata) {
     sendChatParams = {
         threadId: threadId,
         content: message,
         messageType: 0,
-        systemMetadata: metaData,
+        systemMetadata: metadata,
     };
 
     var sentMesageUniqueId = chatAgent.sendTextMessage(sendChatParams, {
@@ -755,12 +755,12 @@ function sendMessage(threadId, message, metaData) {
     console.log(sentMesageUniqueId);
 }
 
-function sendFileMessage(threadId, file, caption, metaData) {
+function sendFileMessage(threadId, file, caption, metadata) {
     var instantResult = chatAgent.sendFileMessage({
         threadId: threadId,
         file: file,
         content: caption,
-        systemMetadata: metaData,
+        systemMetadata: metadata,
     }, {
         onSent: function(result) {
             console.log(result.uniqueId + ' \t has been Sent!');
@@ -785,12 +785,12 @@ function sendFileMessage(threadId, file, caption, metaData) {
     console.log('\nInstant Result For sendFileMessage:\n', instantResult);
 }
 
-function sendBotMessage(messageId, receiverId, message, metaData) {
+function sendBotMessage(messageId, receiverId, message, metadata) {
     sendChatParams = {
         messageId: messageId,
         content: message,
         receiver: receiverId,
-        metaData: metaData,
+        metadata: metadata,
     };
 
     var mim = chatAgent.sendBotMessage(sendChatParams, {
