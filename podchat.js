@@ -32865,6 +32865,7 @@ function extend() {
 
 },{}],189:[function(require,module,exports){
 window.PodChat = require('./src/chat.js');
+// window.PodChat = require('./src/chat-browser.js');
 
 },{"./src/chat.js":424}],190:[function(require,module,exports){
 'use strict';
@@ -90502,7 +90503,7 @@ WError.prototype.cause = function we_cause(c)
              *
              * @return {object} message Object
              */
-            formatDataToMakeMessage = function(threadId, pushMessageVO) {
+            formatDataToMakeMessage = function(threadId, pushMessageVO, fromCache) {
                 /**
                  * + MessageVO                       {object}
                  *    - id                           {long}
@@ -90527,6 +90528,16 @@ WError.prototype.cause = function we_cause(c)
                  *    - timeNanos                    {long}
                  */
 
+                if(fromCache) {
+                    var time = pushMessageVO.time,
+                        timeMiliSeconds = parseInt(pushMessageVO.time / 1000000);
+                } else {
+                    var time = (pushMessageVO.timeNanos)
+                        ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
+                        : (parseInt(pushMessageVO.time)),
+                        timeMiliSeconds = parseInt(pushMessageVO.timeNanos);
+                }
+
                 var message = {
                     id: pushMessageVO.id,
                     threadId: threadId,
@@ -90548,10 +90559,8 @@ WError.prototype.cause = function we_cause(c)
                     forwardInfo: undefined,
                     metadata: pushMessageVO.metadata,
                     systemMetadata: pushMessageVO.systemMetadata,
-                    time: (pushMessageVO.timeNanos)
-                        ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
-                        : (parseInt(pushMessageVO.time)),
-                    timeMiliSeconds: parseInt(pushMessageVO.time),
+                    time: time,
+                    timeMiliSeconds: timeMiliSeconds,
                     timeNanos: parseInt(pushMessageVO.timeNanos)
                 };
 
@@ -90923,7 +90932,7 @@ WError.prototype.cause = function we_cause(c)
                              * This option works on browser only - no Node support
                              * TODO: Implement Node Version
                              */
-                            if (typeof Worker !== 'undefined' && productEnv != 'ReactNative') {
+                            if (typeof Worker !== 'undefined' && productEnv != 'ReactNative' && canUseCache) {
                                 if (typeof(cacheSyncWorker) == 'undefined') {
                                     cacheSyncWorker = new Worker('src/browser-worker.js');
                                 }
@@ -91272,7 +91281,7 @@ WError.prototype.cause = function we_cause(c)
                                                             var tempData = {},
                                                                 salt = messages[i].salt;
 
-                                                            var tempMessage = formatDataToMakeMessage(messages[i].threadId, JSON.parse(chatDecrypt(messages[i].data, cacheSecret, messages[i].salt)));
+                                                            var tempMessage = formatDataToMakeMessage(messages[i].threadId, JSON.parse(chatDecrypt(messages[i].data, cacheSecret, messages[i].salt)), true);
                                                             cacheData.push(tempMessage);
 
                                                             cacheResult[tempMessage.id] = {

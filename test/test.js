@@ -2,7 +2,6 @@ var assert = require('assert'),
   faker = require('faker'),
   Chat = require('../src/chat.js'),
   fs = require('fs'),
-  FormData = require('form-data'),
   path = require('path');
 
 var TOKENS = {

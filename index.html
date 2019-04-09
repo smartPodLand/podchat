@@ -5,20 +5,24 @@
     <title>podChat</title>
 
     <!-- Development Mode -->
-    <script type="text/javascript" src="src/utility/utility.js"></script>
-    <script type="text/javascript" src="node_modules/podasync/src/utility/utility.js"></script>
-    <script type="text/javascript" src="node_modules/podasync/src/network/socket.js"></script>
-    <script type="text/javascript" src="node_modules/podasync/src/network/async.js"></script>
-    <script type="text/javascript" src="node_modules/crypto-js/crypto-js.js"></script>
-    <script type="text/javascript" src="node_modules/dexie/dist/dexie.min.js"></script>
-    <script type="text/javascript" src="src/chat.js"></script>
+    <!--<script type="text/javascript" src="src/utility/utility.js"></script>-->
+    <!--<script type="text/javascript" src="node_modules/podasync/src/utility/utility.js"></script>-->
+    <!--<script type="text/javascript" src="node_modules/podasync/src/network/socket.js"></script>-->
+    <!--<script type="text/javascript" src="node_modules/podasync/src/network/async.js"></script>-->
+    <!--<script type="text/javascript" src="node_modules/crypto-js/crypto-js.js"></script>-->
+    <!--<script type="text/javascript" src="node_modules/dexie/dist/dexie.min.js"></script>-->
+    <!--<script type="text/javascript" src="src/chat.js"></script>-->
 
     <!-- Production Mode -->
-    <!--<script type="text/javascript" src="podchat.js"></script>-->
+    <script type="text/javascript" src="podchat.js"></script>
+    <!--<script type="text/javascript" src="podchat-browser.min.js"></script>-->
 
     <script type="text/javascript">
-        var PodChat = window.POD.Chat;
+        // Developement
+//        var PodChat = window.POD.Chat;
 
+        // Production
+        var PodChat = window.PodChat;
         var params = {
             appId: new Date().getTime(),
             socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address

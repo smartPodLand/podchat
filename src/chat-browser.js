@@ -7,44 +7,13 @@
      */
     var Async,
         ChatUtility,
-        FormData,
-        Request,
         Dexie;
 
     function Chat(params) {
         if (typeof(require) !== 'undefined' && typeof(exports) !== 'undefined') {
             Async = require('podasync'),
                 ChatUtility = require('./utility/utility.js'),
-                FormData = require('form-data'),
-                Request = require('request'),
                 Dexie = require('dexie').default || require('dexie');
-
-            var QueryString = require('querystring'),
-                FS = require('fs'),
-                Mime = require('mime');
-
-            /**
-             * Defining global variables for Dexie to work in Node ENV
-             */
-            if (typeof global !== 'undefined' && ({}).toString.call(global) === '[object global]') {
-                var setGlobalVars = require('indexeddbshim'),
-                    shim = {};
-                setGlobalVars(shim, {
-                    checkOrigin: false
-                });
-
-                var indexedDB = shim.indexedDB,
-                    IDBKeyRange = shim.IDBKeyRange;
-
-                Dexie.dependencies.indexedDB = indexedDB;
-                Dexie.dependencies.IDBKeyRange = IDBKeyRange;
-            }
-        }
-        else {
-            Async = POD.Async,
-                ChatUtility = POD.ChatUtility,
-                FormData = window.FormData,
-                Dexie = window.Dexie;
         }
 
         /*******************************************************
@@ -268,6 +237,8 @@
             chatUploadQueue = [],
             chatSendQueueHandlerTimeout,
             fullResponseObject = params.fullResponseObject || false;
+
+        console.log("isNode", isNode);
 
         /*******************************************************
          *            P R I V A T E   M E T H O D S            *
@@ -735,489 +706,234 @@
                     return;
                 }
 
-                if (isNode && Request) {
-                    var headers = params.headers;
+                var hasFile = false;
 
-                    if (params.method == 'POST' && data) {
-                        if (data.hasOwnProperty('image') || data.hasOwnProperty('file')) {
-                            headers['Content-Type'] = 'multipart/form-data';
-                            var postFormData = {};
+                httpRequestObject[eval('fileUploadUniqueId')] = new XMLHttpRequest(),
+                    settings = params.settings;
 
-                            for (var i in data) {
-                                if (i == 'image' || i == 'file') {
-                                    fileSize = data.fileSize;
-                                    originalFileName = data.originalFileName;
-                                    threadId = data.threadId;
-                                    fileUniqueId = data.uniqueId;
-                                    fileObject = data[i];
-                                    postFormData[i] = FS.createReadStream(data[i]);
-                                }
-                                else {
-                                    postFormData[i] = data[i];
-                                }
-                            }
+                httpRequestObject[eval('fileUploadUniqueId')].timeout = (settings && typeof parseInt(settings.timeout) > 0 && settings.timeout > 0)
+                    ? settings.timeout
+                    : httpRequestTimeout;
 
-                            var r = httpRequestObject[eval('fileUploadUniqueId')] = Request.post({
-                                url: url,
-                                formData: postFormData,
-                                headers: headers
-                            }, function(error, response, body) {
-                                if (!error) {
-                                    if (response.statusCode == 200) {
-                                        var body = JSON.parse(body);
-                                        if (typeof body.hasError !== 'undefined' && body.hasError) {
-                                            hasError = true;
-                                            fireEvent('fileUploadEvents', {
-                                                threadId: threadId,
-                                                uniqueId: fileUniqueId,
-                                                state: 'UPLOAD_ERROR',
-                                                progress: 0,
-                                                fileInfo: {
-                                                    fileName: originalFileName,
-                                                    fileSize: fileSize
-                                                },
-                                                fileObject: params.file,
-                                                errorCode: body.errorCode,
-                                                errorMessage: body.message,
-                                                errorEvent: body
-                                            });
-
-                                            callback && callback({
-                                                hasError: true,
-                                                errorCode: body.errorCode,
-                                                errorMessage: body.message,
-                                                errorEvent: body
-                                            });
-                                        }
-                                        else {
-                                            hasError = false;
-                                            fireEvent('fileUploadEvents', {
-                                                threadId: threadId,
-                                                uniqueId: fileUniqueId,
-                                                state: 'UPLOADED',
-                                                progress: 100,
-                                                fileInfo: {
-                                                    fileName: originalFileName,
-                                                    fileSize: fileSize
-                                                },
-                                                fileObject: params.file
-                                            });
-
-                                            callback && callback({
-                                                hasError: false,
-                                                cache: false,
-                                                result: {
-                                                    responseText: body
-                                                }
-                                            });
-                                        }
-                                    }
-                                    else {
-                                        hasError = true;
-                                        fireEvent('fileUploadEvents', {
-                                            threadId: threadId,
-                                            uniqueId: fileUniqueId,
-                                            state: 'UPLOAD_ERROR',
-                                            progress: 0,
-                                            fileInfo: {
-                                                fileName: originalFileName,
-                                                fileSize: fileSize
-                                            },
-                                            fileObject: params.file,
-                                            errorCode: response.statusCode,
-                                            errorMessage: body
-                                        });
-
-                                        callback && callback({
-                                            hasError: true,
-                                            errorCode: response.statusCode,
-                                            errorMessage: body
-                                        });
-                                    }
-                                }
-                                else {
-                                    hasError = true;
-                                    fireEvent('fileUploadEvents', {
-                                        threadId: threadId,
-                                        uniqueId: fileUniqueId,
-                                        state: 'UPLOAD_ERROR',
-                                        progress: 0,
-                                        fileInfo: {
-                                            fileName: originalFileName,
-                                            fileSize: fileSize
-                                        },
-                                        fileObject: params.file,
-                                        errorCode: 6200,
-                                        errorMessage: CHAT_ERRORS[6200] + ' (Request Error)',
-                                        errorEvent: error
-                                    });
-
-                                    callback && callback({
-                                        hasError: true,
-                                        errorCode: 6200,
-                                        errorMessage: CHAT_ERRORS[6200] + ' (Request Error)',
-                                        errorEvent: error
-                                    });
-                                }
-                            })
-                                .on('abort', function() {
-                                    hasError = true;
-                                    fireEvent('fileUploadEvents', {
-                                        threadId: threadId,
-                                        uniqueId: fileUniqueId,
-                                        state: 'UPLOAD_CANCELED',
-                                        progress: 0,
-                                        fileInfo: {
-                                            fileName: originalFileName,
-                                            fileSize: fileSize
-                                        },
-                                        fileObject: fileObject,
-                                        errorCode: 6303,
-                                        errorMessage: CHAT_ERRORS[6303]
-                                    });
-                                    callback({
-                                        hasError: true,
-                                        errorCode: 6303,
-                                        errorMessage: CHAT_ERRORS[6303]
-                                    });
-                                });
-
-                            var oldPercent = 0;
-
-                            var q = setInterval(function() {
-                                if (r.req && r.req.connection) {
-                                    var dispatched = r.req.connection._bytesDispatched;
-                                    var percent = Math.round(dispatched * 100 / fileSize);
-
-                                    if (percent < 100 && !hasError) {
-                                        oldPercent = percent;
-                                        fireEvent('fileUploadEvents', {
-                                            threadId: threadId,
-                                            uniqueId: fileUniqueId,
-                                            state: 'UPLOADING',
-                                            progress: percent,
-                                            fileInfo: {
-                                                fileName: originalFileName,
-                                                fileSize: fileSize
-                                            },
-                                            fileObject: params.file
-                                        });
-                                    }
-                                    else {
-                                        clearInterval(q);
-                                    }
-                                }
-                            }, 10);
-
-                        }
-                        else {
-                            headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                            data = QueryString.stringify(data);
-                            Request.post({
-                                url: url,
-                                body: data,
-                                headers: headers
-                            }, function(error, response, body) {
-                                if (!error) {
-                                    if (response.statusCode == 200) {
-                                        callback && callback({
-                                            hasError: false,
-                                            cache: false,
-                                            result: {
-                                                responseText: body
-                                            }
-                                        });
-                                    }
-                                    else {
-                                        callback && callback({
-                                            hasError: true,
-                                            errorCode: response.statusCode,
-                                            errorMessage: body
-                                        });
-                                    }
-                                }
-                                else {
-                                    callback && callback({
-                                        hasError: true,
-                                        errorCode: 6200,
-                                        errorMessage: CHAT_ERRORS[6200] + ' (Request Error)',
-                                        errorEvent: error
-                                    });
-                                }
-                            });
-                        }
-                    }
-                    else if (params.method == 'GET') {
-                        if (typeof data === 'object') {
-                            data = QueryString.stringify(data);
-                            url += '?' + data;
-                        }
-                        else if (typeof data === 'string') {
-                            url += '?' + data;
-                        }
-                        Request.get({
-                            url: url,
-                            headers: headers
-                        }, function(error, response, body) {
-                            if (!error) {
-                                if (response.statusCode == 200) {
-                                    callback && callback({
-                                        hasError: false,
-                                        cache: false,
-                                        result: {
-                                            responseText: body
-                                        }
-                                    });
-                                }
-                                else {
-                                    callback && callback({
-                                        hasError: true,
-                                        errorCode: response.statusCode,
-                                        errorMessage: body
-                                    });
-                                }
-                            }
-                            else {
-                                callback && callback({
-                                    hasError: true,
-                                    errorCode: 6200,
-                                    errorMessage: CHAT_ERRORS[6200] + ' (Request Error)',
-                                    errorEvent: error
-                                });
-                            }
-                        });
-                    }
-                }
-                else {
-                    var hasFile = false;
-
-                    httpRequestObject[eval('fileUploadUniqueId')] = new XMLHttpRequest(),
-                        settings = params.settings;
-
-                    httpRequestObject[eval('fileUploadUniqueId')].timeout = (settings && typeof parseInt(settings.timeout) > 0 && settings.timeout > 0)
-                        ? settings.timeout
-                        : httpRequestTimeout;
-
-                    httpRequestObject[eval('fileUploadUniqueId')]
-                        .addEventListener('error', function(event) {
-                            if (callback) {
-                                if (hasFile) {
-                                    hasError = true;
-                                    fireEvent('fileUploadEvents', {
-                                        threadId: threadId,
-                                        uniqueId: fileUniqueId,
-                                        state: 'UPLOAD_ERROR',
-                                        progress: 0,
-                                        fileInfo: {
-                                            fileName: originalFileName,
-                                            fileSize: fileSize
-                                        },
-                                        fileObject: fileObject,
-                                        errorCode: 6200,
-                                        errorMessage: CHAT_ERRORS[6200] + ' (XMLHttpRequest Error Event Listener)'
-                                    });
-                                }
-                                callback({
-                                    hasError: true,
+                httpRequestObject[eval('fileUploadUniqueId')]
+                    .addEventListener('error', function(event) {
+                        if (callback) {
+                            if (hasFile) {
+                                hasError = true;
+                                fireEvent('fileUploadEvents', {
+                                    threadId: threadId,
+                                    uniqueId: fileUniqueId,
+                                    state: 'UPLOAD_ERROR',
+                                    progress: 0,
+                                    fileInfo: {
+                                        fileName: originalFileName,
+                                        fileSize: fileSize
+                                    },
+                                    fileObject: fileObject,
                                     errorCode: 6200,
                                     errorMessage: CHAT_ERRORS[6200] + ' (XMLHttpRequest Error Event Listener)'
                                 });
                             }
-                        }, false);
+                            callback({
+                                hasError: true,
+                                errorCode: 6200,
+                                errorMessage: CHAT_ERRORS[6200] + ' (XMLHttpRequest Error Event Listener)'
+                            });
+                        }
+                    }, false);
 
-                    httpRequestObject[eval('fileUploadUniqueId')].addEventListener('abort',
-                        function(event) {
-                            if (callback) {
-                                if (hasFile) {
-                                    hasError = true;
-                                    fireEvent('fileUploadEvents', {
-                                        threadId: threadId,
-                                        uniqueId: fileUniqueId,
-                                        state: 'UPLOAD_CANCELED',
-                                        progress: 0,
-                                        fileInfo: {
-                                            fileName: originalFileName,
-                                            fileSize: fileSize
-                                        },
-                                        fileObject: fileObject,
-                                        errorCode: 6303,
-                                        errorMessage: CHAT_ERRORS[6303]
-                                    });
-                                }
-                                callback({
-                                    hasError: true,
+                httpRequestObject[eval('fileUploadUniqueId')].addEventListener('abort',
+                    function(event) {
+                        if (callback) {
+                            if (hasFile) {
+                                hasError = true;
+                                fireEvent('fileUploadEvents', {
+                                    threadId: threadId,
+                                    uniqueId: fileUniqueId,
+                                    state: 'UPLOAD_CANCELED',
+                                    progress: 0,
+                                    fileInfo: {
+                                        fileName: originalFileName,
+                                        fileSize: fileSize
+                                    },
+                                    fileObject: fileObject,
                                     errorCode: 6303,
                                     errorMessage: CHAT_ERRORS[6303]
                                 });
                             }
-                        }, false);
+                            callback({
+                                hasError: true,
+                                errorCode: 6303,
+                                errorMessage: CHAT_ERRORS[6303]
+                            });
+                        }
+                    }, false);
 
-                    try {
-                        if (method == 'GET') {
-                            if (typeof data === 'object' && data !== null) {
+                try {
+                    if (method == 'GET') {
+                        if (typeof data === 'object' && data !== null) {
+                            var keys = Object.keys(data);
+
+                            if (keys.length > 0) {
+                                url += '?';
+
+                                for (var i = 0; i < keys.length; i++) {
+                                    var key = keys[i];
+                                    url += key + '=' + data[key];
+                                    if (i < keys.length - 1) {
+                                        url += '&';
+                                    }
+                                }
+                            }
+                        }
+                        else if (typeof data === 'string' && data !== null) {
+                            url += '?' + data;
+                        }
+
+                        httpRequestObject[eval('fileUploadUniqueId')].open(method, url, true);
+
+                        if (typeof params.headers === 'object') {
+                            for (var key in params.headers) {
+                                httpRequestObject[eval('fileUploadUniqueId')].setRequestHeader(key, params.headers[key]);
+                            }
+                        }
+
+                        httpRequestObject[eval('fileUploadUniqueId')].send();
+                    }
+
+                    if (method === 'POST' && data) {
+
+                        httpRequestObject[eval('fileUploadUniqueId')].open(method, url, true);
+
+                        if (typeof params.headers === 'object') {
+                            for (var key in params.headers) {
+                                httpRequestObject[eval('fileUploadUniqueId')].setRequestHeader(key, params.headers[key]);
+                            }
+                        }
+
+                        if (typeof data == 'object') {
+                            if (data.hasOwnProperty('image') || data.hasOwnProperty('file')) {
+                                hasFile = true;
+                                var formData = new FormData();
+                                for (var key in data) {
+                                    formData.append(key, data[key]);
+                                }
+
+                                fileSize = data.fileSize;
+                                originalFileName = data.originalFileName;
+                                threadId = data.threadId;
+                                fileUniqueId = data.uniqueId;
+                                fileObject = (data['image'])
+                                    ? data['image']
+                                    : data['file'];
+
+                                httpRequestObject[eval('fileUploadUniqueId')].upload.onprogress = function(event) {
+                                    if (event.lengthComputable && !hasError) {
+                                        fireEvent('fileUploadEvents', {
+                                            threadId: threadId,
+                                            uniqueId: fileUniqueId,
+                                            state: 'UPLOADING',
+                                            progress: Math.round((event.loaded / event.total) * 100),
+                                            fileInfo: {
+                                                fileName: originalFileName,
+                                                fileSize: fileSize
+                                            },
+                                            fileObject: fileObject
+                                        });
+                                    }
+                                };
+
+                                httpRequestObject[eval('fileUploadUniqueId')].send(formData);
+                            }
+                            else {
+                                httpRequestObject[eval('fileUploadUniqueId')].setRequestHeader(
+                                    'Content-Type',
+                                    'application/x-www-form-urlencoded');
+
                                 var keys = Object.keys(data);
 
                                 if (keys.length > 0) {
-                                    url += '?';
+                                    sendData = '';
 
                                     for (var i = 0; i < keys.length; i++) {
                                         var key = keys[i];
-                                        url += key + '=' + data[key];
+                                        sendData += key + '=' + data[key];
                                         if (i < keys.length - 1) {
-                                            url += '&';
+                                            sendData += '&';
                                         }
                                     }
                                 }
-                            }
-                            else if (typeof data === 'string' && data !== null) {
-                                url += '?' + data;
-                            }
 
-                            httpRequestObject[eval('fileUploadUniqueId')].open(method, url, true);
-
-                            if (typeof params.headers === 'object') {
-                                for (var key in params.headers) {
-                                    httpRequestObject[eval('fileUploadUniqueId')].setRequestHeader(key, params.headers[key]);
-                                }
+                                httpRequestObject[eval('fileUploadUniqueId')].send(sendData);
                             }
-
-                            httpRequestObject[eval('fileUploadUniqueId')].send();
                         }
-
-                        if (method === 'POST' && data) {
-
-                            httpRequestObject[eval('fileUploadUniqueId')].open(method, url, true);
-
-                            if (typeof params.headers === 'object') {
-                                for (var key in params.headers) {
-                                    httpRequestObject[eval('fileUploadUniqueId')].setRequestHeader(key, params.headers[key]);
-                                }
-                            }
-
-                            if (typeof data == 'object') {
-                                if (data.hasOwnProperty('image') || data.hasOwnProperty('file')) {
-                                    hasFile = true;
-                                    var formData = new FormData();
-                                    for (var key in data) {
-                                        formData.append(key, data[key]);
-                                    }
-
-                                    fileSize = data.fileSize;
-                                    originalFileName = data.originalFileName;
-                                    threadId = data.threadId;
-                                    fileUniqueId = data.uniqueId;
-                                    fileObject = (data['image'])
-                                        ? data['image']
-                                        : data['file'];
-
-                                    httpRequestObject[eval('fileUploadUniqueId')].upload.onprogress = function(event) {
-                                        if (event.lengthComputable && !hasError) {
-                                            fireEvent('fileUploadEvents', {
-                                                threadId: threadId,
-                                                uniqueId: fileUniqueId,
-                                                state: 'UPLOADING',
-                                                progress: Math.round((event.loaded / event.total) * 100),
-                                                fileInfo: {
-                                                    fileName: originalFileName,
-                                                    fileSize: fileSize
-                                                },
-                                                fileObject: fileObject
-                                            });
-                                        }
-                                    };
-
-                                    httpRequestObject[eval('fileUploadUniqueId')].send(formData);
-                                }
-                                else {
-                                    httpRequestObject[eval('fileUploadUniqueId')].setRequestHeader(
-                                        'Content-Type',
-                                        'application/x-www-form-urlencoded');
-
-                                    var keys = Object.keys(data);
-
-                                    if (keys.length > 0) {
-                                        sendData = '';
-
-                                        for (var i = 0; i < keys.length; i++) {
-                                            var key = keys[i];
-                                            sendData += key + '=' + data[key];
-                                            if (i < keys.length - 1) {
-                                                sendData += '&';
-                                            }
-                                        }
-                                    }
-
-                                    httpRequestObject[eval('fileUploadUniqueId')].send(sendData);
-                                }
-                            }
-                            else {
-                                httpRequestObject[eval('fileUploadUniqueId')].send(data);
-                            }
+                        else {
+                            httpRequestObject[eval('fileUploadUniqueId')].send(data);
                         }
                     }
-                    catch (e) {
-                        callback && callback({
-                            hasError: true,
-                            cache: false,
-                            errorCode: 6200,
-                            errorMessage: CHAT_ERRORS[6200] + ' (Request Catch Error)' + e
-                        });
-                    }
-
-                    httpRequestObject[eval('fileUploadUniqueId')].onreadystatechange = function() {
-                        if (httpRequestObject[eval('fileUploadUniqueId')].readyState == 4) {
-                            if (httpRequestObject[eval('fileUploadUniqueId')].status == 200) {
-                                if (hasFile) {
-                                    hasError = false;
-                                    fireEvent('fileUploadEvents', {
-                                        threadId: threadId,
-                                        uniqueId: fileUniqueId,
-                                        state: 'UPLOADED',
-                                        progress: 100,
-                                        fileInfo: {
-                                            fileName: originalFileName,
-                                            fileSize: fileSize
-                                        },
-                                        fileObject: fileObject
-                                    });
-                                }
-
-                                callback && callback({
-                                    hasError: false,
-                                    cache: false,
-                                    result: {
-                                        responseText: httpRequestObject[eval('fileUploadUniqueId')].responseText,
-                                        responseHeaders: httpRequestObject[eval('fileUploadUniqueId')].getAllResponseHeaders()
-                                    }
-                                });
-                            }
-                            else {
-                                if (hasFile) {
-                                    hasError = true;
-                                    fireEvent('fileUploadEvents', {
-                                        threadId: threadId,
-                                        uniqueId: fileUniqueId,
-                                        state: 'UPLOAD_ERROR',
-                                        progress: 0,
-                                        fileInfo: {
-                                            fileName: originalFileName,
-                                            fileSize: fileSize
-                                        },
-                                        fileObject: fileObject,
-                                        errorCode: 6200,
-                                        errorMessage: CHAT_ERRORS[6200] + ' (Request Status != 200)',
-                                        statusCode: httpRequestObject[eval('fileUploadUniqueId')].status
-                                    });
-                                }
-                                callback && callback({
-                                    hasError: true,
-                                    errorMessage: httpRequestObject[eval('fileUploadUniqueId')].responseText,
-                                    errorCode: httpRequestObject[eval('fileUploadUniqueId')].status
-                                });
-                            }
-                        }
-                    };
                 }
+                catch (e) {
+                    callback && callback({
+                        hasError: true,
+                        cache: false,
+                        errorCode: 6200,
+                        errorMessage: CHAT_ERRORS[6200] + ' (Request Catch Error)' + e
+                    });
+                }
+
+                httpRequestObject[eval('fileUploadUniqueId')].onreadystatechange = function() {
+                    if (httpRequestObject[eval('fileUploadUniqueId')].readyState == 4) {
+                        if (httpRequestObject[eval('fileUploadUniqueId')].status == 200) {
+                            if (hasFile) {
+                                hasError = false;
+                                fireEvent('fileUploadEvents', {
+                                    threadId: threadId,
+                                    uniqueId: fileUniqueId,
+                                    state: 'UPLOADED',
+                                    progress: 100,
+                                    fileInfo: {
+                                        fileName: originalFileName,
+                                        fileSize: fileSize
+                                    },
+                                    fileObject: fileObject
+                                });
+                            }
+
+                            callback && callback({
+                                hasError: false,
+                                cache: false,
+                                result: {
+                                    responseText: httpRequestObject[eval('fileUploadUniqueId')].responseText,
+                                    responseHeaders: httpRequestObject[eval('fileUploadUniqueId')].getAllResponseHeaders()
+                                }
+                            });
+                        }
+                        else {
+                            if (hasFile) {
+                                hasError = true;
+                                fireEvent('fileUploadEvents', {
+                                    threadId: threadId,
+                                    uniqueId: fileUniqueId,
+                                    state: 'UPLOAD_ERROR',
+                                    progress: 0,
+                                    fileInfo: {
+                                        fileName: originalFileName,
+                                        fileSize: fileSize
+                                    },
+                                    fileObject: fileObject,
+                                    errorCode: 6200,
+                                    errorMessage: CHAT_ERRORS[6200] + ' (Request Status != 200)',
+                                    statusCode: httpRequestObject[eval('fileUploadUniqueId')].status
+                                });
+                            }
+                            callback && callback({
+                                hasError: true,
+                                errorMessage: httpRequestObject[eval('fileUploadUniqueId')].responseText,
+                                errorCode: httpRequestObject[eval('fileUploadUniqueId')].status
+                            });
+                        }
+                    }
+                };
             },
 
             /**
@@ -3438,7 +3154,7 @@
              *
              * @return {object} message Object
              */
-            formatDataToMakeMessage = function(threadId, pushMessageVO, fromCache) {
+            formatDataToMakeMessage = function(threadId, pushMessageVO) {
                 /**
                  * + MessageVO                       {object}
                  *    - id                           {long}
@@ -3463,16 +3179,6 @@
                  *    - timeNanos                    {long}
                  */
 
-                if(fromCache) {
-                    var time = pushMessageVO.time,
-                        timeMiliSeconds = parseInt(pushMessageVO.time / 1000000);
-                } else {
-                    var time = (pushMessageVO.timeNanos)
-                        ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
-                        : (parseInt(pushMessageVO.time)),
-                        timeMiliSeconds = parseInt(pushMessageVO.timeNanos);
-                }
-
                 var message = {
                     id: pushMessageVO.id,
                     threadId: threadId,
@@ -3494,8 +3200,10 @@
                     forwardInfo: undefined,
                     metadata: pushMessageVO.metadata,
                     systemMetadata: pushMessageVO.systemMetadata,
-                    time: time,
-                    timeMiliSeconds: timeMiliSeconds,
+                    time: (pushMessageVO.timeNanos)
+                        ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
+                        : (parseInt(pushMessageVO.time)),
+                    timeMiliSeconds: parseInt(pushMessageVO.time),
                     timeNanos: parseInt(pushMessageVO.timeNanos)
                 };
 
@@ -4216,7 +3924,7 @@
                                                             var tempData = {},
                                                                 salt = messages[i].salt;
 
-                                                            var tempMessage = formatDataToMakeMessage(messages[i].threadId, JSON.parse(chatDecrypt(messages[i].data, cacheSecret, messages[i].salt)), true);
+                                                            var tempMessage = formatDataToMakeMessage(messages[i].threadId, JSON.parse(chatDecrypt(messages[i].data, cacheSecret, messages[i].salt)));
                                                             cacheData.push(tempMessage);
 
                                                             cacheResult[tempMessage.id] = {
@@ -5214,21 +4922,11 @@
                     uploadUniqueId,
                     uploadThreadId;
 
-                if (isNode) {
-                    fileName = params.file.split('/')
-                        .pop();
-                    fileType = Mime.getType(params.file);
-                    fileSize = FS.statSync(params.file).size;
-                    fileExtension = params.file.split('.')
-                        .pop();
-                }
-                else {
-                    fileName = params.file.name;
-                    fileType = params.file.type;
-                    fileSize = params.file.size;
-                    fileExtension = params.file.name.split('.')
-                        .pop();
-                }
+                fileName = params.file.name;
+                fileType = params.file.type;
+                fileSize = params.file.size;
+                fileExtension = params.file.name.split('.')
+                    .pop();
 
                 var uploadFileData = {};
 
@@ -5462,21 +5160,11 @@
                     uploadUniqueId,
                     uploadThreadId;
 
-                if (isNode) {
-                    fileName = params.image.split('/')
-                        .pop();
-                    fileType = Mime.getType(params.image);
-                    fileSize = FS.statSync(params.image).size;
-                    fileExtension = params.image.split('.')
-                        .pop();
-                }
-                else {
-                    fileName = params.image.name;
-                    fileType = params.image.type;
-                    fileSize = params.image.size;
-                    fileExtension = params.image.name.split('.')
-                        .pop();
-                }
+                fileName = params.image.name;
+                fileType = params.image.type;
+                fileSize = params.image.size;
+                fileExtension = params.image.name.split('.')
+                    .pop();
 
                 if (imageMimeTypes.indexOf(fileType) > 0 || imageExtentions.indexOf(fileExtension) > 0) {
                     uploadImageData = {};
@@ -7086,21 +6774,11 @@
                         fileSize,
                         fileExtension;
 
-                    if (isNode) {
-                        fileName = params.file.split('/')
-                            .pop();
-                        fileType = Mime.getType(params.file);
-                        fileSize = FS.statSync(params.file).size;
-                        fileExtension = params.file.split('.')
-                            .pop();
-                    }
-                    else {
-                        fileName = params.file.name;
-                        fileType = params.file.type;
-                        fileSize = params.file.size;
-                        fileExtension = params.file.name.split('.')
-                            .pop();
-                    }
+                    fileName = params.file.name;
+                    fileType = params.file.type;
+                    fileSize = params.file.size;
+                    fileExtension = params.file.name.split('.')
+                        .pop();
 
                     fireEvent('fileUploadEvents', {
                         threadId: params.threadId,
@@ -7659,21 +7337,11 @@
                         fileSize,
                         fileExtension;
 
-                    if (isNode) {
-                        fileName = params.file.split('/')
-                            .pop();
-                        fileType = Mime.getType(params.file);
-                        fileSize = FS.statSync(params.file).size;
-                        fileExtension = params.file.split('.')
-                            .pop();
-                    }
-                    else {
-                        fileName = params.file.name;
-                        fileType = params.file.type;
-                        fileSize = params.file.size;
-                        fileExtension = params.file.name.split('.')
-                            .pop();
-                    }
+                    fileName = params.file.name;
+                    fileType = params.file.type;
+                    fileSize = params.file.size;
+                    fileExtension = params.file.name.split('.')
+                        .pop();
 
                     fireEvent('fileUploadEvents', {
                         threadId: params.threadId,
