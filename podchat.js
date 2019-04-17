@@ -90932,9 +90932,10 @@ WError.prototype.cause = function we_cause(c)
                              * This option works on browser only - no Node support
                              * TODO: Implement Node Version
                              */
+
                             if (typeof Worker !== 'undefined' && productEnv != 'ReactNative' && canUseCache) {
                                 if (typeof(cacheSyncWorker) == 'undefined') {
-                                    cacheSyncWorker = new Worker('src/browser-worker.js');
+                                    cacheSyncWorker = new Worker('~/node_modules/podchat/src/browser-worker.js');
                                 }
 
                                 var workerCommand = {
