@@ -5,25 +5,25 @@
     <title>podChat</title>
 
     <!-- Development Mode -->
-    <!--<script type="text/javascript" src="src/utility/utility.js"></script>-->
-    <!--<script type="text/javascript" src="node_modules/podasync/src/utility/utility.js"></script>-->
-    <!--<script type="text/javascript" src="node_modules/podasync/src/network/socket.js"></script>-->
-    <!--<script type="text/javascript" src="node_modules/podasync/src/network/async.js"></script>-->
-    <!--<script type="text/javascript" src="node_modules/crypto-js/crypto-js.js"></script>-->
-    <!--<script type="text/javascript" src="node_modules/dexie/dist/dexie.min.js"></script>-->
-    <!--<script type="text/javascript" src="src/chat.js"></script>-->
+    <script type="text/javascript" src="src/utility/utility.js"></script>
+    <script type="text/javascript" src="node_modules/podasync/src/utility/utility.js"></script>
+    <script type="text/javascript" src="node_modules/podasync/src/network/socket.js"></script>
+    <script type="text/javascript" src="node_modules/podasync/src/network/async.js"></script>
+    <script type="text/javascript" src="node_modules/crypto-js/crypto-js.js"></script>
+    <script type="text/javascript" src="node_modules/dexie/dist/dexie.min.js"></script>
+    <script type="text/javascript" src="src/chat.js"></script>
 
     <!-- Production Mode -->
-    <script type="text/javascript" src="podchat.js"></script>
+    <!--<script type="text/javascript" src="podchat.js"></script>-->
     <!--<script type="text/javascript" src="podchat-browser.min.js"></script>-->
 
     <script type="text/javascript">
         // Developement
-//        var PodChat = window.POD.Chat;
+        var PodChat = window.POD.Chat;
 
         // Production
-        var PodChat = window.PodChat;
-        var params = {
+//        var PodChat = window.PodChat;
+            var params = {
             appId: new Date().getTime(),
             socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
             ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
@@ -1009,7 +1009,9 @@
             display: inline-block;
         }
 
-        #reconnect {
+        #reconnect,
+        #clearCache,
+        #deleteCache {
             display: inline-block;
             font-size: 12px;
             color: #aaa;
@@ -1020,7 +1022,7 @@
 </head>
 
 <body style="max-width: 600px;">
-<p>POD CHAT <span id="reconnect">Reconnect...</span></p>
+<p>POD CHAT <span id="reconnect">Reconnect...</span> | <span id="clearCache">Clear User Cache</span> | <span id="deleteCache">Delete Cache</span></p>
 
 <form>
     <fieldset>
@@ -1276,6 +1278,14 @@
 <script>
     document.getElementById("reconnect").addEventListener("click", function() {
         chatAgent.reconnect();
+    });
+
+    document.getElementById("clearCache").addEventListener("click", function() {
+        chatAgent.clearCacheDatabasesOfUser();
+    });
+
+    document.getElementById("deleteCache").addEventListener("click", function() {
+        chatAgent.deleteCacheDatabases({storage: true,  queues: true});
     });
 
     /**

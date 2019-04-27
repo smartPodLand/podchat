@@ -3463,14 +3463,15 @@
                  *    - timeNanos                    {long}
                  */
 
-                if(fromCache) {
+                if (fromCache) {
                     var time = pushMessageVO.time,
                         timeMiliSeconds = parseInt(pushMessageVO.time / 1000000);
-                } else {
+                }
+                else {
                     var time = (pushMessageVO.timeNanos)
-                        ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
-                        : (parseInt(pushMessageVO.time)),
-                        timeMiliSeconds = parseInt(pushMessageVO.timeNanos);
+                            ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
+                            : (parseInt(pushMessageVO.time)),
+                        timeMiliSeconds = parseInt(pushMessageVO.time);
                 }
 
                 var message = {
@@ -3898,7 +3899,10 @@
                                                         if (lastMessageTime > 0) {
                                                             db.messages
                                                                 .where('[threadId+owner+time]')
-                                                                .between([threadId, userId, lastMessageTime], [threadId, userId, Number.MAX_SAFE_INTEGER * 1000], false, true)
+                                                                .between([threadId, userId, lastMessageTime], [
+                                                                    threadId,
+                                                                    userId,
+                                                                    Number.MAX_SAFE_INTEGER * 1000], false, true)
                                                                 .delete();
                                                         }
                                                     }
@@ -3907,8 +3911,8 @@
                                         }, false);
                                     };
                                     var code = plainWorker.toString();
-                                    code = code.substring(code.indexOf("{")+1, code.lastIndexOf("}"));
-                                    var blob = new Blob([code], {type: "application/javascript"});
+                                    code = code.substring(code.indexOf('{') + 1, code.lastIndexOf('}'));
+                                    var blob = new Blob([code], {type: 'application/javascript'});
                                     cacheSyncWorker = new Worker(URL.createObjectURL(blob));
                                 }
 
@@ -4060,31 +4064,39 @@
                 if (sendingQueue) {
                     getChatSendQueue(parseInt(params.threadId), function(sendQueueMessages) {
                         for (var i = 0; i < sendQueueMessages.length; i++) {
-                            var decryptedEnqueuedMessage = Utility.jsonParser(chatDecrypt(sendQueueMessages[i].message, cacheSecret));
-                            sendQueueMessages[i] = formatDataToMakeMessage(sendQueueMessages[i].threadId, {
-                                uniqueId: decryptedEnqueuedMessage.uniqueId,
-                                ownerId: userInfo.id,
-                                message: decryptedEnqueuedMessage.content,
-                                metadata: decryptedEnqueuedMessage.metadata,
-                                systemMetadata: decryptedEnqueuedMessage.systemMetadata,
-                                replyInfo: decryptedEnqueuedMessage.replyInfo,
-                                forwardInfo: decryptedEnqueuedMessage.forwardInfo
-                            });
-                        }
+                            var time = new Date().getTime();
 
-                        sendingQueueMessages = sendQueueMessages;
+                            sendingQueueMessages.push(formatDataToMakeMessage(sendQueueMessages[i].threadId, {
+                                uniqueId: sendQueueMessages[i].uniqueId,
+                                ownerId: userInfo.id,
+                                message: sendQueueMessages[i].content,
+                                metadata: sendQueueMessages[i].metadata,
+                                systemMetadata: sendQueueMessages[i].systemMetadata,
+                                replyInfo: sendQueueMessages[i].replyInfo,
+                                forwardInfo: sendQueueMessages[i].forwardInfo,
+                                time: time,
+                                timeNanos: (time % 1000) * 1000000
+                            }));
+                        }
                     });
                 }
 
                 if (uploadingQueue) {
                     getChatUploadQueue(parseInt(params.threadId), function(uploadQueueMessages) {
-                        uploadingQueueMessages = uploadQueueMessages;
+                        for (var i = 0; i < uploadQueueMessages.length; i++) {
+                            uploadQueueMessages[i].message.participant = userInfo;
+                            var time = new Date().getTime();
+                            uploadQueueMessages[i].message.time = time;
+                            uploadQueueMessages[i].message.timeNanos = (time % 1000) * 1000000;
+                            uploadingQueueMessages.push(formatDataToMakeMessage(params.threadId, uploadQueueMessages[i].message, false));
+                        }
                     });
                 }
 
                 getChatWaitQueue(parseInt(params.threadId), failedQueue, function(waitQueueMessages) {
                     for (var i = 0; i < waitQueueMessages.length; i++) {
                         var decryptedEnqueuedMessage = Utility.jsonParser(chatDecrypt(waitQueueMessages[i].message, cacheSecret));
+                        var time = new Date().getTime();
                         waitQueueMessages[i] = formatDataToMakeMessage(waitQueueMessages[i].threadId,
                             {
                                 uniqueId: decryptedEnqueuedMessage.uniqueId,
@@ -4093,7 +4105,10 @@
                                 metadata: decryptedEnqueuedMessage.metadata,
                                 systemMetadata: decryptedEnqueuedMessage.systemMetadata,
                                 replyInfo: decryptedEnqueuedMessage.replyInfo,
-                                forwardInfo: decryptedEnqueuedMessage.forwardInfo
+                                forwardInfo: decryptedEnqueuedMessage.forwardInfo,
+                                participant: userInfo,
+                                time: time,
+                                timeNanos: (time % 1000) * 1000000
                             });
                     }
 
@@ -5676,46 +5691,36 @@
              *
              * @return {undefined}
              */
-            deleteCacheDatabases = function(params) {
-                if (params) {
-                    var storage = params.storage,
-                        queue = params.queue;
+            deleteCacheDatabases = function() {
+                if (db) {
+                    db.close();
                 }
 
-                if (storage) {
-                    if (db) {
-                        db.close();
-                    }
-
-                    var chatCacheDB = new Dexie('podChat');
-                    if (chatCacheDB) {
-                        chatCacheDB.delete()
-                            .then(function() {
-                                console.log('PodChat Database successfully deleted!');
-                                db.open();
-                            })
-                            .catch(function(err) {
-                                console.log(err);
-                            });
-                    }
+                if (queueDb) {
+                    queueDb.close();
                 }
 
-                if (queue) {
-                    if (queueDb) {
-                        queueDb.close();
-                    }
+                var chatCacheDB = new Dexie('podChat');
+                if (chatCacheDB) {
+                    chatCacheDB.delete()
+                        .then(function() {
+                            console.log('PodChat Database successfully deleted!');
 
-                    var queueDb = new Dexie('podQueues');
-                    if (queueDb) {
-                        queueDb.delete()
-                            .then(function() {
-                                console.log('PodQueues Database successfully deleted!');
-                                queueDb.open();
-                            })
-                            .catch(function(err) {
-                                console.log(err);
-                            });
-                    }
+                            var queueDb = new Dexie('podQueues');
+                            if (queueDb) {
+                                queueDb.delete()
+                                    .then(function() {
+                                        console.log('PodQueues Database successfully deleted!');
+                                        startCacheDatabases();
+                                    })
+                                    .catch(function(err) {
+                                        console.log(err);
+                                    });
+                            }
+                        })
+                        .catch(function(err) {
+                            console.log(err);
+                        });
                 }
             },
 
@@ -6006,12 +6011,12 @@
             getChatUploadQueue = function(threadId, callback) {
                 var uploadQ = [];
                 for (var i = 0; i < chatUploadQueue.length; i++) {
-                    if (chatUploadQueue[i].threadId == threadId) {
+                    if (parseInt(chatUploadQueue[i].message.subjectId) == threadId) {
                         uploadQ.push(chatUploadQueue[i]);
                     }
                 }
 
-                callback && callback(chatUploadQueue);
+                callback && callback(uploadQ);
             },
 
             /**
@@ -7229,11 +7234,9 @@
                                         result.result.id + '&hashCode=' +
                                         result.result.hashCode;
 
-                                    transferFromUploadQToSendQ(
-                                        parseInt(params.threadId), fileUniqueId,
-                                        JSON.stringify(metadata), function() {
-                                            chatSendQueueHandler();
-                                        });
+                                    transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
+                                        chatSendQueueHandler();
+                                    });
                                 }
                             });
                         }
@@ -9154,7 +9157,7 @@
 
         this.deleteCacheDatabases = deleteCacheDatabases;
 
-        this.clearCacheDatabases = clearCacheDatabasesOfUser;
+        this.clearCacheDatabasesOfUser = clearCacheDatabasesOfUser;
 
         this.getChatState = function() {
             return chatFullStateObject;
