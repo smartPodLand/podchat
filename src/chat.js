@@ -3870,7 +3870,46 @@
 
                             if (typeof Worker !== 'undefined' && productEnv != 'ReactNative' && canUseCache) {
                                 if (typeof(cacheSyncWorker) == 'undefined') {
-                                    cacheSyncWorker = new Worker('~/node_modules/podchat/src/browser-worker.js');
+                                    var plainWorker = function() {
+                                        self.importScripts('https://npmcdn.com/dexie@2.0.4/dist/dexie.min.js');
+                                        db = new Dexie('podChat');
+                                        db.version(1)
+                                            .stores({
+                                                users: '&id, name, cellphoneNumber, keyId',
+                                                contacts: '[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName, expireTime',
+                                                threads: '[owner+id] ,id, owner, title, time, [owner+time]',
+                                                participants: '[owner+id], id, owner, threadId, notSeenDuration, name, contactName, email, expireTime',
+                                                messages: '[owner+id], id, owner, threadId, time, [threadId+id], [threadId+owner+time]',
+                                                messageGaps: '[owner+id], [owner+waitsFor], id, waitsFor, owner, threadId, time, [threadId+owner+time]'
+                                            });
+
+                                        addEventListener('message', function(event) {
+                                            var data = JSON.parse(event.data);
+
+                                            switch (data.type) {
+                                                case 'getThreads':
+                                                    var content = JSON.parse(data.data),
+                                                        userId = parseInt(data.userId);
+
+                                                    for (var i = 0; i < content.length; i++) {
+                                                        var lastMessageTime = (content[i].lastMessageVO) ? content[i].lastMessageVO.time : 0,
+                                                            threadId = parseInt(content[i].id);
+
+                                                        if (lastMessageTime > 0) {
+                                                            db.messages
+                                                                .where('[threadId+owner+time]')
+                                                                .between([threadId, userId, lastMessageTime], [threadId, userId, Number.MAX_SAFE_INTEGER * 1000], false, true)
+                                                                .delete();
+                                                        }
+                                                    }
+                                                    break;
+                                            }
+                                        }, false);
+                                    };
+                                    var code = plainWorker.toString();
+                                    code = code.substring(code.indexOf("{")+1, code.lastIndexOf("}"));
+                                    var blob = new Blob([code], {type: "application/javascript"});
+                                    cacheSyncWorker = new Worker(URL.createObjectURL(blob));
                                 }
 
                                 var workerCommand = {
