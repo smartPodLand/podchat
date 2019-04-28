@@ -5,7 +5,6 @@
 # Recent Changelog
 
 All notable changes to this project will be documented here.
-In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 
 ## [Unreleased]
 
