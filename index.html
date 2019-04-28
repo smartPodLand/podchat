@@ -25,16 +25,27 @@
 //        var PodChat = window.PodChat;
             var params = {
             appId: new Date().getTime(),
-            socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
-            ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
-            platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
-            fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
-            serverName: "chat-server", // {**REQUIRED**} Server to to register on
+//            socketAddress: "ws://172.16.110.131:8003/ws",
+//            socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+//            ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
+//            platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
+//            fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
+
+
+            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+
+
+//            serverName: "chat-server2",// {**REQUIRED**} Server to to register on
+            serverName: "chat-server",// {**REQUIRED**} Server to to register on
             grantDeviceIdFromSSO: false,
             enableCache: true, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-            token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+            token: "0aced50422b64409b10fae5d660ea1ec",
+//            token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
 //             token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
             // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi

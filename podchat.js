@@ -92427,7 +92427,6 @@ WError.prototype.cause = function we_cause(c)
                                 errorMessage: 'Problem in Parsing result'
                             });
                         }
-
                     }
                     else {
                         callback({
@@ -94310,6 +94309,8 @@ WError.prototype.cause = function we_cause(c)
                                     transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
                                         chatSendQueueHandler();
                                     });
+                                } else {
+                                    deleteFromChatUploadQueue({message: {uniqueId: fileUniqueId}});
                                 }
                             });
                         }
@@ -94327,6 +94328,8 @@ WError.prototype.cause = function we_cause(c)
                                     transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
                                         chatSendQueueHandler();
                                     });
+                                }  else {
+                                    deleteFromChatUploadQueue({message: {uniqueId: fileUniqueId}});
                                 }
                             });
                         }

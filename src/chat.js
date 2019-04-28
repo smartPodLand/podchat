@@ -5354,7 +5354,6 @@
                                 errorMessage: 'Problem in Parsing result'
                             });
                         }
-
                     }
                     else {
                         callback({
@@ -7237,6 +7236,8 @@
                                     transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
                                         chatSendQueueHandler();
                                     });
+                                } else {
+                                    deleteFromChatUploadQueue({message: {uniqueId: fileUniqueId}});
                                 }
                             });
                         }
@@ -7254,6 +7255,8 @@
                                     transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
                                         chatSendQueueHandler();
                                     });
+                                }  else {
+                                    deleteFromChatUploadQueue({message: {uniqueId: fileUniqueId}});
                                 }
                             });
                         }

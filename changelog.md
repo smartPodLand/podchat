@@ -9,6 +9,18 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 -   Search in threads metadata
 
 
+## [3.5.30] - 2019-04-28
+
+### Added
+
+-   Clear and Delete functionalities for cache. In order to clear current user's cache you can simply call `clearCacheDatabasesOfUser()` and if you want to delete whole cache database just call `deleteCacheDatabases()`
+
+### Changed
+
+-   Turn external web workers into Inline BLOB type workers.
+-   Unified message structure for all queues
+
+
 ## [3.5.25] - 2019-03-13
 
 ### Added
