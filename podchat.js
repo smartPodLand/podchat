@@ -89690,7 +89690,7 @@ WError.prototype.cause = function we_cause(c)
                             // TODO: Temporarily removed due to unknown activity
                             // chatState = false;
                             // asyncClient.logout();
-                            clearChatServerCaches();
+                            // clearChatServerCaches();
                         }
 
                         fireEvent('error', {
@@ -96226,6 +96226,7 @@ WError.prototype.cause = function we_cause(c)
         this.generateUUID = Utility.generateUUID;
 
         this.logout = function() {
+            clearChatServerCaches();
             asyncClient.logout();
         };
 
