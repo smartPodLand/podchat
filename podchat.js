@@ -93851,6 +93851,7 @@ WError.prototype.cause = function we_cause(c)
                     if (!returnData.hasError && returnCache) {
                         fireEvent('threadEvents', {
                             type: 'THREAD_PARTICIPANTS_LIST_CHANGE',
+                            threadId: params.threadId,
                             result: returnData.result
                         });
                     }
