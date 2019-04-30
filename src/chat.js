@@ -5878,7 +5878,7 @@
              * @return {array}  An array of messages on sendQueue
              */
             getChatWaitQueue = function(threadId, active, callback) {
-                if (active) {
+                if (active && threadId > 0) {
                     if (hasCache && typeof queueDb == 'object') {
                         queueDb.waitQ.where('threadId')
                             .equals(threadId)
