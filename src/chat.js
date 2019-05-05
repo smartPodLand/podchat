@@ -366,6 +366,10 @@
                                                     }, function(result) {
                                                         if (!result.hasError) {
                                                             cacheSecret = result.secretKey;
+
+                                                            chatState = true;
+                                                            fireEvent('chatReady');
+                                                            chatSendQueueHandler();
                                                         }
                                                         else {
                                                             if (result.message != '') {
@@ -408,10 +412,11 @@
                                         });
                                     }
                                 }
-
-                                chatState = true;
-                                fireEvent('chatReady');
-                                chatSendQueueHandler();
+                                else {
+                                    chatState = true;
+                                    fireEvent('chatReady');
+                                    chatSendQueueHandler();
+                                }
                             }
                         });
                     }
@@ -553,7 +558,9 @@
             generateEncryptionKey = function(params) {
                 var data = {
                     validity: 10 * 365 * 24 * 60 * 60, // 10 Years
-                    renew: false
+                    renew: false,
+                    keyAlgorithm: 'aes',
+                    keySize: 256
                 };
 
                 if (params) {
@@ -657,45 +664,45 @@
                 if (params) {
                     if (params.keyId != 'undefined') {
                         keyId = params.keyId;
+
+                        var httpRequestParams = {
+                            url: SERVICE_ADDRESSES.SSO_ADDRESS + SERVICES_PATH.SSO_GET_KEY + keyId,
+                            method: 'GET',
+                            headers: {
+                                'Authorization': 'Bearer ' + token
+                            }
+                        };
+
+                        httpRequest(httpRequestParams, function(result) {
+                            if (!result.hasError) {
+                                try {
+                                    var response = JSON.parse(result.result.responseText);
+                                }
+                                catch (e) {
+                                    console.log(e);
+                                }
+
+                                callback && callback({
+                                    hasError: false,
+                                    secretKey: response.secretKey
+                                });
+                            }
+                            else {
+                                callback && callback({
+                                    hasError: true,
+                                    code: result.errorCode,
+                                    message: result.errorMessage
+                                });
+
+                                fireEvent('error', {
+                                    code: result.errorCode,
+                                    message: result.errorMessage,
+                                    error: result
+                                });
+                            }
+                        });
                     }
                 }
-
-                var httpRequestParams = {
-                    url: SERVICE_ADDRESSES.SSO_ADDRESS + SERVICES_PATH.SSO_GET_KEY + keyId,
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                };
-
-                httpRequest(httpRequestParams, function(result) {
-                    if (!result.hasError) {
-                        try {
-                            var response = JSON.parse(result.result.responseText);
-                        }
-                        catch (e) {
-                            console.log(e);
-                        }
-
-                        callback && callback({
-                            hasError: false,
-                            secretKey: response.secretKey
-                        });
-                    }
-                    else {
-                        callback && callback({
-                            hasError: true,
-                            code: result.errorCode,
-                            message: result.errorMessage
-                        });
-
-                        fireEvent('error', {
-                            code: result.errorCode,
-                            message: result.errorMessage,
-                            error: result
-                        });
-                    }
-                });
             },
 
             /**
@@ -1950,7 +1957,7 @@
                         /**
                          * Add participants into cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 var cacheData = [];
 
@@ -2160,8 +2167,7 @@
                          */
                         if (canUseCache) {
                             if (db) {
-                                for (var i = 0; i <
-                                messageContent.length; i++) {
+                                for (var i = 0; i < messageContent.length; i++) {
                                     db.participants.where('id')
                                         .equals(messageContent[i].id)
                                         .and(function(participants) {
@@ -2308,7 +2314,7 @@
                                 /**
                                  * Add Updated Thread into cache database #cache
                                  */
-                                if (canUseCache) {
+                                if (canUseCache && cacheSecret.length > 0) {
                                     if (db) {
                                         var tempData = {};
 
@@ -2465,7 +2471,7 @@
                         /**
                          * Add Updated Thread into cache database #cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 var tempData = {};
 
@@ -2742,7 +2748,7 @@
                 /**
                  * Add New Messages into cache database
                  */
-                if (canUseCache) {
+                if (canUseCache && cacheSecret.length > 0) {
                     if (db) {
                         /**
                          * Insert new messages into cache database
@@ -2876,7 +2882,7 @@
                 /**
                  * Update Message on cache
                  */
-                if (canUseCache) {
+                if (canUseCache && cacheSecret.length > 0) {
                     if (db) {
                         try {
                             var tempData = {},
@@ -2954,7 +2960,7 @@
                     /**
                      * Add New Thread into cache database #cache
                      */
-                    if (canUseCache) {
+                    if (canUseCache && cacheSecret.length > 0) {
                         if (db) {
                             var tempData = {};
 
@@ -3728,7 +3734,7 @@
                 /**
                  * Retrieve threads from cache
                  */
-                if (canUseCache) {
+                if (canUseCache && cacheSecret.length > 0) {
                     if (db) {
                         var thenAble;
 
@@ -3869,7 +3875,7 @@
                              * TODO: Implement Node Version
                              */
 
-                            if (typeof Worker !== 'undefined' && productEnv != 'ReactNative' && canUseCache) {
+                            if (typeof Worker !== 'undefined' && productEnv != 'ReactNative' && canUseCache && cacheSecret.length > 0) {
                                 if (typeof(cacheSyncWorker) == 'undefined') {
                                     var plainWorker = function() {
                                         self.importScripts('https://npmcdn.com/dexie@2.0.4/dist/dexie.min.js');
@@ -3939,7 +3945,7 @@
                             /**
                              * Add Threads into cache database #cache
                              */
-                            if (canUseCache) {
+                            if (canUseCache && cacheSecret.length > 0) {
                                 if (db) {
                                     var cacheData = [];
 
@@ -4029,521 +4035,491 @@
              * @return {object} Instant result of sendMessage
              */
             getHistory = function(params, callback) {
-                var sendMessageParams = {
-                        chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
-                        typeCode: params.typeCode,
-                        content: {},
-                        subjectId: params.threadId
-                    },
-                    whereClause = {},
-                    offset = (parseInt(params.offset) > 0) ? parseInt(params.offset) : 0,
-                    count = (parseInt(params.count) > 0) ? parseInt(params.count) : config.getHistoryCount,
-                    order = (typeof params.order != 'undefined') ? (params.order).toLowerCase() : 'desc',
-                    cacheResult = {},
-                    serverResult = {},
-                    cacheFirstMessage,
-                    cacheLastMessage,
-                    messages,
-                    returnCache,
-                    dynamicHistoryCount = (params.dynamicHistoryCount && typeof params.dynamicHistoryCount === 'boolean')
-                        ? params.dynamicHistoryCount
-                        : false,
-                    sendingQueue = (params.queues && typeof params.queues.sending === 'boolean')
-                        ? params.queues.sending
-                        : true,
-                    failedQueue = (params.queues && typeof params.queues.failed === 'boolean')
-                        ? params.queues.failed
-                        : true,
-                    uploadingQueue = (params.queues && typeof params.queues.uploading === 'boolean')
-                        ? params.queues.uploading
-                        : true,
-                    sendingQueueMessages = [],
-                    failedQueueMessages = [],
-                    uploadingQueueMessages = [];
+                if (parseInt(params.threadId) > 0) {
+                    var sendMessageParams = {
+                            chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
+                            typeCode: params.typeCode,
+                            content: {},
+                            subjectId: params.threadId
+                        },
+                        whereClause = {},
+                        offset = (parseInt(params.offset) > 0) ? parseInt(params.offset) : 0,
+                        count = (parseInt(params.count) > 0) ? parseInt(params.count) : config.getHistoryCount,
+                        order = (typeof params.order != 'undefined') ? (params.order).toLowerCase() : 'desc',
+                        cacheResult = {},
+                        serverResult = {},
+                        cacheFirstMessage,
+                        cacheLastMessage,
+                        messages,
+                        returnCache,
+                        dynamicHistoryCount = (params.dynamicHistoryCount && typeof params.dynamicHistoryCount === 'boolean')
+                            ? params.dynamicHistoryCount
+                            : false,
+                        sendingQueue = (params.queues && typeof params.queues.sending === 'boolean')
+                            ? params.queues.sending
+                            : true,
+                        failedQueue = (params.queues && typeof params.queues.failed === 'boolean')
+                            ? params.queues.failed
+                            : true,
+                        uploadingQueue = (params.queues && typeof params.queues.uploading === 'boolean')
+                            ? params.queues.uploading
+                            : true,
+                        sendingQueueMessages = [],
+                        failedQueueMessages = [],
+                        uploadingQueueMessages = [];
 
-                if (sendingQueue) {
-                    getChatSendQueue(parseInt(params.threadId), function(sendQueueMessages) {
-                        for (var i = 0; i < sendQueueMessages.length; i++) {
-                            var time = new Date().getTime();
+                    if (sendingQueue) {
+                        getChatSendQueue(parseInt(params.threadId), function(sendQueueMessages) {
+                            for (var i = 0; i < sendQueueMessages.length; i++) {
+                                var time = new Date().getTime();
 
-                            sendingQueueMessages.push(formatDataToMakeMessage(sendQueueMessages[i].threadId, {
-                                uniqueId: sendQueueMessages[i].uniqueId,
-                                ownerId: userInfo.id,
-                                message: sendQueueMessages[i].content,
-                                metadata: sendQueueMessages[i].metadata,
-                                systemMetadata: sendQueueMessages[i].systemMetadata,
-                                replyInfo: sendQueueMessages[i].replyInfo,
-                                forwardInfo: sendQueueMessages[i].forwardInfo,
-                                time: time,
-                                timeNanos: (time % 1000) * 1000000
-                            }));
-                        }
-                    });
-                }
-
-                if (uploadingQueue) {
-                    getChatUploadQueue(parseInt(params.threadId), function(uploadQueueMessages) {
-                        for (var i = 0; i < uploadQueueMessages.length; i++) {
-                            uploadQueueMessages[i].message.participant = userInfo;
-                            var time = new Date().getTime();
-                            uploadQueueMessages[i].message.time = time;
-                            uploadQueueMessages[i].message.timeNanos = (time % 1000) * 1000000;
-                            uploadingQueueMessages.push(formatDataToMakeMessage(params.threadId, uploadQueueMessages[i].message, false));
-                        }
-                    });
-                }
-
-                getChatWaitQueue(parseInt(params.threadId), failedQueue, function(waitQueueMessages) {
-                    for (var i = 0; i < waitQueueMessages.length; i++) {
-                        var decryptedEnqueuedMessage = Utility.jsonParser(chatDecrypt(waitQueueMessages[i].message, cacheSecret));
-                        var time = new Date().getTime();
-                        waitQueueMessages[i] = formatDataToMakeMessage(waitQueueMessages[i].threadId,
-                            {
-                                uniqueId: decryptedEnqueuedMessage.uniqueId,
-                                ownerId: userInfo.id,
-                                message: decryptedEnqueuedMessage.content,
-                                metadata: decryptedEnqueuedMessage.metadata,
-                                systemMetadata: decryptedEnqueuedMessage.systemMetadata,
-                                replyInfo: decryptedEnqueuedMessage.replyInfo,
-                                forwardInfo: decryptedEnqueuedMessage.forwardInfo,
-                                participant: userInfo,
-                                time: time,
-                                timeNanos: (time % 1000) * 1000000
-                            });
-                    }
-
-                    failedQueueMessages = waitQueueMessages;
-
-                    if (dynamicHistoryCount) {
-                        var tempCount = count - (sendingQueueMessages.length + failedQueueMessages.length + uploadingQueueMessages.length);
-                        sendMessageParams.content.count = (tempCount > 0) ? tempCount : 0;
-                    }
-                    else {
-                        sendMessageParams.content.count = count;
-                    }
-
-                    sendMessageParams.content.offset = offset;
-                    sendMessageParams.content.order = order;
-
-                    if (parseInt(params.id) > 0) {
-                        sendMessageParams.content.id = whereClause.id = params.id;
-                    }
-
-                    if (Array.isArray(params.uniqueIds)) {
-                        sendMessageParams.content.uniqueIds = params.uniqueIds;
-                    }
-
-                    if (parseInt(params.fromTimeFull) > 0 && params.fromTimeFull.toString().length == 19) {
-                        sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTimeFull.toString()
-                            .substring(0, 13));
-                        sendMessageParams.content.fromTimeNanos = whereClause.fromTimeNanos = parseInt(params.fromTimeFull.toString()
-                            .substring(10, 19));
-                    }
-                    else {
-                        if (parseInt(params.fromTime) > 0 && arseInt(params.fromTime) < 9999999999999) {
-                            sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTime);
-                        }
-
-                        if (parseInt(params.fromTimeNanos) > 0 && parseInt(params.fromTimeNanos) < 999999999) {
-                            sendMessageParams.content.fromTimeNanos = whereClause.fromTimeNanos = parseInt(params.fromTimeNanos);
-                        }
-                    }
-
-                    if (parseInt(params.toTimeFull) > 0 && params.toTimeFull.toString().length == 19) {
-                        sendMessageParams.content.toTime = whereClause.toTime = parseInt(params.toTimeFull.toString()
-                            .substring(0, 13));
-                        sendMessageParams.content.toTimeNanos = whereClause.toTimeNanos = parseInt(params.toTimeFull.toString()
-                            .substring(10, 19));
-                    }
-                    else {
-                        if (parseInt(params.toTime) > 0 && parseInt(params.toTime) < 9999999999999) {
-                            sendMessageParams.content.toTime = whereClause.toTime = parseInt(params.toTime);
-                        }
-
-                        if (parseInt(params.toTimeNanos) > 0 && parseInt(params.toTimeNanos) < 999999999) {
-                            sendMessageParams.content.toTimeNanos = whereClause.toTimeNanos = parseInt(params.toTimeNanos);
-                        }
-                    }
-
-                    if (typeof params.query != 'undefined') {
-                        sendMessageParams.content.query = whereClause.query = params.query;
-                    }
-
-                    if (typeof params.metadataCriteria == 'object' && params.metadataCriteria.hasOwnProperty('field')) {
-                        sendMessageParams.content.metadataCriteria = whereClause.metadataCriteria = params.metadataCriteria;
-                    }
-
-                    /**
-                     * Get Thread Messages from cache
-                     *
-                     * Because we are not applying metadataCriteria search
-                     * on cached data, if this attribute has been set, we
-                     * should not return any results from cache
-                     */
-                    if (canUseCache && !whereClause.hasOwnProperty('metadataCriteria')) {
-                        if (db) {
-                            var table = db.messages,
-                                collection;
-                            returnCache = true;
-
-                            if (whereClause.hasOwnProperty('id') && whereClause.id > 0) {
-                                collection = table.where('id')
-                                    .equals(params.id)
-                                    .and(function(message) {
-                                        return message.owner == userInfo.id;
-                                    })
-                                    .reverse();
+                                sendingQueueMessages.push(formatDataToMakeMessage(sendQueueMessages[i].threadId, {
+                                    uniqueId: sendQueueMessages[i].uniqueId,
+                                    ownerId: userInfo.id,
+                                    message: sendQueueMessages[i].content,
+                                    metadata: sendQueueMessages[i].metadata,
+                                    systemMetadata: sendQueueMessages[i].systemMetadata,
+                                    replyInfo: sendQueueMessages[i].replyInfo,
+                                    forwardInfo: sendQueueMessages[i].forwardInfo,
+                                    time: time,
+                                    timeNanos: (time % 1000) * 1000000
+                                }));
                             }
-                            else {
-                                collection = table.where('[threadId+owner+time]')
-                                    .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
-                                        [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000])
-                                    .reverse();
+                        });
+                    }
+
+                    if (uploadingQueue) {
+                        getChatUploadQueue(parseInt(params.threadId), function(uploadQueueMessages) {
+                            for (var i = 0; i < uploadQueueMessages.length; i++) {
+                                uploadQueueMessages[i].message.participant = userInfo;
+                                var time = new Date().getTime();
+                                uploadQueueMessages[i].message.time = time;
+                                uploadQueueMessages[i].message.timeNanos = (time % 1000) * 1000000;
+                                uploadingQueueMessages.push(formatDataToMakeMessage(params.threadId, uploadQueueMessages[i].message, false));
                             }
+                        });
+                    }
 
-                            collection.toArray()
-                                .then(function(resultMessages) {
-                                    messages = resultMessages.sort(Utility.dynamicSort('time', !(order === 'asc')));
-
-                                    if (whereClause.hasOwnProperty('fromTime')) {
-                                        var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
-                                            ? (Math.floor(whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
-                                            : whereClause.fromTime * 1000000;
-                                        messages = messages.filter(function(message) {
-                                            return message.time >= fromTime;
-                                        });
-                                    }
-
-                                    if (whereClause.hasOwnProperty('toTime')) {
-                                        var toTime = (whereClause.hasOwnProperty('toTimeNanos'))
-                                            ? ((Math.floor(whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
-                                            : (whereClause.toTime + 1) * 1000000;
-                                        messages = messages.filter(function(message) {
-                                            return message.time <= toTime;
-                                        });
-                                    }
-
-                                    if (whereClause.hasOwnProperty('query') && typeof whereClause.query == 'string') {
-                                        messages = messages.filter(function(message) {
-                                            var reg = new RegExp(whereClause.query);
-                                            return reg.test(chatDecrypt(message.message, cacheSecret, message.salt));
-                                        });
-                                    }
-
-                                    /**
-                                     * We should check to see if message[offset-1] has
-                                     * GAP on cache or not? if yes, we should not return
-                                     * any value from cache, because there is a gap between
-                                     */
-                                    if (offset > 0) {
-                                        if (typeof messages[offset - 1] == 'object' && messages[offset - 1].hasGap) {
-                                            returnCache = false;
-                                        }
-                                    }
-
-                                    if (returnCache) {
-                                        messages = messages.slice(offset, offset + count);
-
-                                        if (messages.length == 0) {
-                                            returnCache = false;
-                                        }
-
-                                        cacheFirstMessage = messages[0];
-                                        cacheLastMessage = messages[messages.length - 1];
-
-                                        if (returnCache) {
-                                            collection.count()
-                                                .then(function(contentCount) {
-                                                    var cacheData = [];
-
-                                                    for (var i = 0; i < messages.length; i++) {
-                                                        /**
-                                                         * If any of messages between first and last message of cache response
-                                                         * has a GAP before them, we shouldn't return cache's result and
-                                                         * wait for server's response to hit in
-                                                         */
-                                                        if (i != 0 && i != messages.length - 1 && messages[i].hasGap) {
-                                                            returnCache = false;
-                                                            break;
-                                                        }
-
-                                                        try {
-                                                            var tempData = {},
-                                                                salt = messages[i].salt;
-
-                                                            var tempMessage = formatDataToMakeMessage(messages[i].threadId, JSON.parse(chatDecrypt(messages[i].data, cacheSecret, messages[i].salt)), true);
-                                                            cacheData.push(tempMessage);
-
-                                                            cacheResult[tempMessage.id] = {
-                                                                index: i,
-                                                                messageId: tempMessage.id,
-                                                                threadId: tempMessage.threadId,
-                                                                data: Utility.MD5(JSON.stringify([
-                                                                    tempMessage.id,
-                                                                    tempMessage.message,
-                                                                    tempMessage.edited,
-                                                                    tempMessage.delivered,
-                                                                    tempMessage.seen,
-                                                                    tempMessage.metadata,
-                                                                    tempMessage.systemMetadata]))
-                                                            };
-                                                        }
-                                                        catch (error) {
-                                                            fireEvent('error', {
-                                                                code: error.code,
-                                                                message: error.message,
-                                                                error: error
-                                                            });
-                                                        }
-                                                    }
-
-                                                    /**
-                                                     * If there is a GAP between messages of cache result
-                                                     * WE should not return data from cache, cause it is not valid!
-                                                     * Therefore we wait for server's response and edit cache afterwards
-                                                     */
-                                                    if (returnCache) {
-                                                        var returnData = {
-                                                            hasError: false,
-                                                            cache: true,
-                                                            errorCode: 0,
-                                                            errorMessage: '',
-                                                            result: {
-                                                                history: cacheData,
-                                                                contentCount: contentCount,
-                                                                hasNext: (offset + count < contentCount && messages.length > 0),
-                                                                nextOffset: offset + messages.length
-                                                            }
-                                                        };
-
-                                                        if (sendingQueue) {
-                                                            returnData.result.sending = sendingQueueMessages;
-                                                        }
-                                                        if (uploadingQueue) {
-                                                            returnData.result.uploading = uploadingQueueMessages;
-                                                        }
-                                                        if (failedQueue) {
-                                                            returnData.result.failed = failedQueueMessages;
-                                                        }
-
-                                                        callback && callback(returnData);
-                                                        callback = undefined;
-                                                    }
-                                                })
-                                                .catch(function(error) {
-                                                    fireEvent('error', {
-                                                        code: error.code,
-                                                        message: error.message,
-                                                        error: error
-                                                    });
-                                                });
-                                        }
-                                    }
-                                })
-                                .catch(function(error) {
-                                    fireEvent('error', {
-                                        code: error.code,
-                                        message: error.message,
-                                        error: error
+                    getChatWaitQueue(parseInt(params.threadId), failedQueue, function(waitQueueMessages) {
+                        if(cacheSecret.length > 0) {
+                            for (var i = 0; i < waitQueueMessages.length; i++) {
+                                var decryptedEnqueuedMessage = Utility.jsonParser(chatDecrypt(waitQueueMessages[i].message, cacheSecret));
+                                var time = new Date().getTime();
+                                waitQueueMessages[i] = formatDataToMakeMessage(waitQueueMessages[i].threadId,
+                                    {
+                                        uniqueId: decryptedEnqueuedMessage.uniqueId,
+                                        ownerId: userInfo.id,
+                                        message: decryptedEnqueuedMessage.content,
+                                        metadata: decryptedEnqueuedMessage.metadata,
+                                        systemMetadata: decryptedEnqueuedMessage.systemMetadata,
+                                        replyInfo: decryptedEnqueuedMessage.replyInfo,
+                                        forwardInfo: decryptedEnqueuedMessage.forwardInfo,
+                                        participant: userInfo,
+                                        time: time,
+                                        timeNanos: (time % 1000) * 1000000
                                     });
-                                });
+                            }
+
+                            failedQueueMessages = waitQueueMessages;
+                        } else {
+                            failedQueueMessages = [];
+                        }
+
+                        if (dynamicHistoryCount) {
+                            var tempCount = count - (sendingQueueMessages.length + failedQueueMessages.length + uploadingQueueMessages.length);
+                            sendMessageParams.content.count = (tempCount > 0) ? tempCount : 0;
                         }
                         else {
-                            fireEvent('error', {
-                                code: 6601,
-                                message: CHAT_ERRORS[6601],
-                                error: null
-                            });
+                            sendMessageParams.content.count = count;
                         }
-                    }
 
-                    /**
-                     * Get Thread Messages From Server
-                     */
-                    return sendMessage(sendMessageParams, {
-                        onResult: function(result) {
-                            var returnData = {
-                                    hasError: result.hasError,
-                                    cache: false,
-                                    errorMessage: result.errorMessage,
-                                    errorCode: result.errorCode
-                                },
-                                resultMessagesId = [];
+                        sendMessageParams.content.offset = offset;
+                        sendMessageParams.content.order = order;
 
-                            if (!returnData.hasError) {
-                                var messageContent = result.result,
-                                    messageLength = messageContent.length;
+                        if (parseInt(params.id) > 0) {
+                            sendMessageParams.content.id = whereClause.id = params.id;
+                        }
 
-                                var history = reformatThreadHistory(params.threadId, messageContent);
+                        if (Array.isArray(params.uniqueIds)) {
+                            sendMessageParams.content.uniqueIds = params.uniqueIds;
+                        }
 
-                                if (messageLength > 0) {
-                                    /**
-                                     * Calculating First and Last Messages of result
-                                     */
-                                    var lastMessage = history[messageContent.length - 1],
-                                        firstMessage = history[0];
+                        if (parseInt(params.fromTimeFull) > 0 && params.fromTimeFull.toString().length == 19) {
+                            sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTimeFull.toString()
+                                .substring(0, 13));
+                            sendMessageParams.content.fromTimeNanos = whereClause.fromTimeNanos = parseInt(params.fromTimeFull.toString()
+                                .substring(10, 19));
+                        }
+                        else {
+                            if (parseInt(params.fromTime) > 0 && arseInt(params.fromTime) < 9999999999999) {
+                                sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTime);
+                            }
 
-                                    /**
-                                     * Sending Delivery for Last Message of Thread
-                                     */
-                                    if (lastMessage.id > 0) {
-                                        deliver({
-                                            messageId: lastMessage.id,
-                                            ownerId: lastMessage.participant.id
-                                        });
-                                    }
+                            if (parseInt(params.fromTimeNanos) > 0 && parseInt(params.fromTimeNanos) < 999999999) {
+                                sendMessageParams.content.fromTimeNanos = whereClause.fromTimeNanos = parseInt(params.fromTimeNanos);
+                            }
+                        }
+
+                        if (parseInt(params.toTimeFull) > 0 && params.toTimeFull.toString().length == 19) {
+                            sendMessageParams.content.toTime = whereClause.toTime = parseInt(params.toTimeFull.toString()
+                                .substring(0, 13));
+                            sendMessageParams.content.toTimeNanos = whereClause.toTimeNanos = parseInt(params.toTimeFull.toString()
+                                .substring(10, 19));
+                        }
+                        else {
+                            if (parseInt(params.toTime) > 0 && parseInt(params.toTime) < 9999999999999) {
+                                sendMessageParams.content.toTime = whereClause.toTime = parseInt(params.toTime);
+                            }
+
+                            if (parseInt(params.toTimeNanos) > 0 && parseInt(params.toTimeNanos) < 999999999) {
+                                sendMessageParams.content.toTimeNanos = whereClause.toTimeNanos = parseInt(params.toTimeNanos);
+                            }
+                        }
+
+                        if (typeof params.query != 'undefined') {
+                            sendMessageParams.content.query = whereClause.query = params.query;
+                        }
+
+                        if (typeof params.metadataCriteria == 'object' && params.metadataCriteria.hasOwnProperty('field')) {
+                            sendMessageParams.content.metadataCriteria = whereClause.metadataCriteria = params.metadataCriteria;
+                        }
+
+                        /**
+                         * Get Thread Messages from cache
+                         *
+                         * Because we are not applying metadataCriteria search
+                         * on cached data, if this attribute has been set, we
+                         * should not return any results from cache
+                         */
+                        if (canUseCache && cacheSecret.length > 0 && !whereClause.hasOwnProperty('metadataCriteria')) {
+                            if (db) {
+                                var table = db.messages,
+                                    collection;
+                                returnCache = true;
+
+                                if (whereClause.hasOwnProperty('id') && whereClause.id > 0) {
+                                    collection = table.where('id')
+                                        .equals(params.id)
+                                        .and(function(message) {
+                                            return message.owner == userInfo.id;
+                                        })
+                                        .reverse();
+                                }
+                                else {
+                                    collection = table.where('[threadId+owner+time]')
+                                        .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
+                                            [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000])
+                                        .reverse();
                                 }
 
-                                /**
-                                 * Add Thread Messages into cache database
-                                 * and remove deleted messages from cache database
-                                 */
-                                if (canUseCache) {
-                                    if (db) {
+                                collection.toArray()
+                                    .then(function(resultMessages) {
+                                        messages = resultMessages.sort(Utility.dynamicSort('time', !(order === 'asc')));
+
+                                        if (whereClause.hasOwnProperty('fromTime')) {
+                                            var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
+                                                ? (Math.floor(whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
+                                                : whereClause.fromTime * 1000000;
+                                            messages = messages.filter(function(message) {
+                                                return message.time >= fromTime;
+                                            });
+                                        }
+
+                                        if (whereClause.hasOwnProperty('toTime')) {
+                                            var toTime = (whereClause.hasOwnProperty('toTimeNanos'))
+                                                ? ((Math.floor(whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
+                                                : (whereClause.toTime + 1) * 1000000;
+                                            messages = messages.filter(function(message) {
+                                                return message.time <= toTime;
+                                            });
+                                        }
+
+                                        if (whereClause.hasOwnProperty('query') && typeof whereClause.query == 'string') {
+                                            messages = messages.filter(function(message) {
+                                                var reg = new RegExp(whereClause.query);
+                                                return reg.test(chatDecrypt(message.message, cacheSecret, message.salt));
+                                            });
+                                        }
 
                                         /**
-                                         * Cache Synchronization
-                                         *
-                                         * If there are some results in cache
-                                         * Database, we have to check if they need
-                                         * to be deleted or not?
-                                         *
-                                         * To do so, first of all we should make
-                                         * sure that metadataCriteria has not been
-                                         * set, cuz we are not applying it on the
-                                         * cache results, besides the results from
-                                         * cache should not be empty, otherwise
-                                         * there is no need to sync cache
+                                         * We should check to see if message[offset-1] has
+                                         * GAP on cache or not? if yes, we should not return
+                                         * any value from cache, because there is a gap between
                                          */
-                                        if (Object.keys(cacheResult).length > 0 && !whereClause.hasOwnProperty('metadataCriteria')) {
+                                        if (offset > 0) {
+                                            if (typeof messages[offset - 1] == 'object' && messages[offset - 1].hasGap) {
+                                                returnCache = false;
+                                            }
+                                        }
 
-                                            /**
-                                             * Check if a condition has been
-                                             * applied on query or not, if there is
-                                             * none, the only limitations on
-                                             * results are count and offset
-                                             *
-                                             * whereClause == []
-                                             */
-                                            if (!whereClause || Object.keys(whereClause).length == 0) {
+                                        if (returnCache) {
+                                            messages = messages.slice(offset, offset + count);
 
-                                                /**
-                                                 * There is no condition applied on
-                                                 * query and result is [], so there
-                                                 * are no messages in this thread
-                                                 * after this offset, and we should
-                                                 * delete those messages from cache
-                                                 * too
-                                                 *
-                                                 * result   []
-                                                 */
-                                                if (messageLength == 0) {
+                                            if (messages.length == 0) {
+                                                returnCache = false;
+                                            }
 
-                                                    /**
-                                                     * Order is ASC, so if the server result is empty we
-                                                     * should delete everything from cache which has bigger
-                                                     * time than first item of cache results for this query
-                                                     */
-                                                    if (order == 'asc') {
-                                                        var finalMessageTime = cacheFirstMessage.time;
+                                            cacheFirstMessage = messages[0];
+                                            cacheLastMessage = messages[messages.length - 1];
 
-                                                        db.messages.where('[threadId+owner+time]')
-                                                            .between([parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime],
-                                                                [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], true, false)
-                                                            .delete()
-                                                            .catch(function(error) {
+                                            if (returnCache) {
+                                                collection.count()
+                                                    .then(function(contentCount) {
+                                                        var cacheData = [];
+
+                                                        for (var i = 0; i < messages.length; i++) {
+                                                            /**
+                                                             * If any of messages between first and last message of cache response
+                                                             * has a GAP before them, we shouldn't return cache's result and
+                                                             * wait for server's response to hit in
+                                                             */
+                                                            if (i != 0 && i != messages.length - 1 && messages[i].hasGap) {
+                                                                returnCache = false;
+                                                                break;
+                                                            }
+
+                                                            try {
+                                                                var tempData = {},
+                                                                    salt = messages[i].salt;
+
+                                                                var tempMessage = formatDataToMakeMessage(messages[i].threadId, JSON.parse(chatDecrypt(messages[i].data, cacheSecret, messages[i].salt)), true);
+                                                                cacheData.push(tempMessage);
+
+                                                                cacheResult[tempMessage.id] = {
+                                                                    index: i,
+                                                                    messageId: tempMessage.id,
+                                                                    threadId: tempMessage.threadId,
+                                                                    data: Utility.MD5(JSON.stringify([
+                                                                        tempMessage.id,
+                                                                        tempMessage.message,
+                                                                        tempMessage.edited,
+                                                                        tempMessage.delivered,
+                                                                        tempMessage.seen,
+                                                                        tempMessage.metadata,
+                                                                        tempMessage.systemMetadata]))
+                                                                };
+                                                            }
+                                                            catch (error) {
                                                                 fireEvent('error', {
                                                                     code: error.code,
                                                                     message: error.message,
                                                                     error: error
                                                                 });
-                                                            });
-                                                    }
-
-                                                    /**
-                                                     * Order is DESC, so if the
-                                                     * server result is empty we
-                                                     * should delete everything
-                                                     * from cache which has smaller
-                                                     * time than first item of
-                                                     * cache results for this query
-                                                     */
-                                                    else {
-                                                        var finalMessageTime = cacheFirstMessage.time;
-
-                                                        db.messages.where('[threadId+owner+time]')
-                                                            .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
-                                                                [parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime], true, true)
-                                                            .delete()
-                                                            .catch(function(error) {
-                                                                fireEvent('error', {
-                                                                    code: error.code,
-                                                                    message: error.message,
-                                                                    error: error
-                                                                });
-                                                            });
-                                                    }
-                                                }
-
-                                                /**
-                                                 * Result is not Empty or doesn't
-                                                 * have just one single record, so
-                                                 * we should remove everything
-                                                 * which are between firstMessage
-                                                 * and lastMessage of this result
-                                                 * from cache database and insert
-                                                 * the new result into cache, so
-                                                 * the deleted ones would be
-                                                 * deleted
-                                                 *
-                                                 * result   [..., n-1, n, n+1, ...]
-                                                 */
-                                                else {
-
-                                                    /**
-                                                     * We should check for last message's previouseId if it
-                                                     * is undefined, so it is the first message of thread and
-                                                     * we should delete everything before it from cache
-                                                     */
-                                                    if (firstMessage.previousId == undefined || lastMessage.previousId == undefined) {
-                                                        var finalMessageTime = (lastMessage.previousId == undefined)
-                                                            ? lastMessage.time
-                                                            : firstMessage.time;
-
-                                                        db.messages.where('[threadId+owner+time]')
-                                                            .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
-                                                                [parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime], true, false)
-                                                            .delete()
-                                                            .catch(function(error) {
-                                                                fireEvent('error', {
-                                                                    code: error.code,
-                                                                    message: error.message,
-                                                                    error: error
-                                                                });
-                                                            });
-                                                    }
-
-                                                    /**
-                                                     * Offset has been set as 0 so this result is either the
-                                                     * very beginning part of thread or the very last
-                                                     * Depending on the sort order
-                                                     *
-                                                     * offset == 0
-                                                     */
-                                                    if (offset == 0) {
+                                                            }
+                                                        }
 
                                                         /**
-                                                         * Results are sorted ASC, and the offset is 0 so
-                                                         * the first Message of this result is first
-                                                         * Message of thread, everything in cache
-                                                         * database which has smaller time than this
-                                                         * one should be removed
-                                                         *
-                                                         * order    ASC
-                                                         * result   [0, 1, 2, ...]
+                                                         * If there is a GAP between messages of cache result
+                                                         * WE should not return data from cache, cause it is not valid!
+                                                         * Therefore we wait for server's response and edit cache afterwards
                                                          */
-                                                        if (order === 'asc') {
-                                                            var finalMessageTime = firstMessage.time;
+                                                        if (returnCache) {
+                                                            var returnData = {
+                                                                hasError: false,
+                                                                cache: true,
+                                                                errorCode: 0,
+                                                                errorMessage: '',
+                                                                result: {
+                                                                    history: cacheData,
+                                                                    contentCount: contentCount,
+                                                                    hasNext: (offset + count < contentCount && messages.length > 0),
+                                                                    nextOffset: offset + messages.length
+                                                                }
+                                                            };
+
+                                                            if (sendingQueue) {
+                                                                returnData.result.sending = sendingQueueMessages;
+                                                            }
+                                                            if (uploadingQueue) {
+                                                                returnData.result.uploading = uploadingQueueMessages;
+                                                            }
+                                                            if (failedQueue) {
+                                                                returnData.result.failed = failedQueueMessages;
+                                                            }
+
+                                                            callback && callback(returnData);
+                                                            callback = undefined;
+                                                        }
+                                                    })
+                                                    .catch(function(error) {
+                                                        fireEvent('error', {
+                                                            code: error.code,
+                                                            message: error.message,
+                                                            error: error
+                                                        });
+                                                    });
+                                            }
+                                        }
+                                    })
+                                    .catch(function(error) {
+                                        fireEvent('error', {
+                                            code: error.code,
+                                            message: error.message,
+                                            error: error
+                                        });
+                                    });
+                            }
+                            else {
+                                fireEvent('error', {
+                                    code: 6601,
+                                    message: CHAT_ERRORS[6601],
+                                    error: null
+                                });
+                            }
+                        }
+
+                        /**
+                         * Get Thread Messages From Server
+                         */
+                        return sendMessage(sendMessageParams, {
+                            onResult: function(result) {
+                                var returnData = {
+                                        hasError: result.hasError,
+                                        cache: false,
+                                        errorMessage: result.errorMessage,
+                                        errorCode: result.errorCode
+                                    },
+                                    resultMessagesId = [];
+
+                                if (!returnData.hasError) {
+                                    var messageContent = result.result,
+                                        messageLength = messageContent.length;
+
+                                    var history = reformatThreadHistory(params.threadId, messageContent);
+
+                                    if (messageLength > 0) {
+                                        /**
+                                         * Calculating First and Last Messages of result
+                                         */
+                                        var lastMessage = history[messageContent.length - 1],
+                                            firstMessage = history[0];
+
+                                        /**
+                                         * Sending Delivery for Last Message of Thread
+                                         */
+                                        if (lastMessage.id > 0) {
+                                            deliver({
+                                                messageId: lastMessage.id,
+                                                ownerId: lastMessage.participant.id
+                                            });
+                                        }
+                                    }
+
+                                    /**
+                                     * Add Thread Messages into cache database
+                                     * and remove deleted messages from cache database
+                                     */
+                                    if (canUseCache && cacheSecret.length > 0) {
+                                        if (db) {
+
+                                            /**
+                                             * Cache Synchronization
+                                             *
+                                             * If there are some results in cache
+                                             * Database, we have to check if they need
+                                             * to be deleted or not?
+                                             *
+                                             * To do so, first of all we should make
+                                             * sure that metadataCriteria has not been
+                                             * set, cuz we are not applying it on the
+                                             * cache results, besides the results from
+                                             * cache should not be empty, otherwise
+                                             * there is no need to sync cache
+                                             */
+                                            if (Object.keys(cacheResult).length > 0 && !whereClause.hasOwnProperty('metadataCriteria')) {
+
+                                                /**
+                                                 * Check if a condition has been
+                                                 * applied on query or not, if there is
+                                                 * none, the only limitations on
+                                                 * results are count and offset
+                                                 *
+                                                 * whereClause == []
+                                                 */
+                                                if (!whereClause || Object.keys(whereClause).length == 0) {
+
+                                                    /**
+                                                     * There is no condition applied on
+                                                     * query and result is [], so there
+                                                     * are no messages in this thread
+                                                     * after this offset, and we should
+                                                     * delete those messages from cache
+                                                     * too
+                                                     *
+                                                     * result   []
+                                                     */
+                                                    if (messageLength == 0) {
+
+                                                        /**
+                                                         * Order is ASC, so if the server result is empty we
+                                                         * should delete everything from cache which has bigger
+                                                         * time than first item of cache results for this query
+                                                         */
+                                                        if (order == 'asc') {
+                                                            var finalMessageTime = cacheFirstMessage.time;
+
+                                                            db.messages.where('[threadId+owner+time]')
+                                                                .between([parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime],
+                                                                    [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], true, false)
+                                                                .delete()
+                                                                .catch(function(error) {
+                                                                    fireEvent('error', {
+                                                                        code: error.code,
+                                                                        message: error.message,
+                                                                        error: error
+                                                                    });
+                                                                });
+                                                        }
+
+                                                        /**
+                                                         * Order is DESC, so if the
+                                                         * server result is empty we
+                                                         * should delete everything
+                                                         * from cache which has smaller
+                                                         * time than first item of
+                                                         * cache results for this query
+                                                         */
+                                                        else {
+                                                            var finalMessageTime = cacheFirstMessage.time;
+
+                                                            db.messages.where('[threadId+owner+time]')
+                                                                .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
+                                                                    [parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime], true, true)
+                                                                .delete()
+                                                                .catch(function(error) {
+                                                                    fireEvent('error', {
+                                                                        code: error.code,
+                                                                        message: error.message,
+                                                                        error: error
+                                                                    });
+                                                                });
+                                                        }
+                                                    }
+
+                                                    /**
+                                                     * Result is not Empty or doesn't
+                                                     * have just one single record, so
+                                                     * we should remove everything
+                                                     * which are between firstMessage
+                                                     * and lastMessage of this result
+                                                     * from cache database and insert
+                                                     * the new result into cache, so
+                                                     * the deleted ones would be
+                                                     * deleted
+                                                     *
+                                                     * result   [..., n-1, n, n+1, ...]
+                                                     */
+                                                    else {
+
+                                                        /**
+                                                         * We should check for last message's previouseId if it
+                                                         * is undefined, so it is the first message of thread and
+                                                         * we should delete everything before it from cache
+                                                         */
+                                                        if (firstMessage.previousId == undefined || lastMessage.previousId == undefined) {
+                                                            var finalMessageTime = (lastMessage.previousId == undefined)
+                                                                ? lastMessage.time
+                                                                : firstMessage.time;
 
                                                             db.messages.where('[threadId+owner+time]')
                                                                 .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
@@ -4559,228 +4535,74 @@
                                                         }
 
                                                         /**
-                                                         * Results are sorted DESC and the offset is 0 so
-                                                         * the last Message of this result is the last
-                                                         * Message of the thread, everything in cache
-                                                         * database which has bigger time than this
-                                                         * one should be removed from cache
+                                                         * Offset has been set as 0 so this result is either the
+                                                         * very beginning part of thread or the very last
+                                                         * Depending on the sort order
                                                          *
-                                                         * order    DESC
-                                                         * result   [..., n-2, n-1, n]
+                                                         * offset == 0
                                                          */
-                                                        else {
-                                                            var finalMessageTime = firstMessage.time;
-
-                                                            db.messages.where('[threadId+owner+time]')
-                                                                .between([parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime],
-                                                                    [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], false, true)
-                                                                .delete()
-                                                                .catch(function(error) {
-                                                                    fireEvent('error', {
-                                                                        code: error.code,
-                                                                        message: error.message,
-                                                                        error: error
-                                                                    });
-                                                                });
-                                                        }
-                                                    }
-
-                                                    /**
-                                                     * Server result is not Empty, so we should remove
-                                                     * everything which are between firstMessage and lastMessage
-                                                     * of this result from cache database and insert the new
-                                                     * result into cache, so the deleted ones would be deleted
-                                                     *
-                                                     * result   [..., n-1, n, n+1, ...]
-                                                     */
-                                                    var boundryStartMessageTime = (firstMessage.time < lastMessage.time)
-                                                            ? firstMessage.time
-                                                            : lastMessage.time,
-                                                        boundryEndMessageTime = (firstMessage.time > lastMessage.time)
-                                                            ? firstMessage.time
-                                                            : lastMessage.time;
-
-                                                    db.messages.where('[threadId+owner+time]')
-                                                        .between([parseInt(params.threadId), parseInt(userInfo.id), boundryStartMessageTime],
-                                                            [parseInt(params.threadId), parseInt(userInfo.id), boundryEndMessageTime], true, true)
-                                                        .delete()
-                                                        .catch(function(error) {
-                                                            fireEvent('error', {
-                                                                code: error.code,
-                                                                message: error.message,
-                                                                error: error
-                                                            });
-                                                        });
-                                                }
-                                            }
-
-                                            /**
-                                             * whereClasue is not empty and we
-                                             * should check for every single one of
-                                             * the conditions to update the cache
-                                             * properly
-                                             *
-                                             * whereClause != []
-                                             */
-                                            else {
-
-                                                /**
-                                                 * When user ordered a message with
-                                                 * exact ID and server returns []
-                                                 * but there is something in cache
-                                                 * database, we should delete that
-                                                 * row from cache, because it has
-                                                 * been deleted
-                                                 */
-                                                if (whereClause.hasOwnProperty('id') && whereClause.id > 0) {
-                                                    db.messages.where('id')
-                                                        .equals(whereClause.id)
-                                                        .and(function(message) {
-                                                            return message.owner == userInfo.id;
-                                                        })
-                                                        .delete()
-                                                        .catch(function(error) {
-                                                            fireEvent('error', {
-                                                                code: error.code,
-                                                                message: error.message,
-                                                                error: error
-                                                            });
-                                                        });
-                                                }
-
-                                                /**
-                                                 * When user sets a query to search
-                                                 * on messages we should delete all
-                                                 * the results came from cache and
-                                                 * insert new results instead,
-                                                 * because those messages would be
-                                                 * either removed or updated
-                                                 */
-                                                if (whereClause.hasOwnProperty('query') && typeof whereClause.query == 'string') {
-                                                    db.messages.where('[threadId+owner+time]')
-                                                        .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
-                                                            [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000])
-                                                        .and(function(message) {
-                                                            var reg = new RegExp(whereClause.query);
-                                                            return reg.test(chatDecrypt(message.message, cacheSecret, message.salt));
-                                                        })
-                                                        .delete()
-                                                        .catch(function(error) {
-                                                            fireEvent('error', {
-                                                                code: error.code,
-                                                                message: error.message,
-                                                                error: error
-                                                            });
-                                                        });
-                                                }
-
-                                                /**
-                                                 * Users sets fromTime or toTime or
-                                                 * both of them
-                                                 */
-                                                if (whereClause.hasOwnProperty('fromTime') || whereClause.hasOwnProperty('toTime')) {
-
-                                                    /**
-                                                     * Server response is Empty []
-                                                     */
-                                                    if (messageLength == 0) {
-
-                                                        /**
-                                                         * User set both fromTime and toTime, so we have a
-                                                         * boundary restriction in this case. if server
-                                                         * result is empty, we should delete all messages from cache
-                                                         * which are between fromTime and toTime. if
-                                                         * there are any messages on server in this
-                                                         * boundary, we should delete all messages
-                                                         * which are between time of first and last
-                                                         * message of the server result, from cache and
-                                                         * insert new result into cache.
-                                                         */
-                                                        if (whereClause.hasOwnProperty('fromTime') && whereClause.hasOwnProperty('toTime')) {
+                                                        if (offset == 0) {
 
                                                             /**
-                                                             * Server response is Empty []
+                                                             * Results are sorted ASC, and the offset is 0 so
+                                                             * the first Message of this result is first
+                                                             * Message of thread, everything in cache
+                                                             * database which has smaller time than this
+                                                             * one should be removed
+                                                             *
+                                                             * order    ASC
+                                                             * result   [0, 1, 2, ...]
                                                              */
-                                                            var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
-                                                                    ? ((whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
-                                                                    : whereClause.fromTime * 1000000,
-                                                                toTime = (whereClause.hasOwnProperty('toTimeNanos'))
-                                                                    ? (((whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
-                                                                    : (whereClause.toTime + 1) * 1000000;
+                                                            if (order === 'asc') {
+                                                                var finalMessageTime = firstMessage.time;
 
-                                                            db.messages.where('[threadId+owner+time]')
-                                                                .between([parseInt(params.threadId), parseInt(userInfo.id), fromTime],
-                                                                    [parseInt(params.threadId), parseInt(userInfo.id), toTime], true, true)
-                                                                .delete()
-                                                                .catch(function(error) {
-                                                                    fireEvent('error', {
-                                                                        code: error.code,
-                                                                        message: error.message,
-                                                                        error: error
+                                                                db.messages.where('[threadId+owner+time]')
+                                                                    .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
+                                                                        [parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime], true, false)
+                                                                    .delete()
+                                                                    .catch(function(error) {
+                                                                        fireEvent('error', {
+                                                                            code: error.code,
+                                                                            message: error.message,
+                                                                            error: error
+                                                                        });
                                                                     });
-                                                                });
-                                                        }
-
-                                                        /**
-                                                         * User only set fromTime
-                                                         */
-                                                        else if (whereClause.hasOwnProperty('fromTime')) {
+                                                            }
 
                                                             /**
-                                                             * Server response is Empty []
+                                                             * Results are sorted DESC and the offset is 0 so
+                                                             * the last Message of this result is the last
+                                                             * Message of the thread, everything in cache
+                                                             * database which has bigger time than this
+                                                             * one should be removed from cache
+                                                             *
+                                                             * order    DESC
+                                                             * result   [..., n-2, n-1, n]
                                                              */
-                                                            var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
-                                                                ? ((whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
-                                                                : whereClause.fromTime * 1000000;
+                                                            else {
+                                                                var finalMessageTime = firstMessage.time;
 
-                                                            db.messages.where('[threadId+owner+time]')
-                                                                .between([parseInt(params.threadId), parseInt(userInfo.id), fromTime],
-                                                                    [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], true, false)
-                                                                .delete()
-                                                                .catch(function(error) {
-                                                                    fireEvent('error', {
-                                                                        code: error.code,
-                                                                        message: error.message,
-                                                                        error: error
+                                                                db.messages.where('[threadId+owner+time]')
+                                                                    .between([parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime],
+                                                                        [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], false, true)
+                                                                    .delete()
+                                                                    .catch(function(error) {
+                                                                        fireEvent('error', {
+                                                                            code: error.code,
+                                                                            message: error.message,
+                                                                            error: error
+                                                                        });
                                                                     });
-                                                                });
+                                                            }
                                                         }
 
                                                         /**
-                                                         * User only set toTime
-                                                         */
-                                                        else {
-
-                                                            /**
-                                                             * Server response is Empty []
-                                                             */
-                                                            var toTime = (whereClause.hasOwnProperty('toTimeNanos'))
-                                                                ? (((whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
-                                                                : (whereClause.toTime + 1) * 1000000;
-
-                                                            db.messages.where('[threadId+owner+time]')
-                                                                .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
-                                                                    [parseInt(params.threadId), parseInt(userInfo.id), toTime], true, true)
-                                                                .delete()
-                                                                .catch(function(error) {
-                                                                    fireEvent('error', {
-                                                                        code: error.code,
-                                                                        message: error.message,
-                                                                        error: error
-                                                                    });
-                                                                });
-                                                        }
-                                                    }
-
-                                                    /**
-                                                     * Server response is not Empty
-                                                     * [..., n-1, n, n+1, ...]
-                                                     */
-                                                    else {
-
-                                                        /**
-                                                         * Server response is not Empty
-                                                         * [..., n-1, n, n+1, ...]
+                                                         * Server result is not Empty, so we should remove
+                                                         * everything which are between firstMessage and lastMessage
+                                                         * of this result from cache database and insert the new
+                                                         * result into cache, so the deleted ones would be deleted
+                                                         *
+                                                         * result   [..., n-1, n, n+1, ...]
                                                          */
                                                         var boundryStartMessageTime = (firstMessage.time < lastMessage.time)
                                                                 ? firstMessage.time
@@ -4802,92 +4624,105 @@
                                                             });
                                                     }
                                                 }
-                                            }
-                                        }
 
-                                        /**
-                                         * Insert new messages into cache database
-                                         * after deleting old messages from cache
-                                         */
-                                        var cacheData = [];
+                                                /**
+                                                 * whereClasue is not empty and we
+                                                 * should check for every single one of
+                                                 * the conditions to update the cache
+                                                 * properly
+                                                 *
+                                                 * whereClause != []
+                                                 */
+                                                else {
 
-                                        for (var i = 0; i < history.length; i++) {
-                                            serverResult[history[i].id] = {
-                                                index: i,
-                                                data: Utility.MD5(JSON.stringify([
-                                                    history[i].id,
-                                                    history[i].message,
-                                                    history[i].edited,
-                                                    history[i].delivered,
-                                                    history[i].seen,
-                                                    history[i].metadata,
-                                                    history[i].systemMetadata]))
-                                            };
-                                            try {
-                                                var tempData = {},
-                                                    salt = Utility.generateUUID();
-                                                tempData.id = parseInt(history[i].id);
-                                                tempData.owner = parseInt(userInfo.id);
-                                                tempData.threadId = parseInt(history[i].threadId);
-                                                tempData.time = history[i].time;
-                                                tempData.message = Utility.crypt(history[i].message, cacheSecret, salt);
-                                                tempData.data = Utility.crypt(JSON.stringify(unsetNotSeenDuration(history[i])), cacheSecret, salt);
-                                                tempData.salt = salt;
-                                                tempData.sendStatus = 'sent';
-                                                tempData.hasGap = false;
-
-                                                cacheData.push(tempData);
-                                                resultMessagesId.push(history[i].id);
-                                            }
-                                            catch (error) {
-                                                fireEvent('error', {
-                                                    code: error.code,
-                                                    message: error.message,
-                                                    error: error
-                                                });
-                                            }
-                                        }
-
-                                        db.messages.bulkPut(cacheData)
-                                            .then(function() {
-                                                if (lastMessage.id > 0 && lastMessage.previousId > 0) {
                                                     /**
-                                                     * Check to see if there is a Gap in cache before
-                                                     * lastMessage or not?
-                                                     * To do this, we should check existence of message
-                                                     * with the ID of lastMessage's previousId field
+                                                     * When user ordered a message with
+                                                     * exact ID and server returns []
+                                                     * but there is something in cache
+                                                     * database, we should delete that
+                                                     * row from cache, because it has
+                                                     * been deleted
                                                      */
-                                                    db.messages
-                                                        .where('[owner+id]')
-                                                        .between([userInfo.id, lastMessage.previousId], [userInfo.id, lastMessage.previousId], true, true)
-                                                        .toArray()
-                                                        .then(function(messages) {
-                                                            if (messages.length == 0) {
+                                                    if (whereClause.hasOwnProperty('id') && whereClause.id > 0) {
+                                                        db.messages.where('id')
+                                                            .equals(whereClause.id)
+                                                            .and(function(message) {
+                                                                return message.owner == userInfo.id;
+                                                            })
+                                                            .delete()
+                                                            .catch(function(error) {
+                                                                fireEvent('error', {
+                                                                    code: error.code,
+                                                                    message: error.message,
+                                                                    error: error
+                                                                });
+                                                            });
+                                                    }
+
+                                                    /**
+                                                     * When user sets a query to search
+                                                     * on messages we should delete all
+                                                     * the results came from cache and
+                                                     * insert new results instead,
+                                                     * because those messages would be
+                                                     * either removed or updated
+                                                     */
+                                                    if (whereClause.hasOwnProperty('query') && typeof whereClause.query == 'string') {
+                                                        db.messages.where('[threadId+owner+time]')
+                                                            .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
+                                                                [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000])
+                                                            .and(function(message) {
+                                                                var reg = new RegExp(whereClause.query);
+                                                                return reg.test(chatDecrypt(message.message, cacheSecret, message.salt));
+                                                            })
+                                                            .delete()
+                                                            .catch(function(error) {
+                                                                fireEvent('error', {
+                                                                    code: error.code,
+                                                                    message: error.message,
+                                                                    error: error
+                                                                });
+                                                            });
+                                                    }
+
+                                                    /**
+                                                     * Users sets fromTime or toTime or
+                                                     * both of them
+                                                     */
+                                                    if (whereClause.hasOwnProperty('fromTime') || whereClause.hasOwnProperty('toTime')) {
+
+                                                        /**
+                                                         * Server response is Empty []
+                                                         */
+                                                        if (messageLength == 0) {
+
+                                                            /**
+                                                             * User set both fromTime and toTime, so we have a
+                                                             * boundary restriction in this case. if server
+                                                             * result is empty, we should delete all messages from cache
+                                                             * which are between fromTime and toTime. if
+                                                             * there are any messages on server in this
+                                                             * boundary, we should delete all messages
+                                                             * which are between time of first and last
+                                                             * message of the server result, from cache and
+                                                             * insert new result into cache.
+                                                             */
+                                                            if (whereClause.hasOwnProperty('fromTime') && whereClause.hasOwnProperty('toTime')) {
+
                                                                 /**
-                                                                 * Previous Message of last message is not in cache database
-                                                                 * so there is a GAP in cache database for this thread before
-                                                                 * the last message.
-                                                                 * We should insert this GAP in messageGaps database
+                                                                 * Server response is Empty []
                                                                  */
-                                                                db.messageGaps
-                                                                    .put({
-                                                                        id: parseInt(lastMessage.id),
-                                                                        owner: parseInt(userInfo.id),
-                                                                        waitsFor: parseInt(lastMessage.previousId),
-                                                                        threadId: parseInt(lastMessage.threadId),
-                                                                        time: lastMessage.time
-                                                                    })
-                                                                    .then(function() {
-                                                                        db.messages
-                                                                            .update([userInfo.id, lastMessage.id], {hasGap: true})
-                                                                            .catch(function(error) {
-                                                                                fireEvent('error', {
-                                                                                    code: error.code,
-                                                                                    message: error.message,
-                                                                                    error: error
-                                                                                });
-                                                                            });
-                                                                    })
+                                                                var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
+                                                                        ? ((whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
+                                                                        : whereClause.fromTime * 1000000,
+                                                                    toTime = (whereClause.hasOwnProperty('toTimeNanos'))
+                                                                        ? (((whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
+                                                                        : (whereClause.toTime + 1) * 1000000;
+
+                                                                db.messages.where('[threadId+owner+time]')
+                                                                    .between([parseInt(params.threadId), parseInt(userInfo.id), fromTime],
+                                                                        [parseInt(params.threadId), parseInt(userInfo.id), toTime], true, true)
+                                                                    .delete()
                                                                     .catch(function(error) {
                                                                         fireEvent('error', {
                                                                             code: error.code,
@@ -4896,7 +4731,207 @@
                                                                         });
                                                                     });
                                                             }
+
+                                                            /**
+                                                             * User only set fromTime
+                                                             */
+                                                            else if (whereClause.hasOwnProperty('fromTime')) {
+
+                                                                /**
+                                                                 * Server response is Empty []
+                                                                 */
+                                                                var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
+                                                                    ? ((whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
+                                                                    : whereClause.fromTime * 1000000;
+
+                                                                db.messages.where('[threadId+owner+time]')
+                                                                    .between([parseInt(params.threadId), parseInt(userInfo.id), fromTime],
+                                                                        [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], true, false)
+                                                                    .delete()
+                                                                    .catch(function(error) {
+                                                                        fireEvent('error', {
+                                                                            code: error.code,
+                                                                            message: error.message,
+                                                                            error: error
+                                                                        });
+                                                                    });
+                                                            }
+
+                                                            /**
+                                                             * User only set toTime
+                                                             */
+                                                            else {
+
+                                                                /**
+                                                                 * Server response is Empty []
+                                                                 */
+                                                                var toTime = (whereClause.hasOwnProperty('toTimeNanos'))
+                                                                    ? (((whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
+                                                                    : (whereClause.toTime + 1) * 1000000;
+
+                                                                db.messages.where('[threadId+owner+time]')
+                                                                    .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
+                                                                        [parseInt(params.threadId), parseInt(userInfo.id), toTime], true, true)
+                                                                    .delete()
+                                                                    .catch(function(error) {
+                                                                        fireEvent('error', {
+                                                                            code: error.code,
+                                                                            message: error.message,
+                                                                            error: error
+                                                                        });
+                                                                    });
+                                                            }
+                                                        }
+
+                                                        /**
+                                                         * Server response is not Empty
+                                                         * [..., n-1, n, n+1, ...]
+                                                         */
+                                                        else {
+
+                                                            /**
+                                                             * Server response is not Empty
+                                                             * [..., n-1, n, n+1, ...]
+                                                             */
+                                                            var boundryStartMessageTime = (firstMessage.time < lastMessage.time)
+                                                                    ? firstMessage.time
+                                                                    : lastMessage.time,
+                                                                boundryEndMessageTime = (firstMessage.time > lastMessage.time)
+                                                                    ? firstMessage.time
+                                                                    : lastMessage.time;
+
+                                                            db.messages.where('[threadId+owner+time]')
+                                                                .between([parseInt(params.threadId), parseInt(userInfo.id), boundryStartMessageTime],
+                                                                    [parseInt(params.threadId), parseInt(userInfo.id), boundryEndMessageTime], true, true)
+                                                                .delete()
+                                                                .catch(function(error) {
+                                                                    fireEvent('error', {
+                                                                        code: error.code,
+                                                                        message: error.message,
+                                                                        error: error
+                                                                    });
+                                                                });
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            /**
+                                             * Insert new messages into cache database
+                                             * after deleting old messages from cache
+                                             */
+                                            var cacheData = [];
+
+                                            for (var i = 0; i < history.length; i++) {
+                                                serverResult[history[i].id] = {
+                                                    index: i,
+                                                    data: Utility.MD5(JSON.stringify([
+                                                        history[i].id,
+                                                        history[i].message,
+                                                        history[i].edited,
+                                                        history[i].delivered,
+                                                        history[i].seen,
+                                                        history[i].metadata,
+                                                        history[i].systemMetadata]))
+                                                };
+                                                try {
+                                                    var tempData = {},
+                                                        salt = Utility.generateUUID();
+                                                    tempData.id = parseInt(history[i].id);
+                                                    tempData.owner = parseInt(userInfo.id);
+                                                    tempData.threadId = parseInt(history[i].threadId);
+                                                    tempData.time = history[i].time;
+                                                    tempData.message = Utility.crypt(history[i].message, cacheSecret, salt);
+                                                    tempData.data = Utility.crypt(JSON.stringify(unsetNotSeenDuration(history[i])), cacheSecret, salt);
+                                                    tempData.salt = salt;
+                                                    tempData.sendStatus = 'sent';
+                                                    tempData.hasGap = false;
+
+                                                    cacheData.push(tempData);
+                                                    resultMessagesId.push(history[i].id);
+                                                }
+                                                catch (error) {
+                                                    fireEvent('error', {
+                                                        code: error.code,
+                                                        message: error.message,
+                                                        error: error
+                                                    });
+                                                }
+                                            }
+
+                                            db.messages.bulkPut(cacheData)
+                                                .then(function() {
+                                                    if (typeof lastMessage == 'object' &&
+                                                        lastMessage != null &&
+                                                        lastMessage.id > 0 &&
+                                                        lastMessage.previousId > 0) {
+                                                        /**
+                                                         * Check to see if there is a Gap in cache before
+                                                         * lastMessage or not?
+                                                         * To do this, we should check existence of message
+                                                         * with the ID of lastMessage's previousId field
+                                                         */
+                                                        db.messages
+                                                            .where('[owner+id]')
+                                                            .between([userInfo.id, lastMessage.previousId], [userInfo.id, lastMessage.previousId], true, true)
+                                                            .toArray()
+                                                            .then(function(messages) {
+                                                                if (messages.length == 0) {
+                                                                    /**
+                                                                     * Previous Message of last message is not in cache database
+                                                                     * so there is a GAP in cache database for this thread before
+                                                                     * the last message.
+                                                                     * We should insert this GAP in messageGaps database
+                                                                     */
+                                                                    db.messageGaps
+                                                                        .put({
+                                                                            id: parseInt(lastMessage.id),
+                                                                            owner: parseInt(userInfo.id),
+                                                                            waitsFor: parseInt(lastMessage.previousId),
+                                                                            threadId: parseInt(lastMessage.threadId),
+                                                                            time: lastMessage.time
+                                                                        })
+                                                                        .then(function() {
+                                                                            db.messages
+                                                                                .update([userInfo.id, lastMessage.id], {hasGap: true})
+                                                                                .catch(function(error) {
+                                                                                    fireEvent('error', {
+                                                                                        code: error.code,
+                                                                                        message: error.message,
+                                                                                        error: error
+                                                                                    });
+                                                                                });
+                                                                        })
+                                                                        .catch(function(error) {
+                                                                            fireEvent('error', {
+                                                                                code: error.code,
+                                                                                message: error.message,
+                                                                                error: error
+                                                                            });
+                                                                        });
+                                                                }
+                                                            })
+                                                            .catch(function(error) {
+                                                                fireEvent('error', {
+                                                                    code: error.code,
+                                                                    message: error.message,
+                                                                    error: error
+                                                                });
+                                                            });
+                                                    }
+
+                                                    /**
+                                                     * Some new messages have been added into cache,
+                                                     * We should check to see if any GAPs have been
+                                                     * filled with these messages or not?
+                                                     */
+                                                    db.messageGaps
+                                                        .where('waitsFor')
+                                                        .anyOf(resultMessagesId)
+                                                        .and(function(messages) {
+                                                            return messages.owner == userInfo.id;
                                                         })
+                                                        .delete()
                                                         .catch(function(error) {
                                                             fireEvent('error', {
                                                                 code: error.code,
@@ -4904,131 +4939,114 @@
                                                                 error: error
                                                             });
                                                         });
-                                                }
-
-                                                /**
-                                                 * Some new messages have been added into cache,
-                                                 * We should check to see if any GAPs have been
-                                                 * filled with these messages or not?
-                                                 */
-                                                db.messageGaps
-                                                    .where('waitsFor')
-                                                    .anyOf(resultMessagesId)
-                                                    .and(function(messages) {
-                                                        return messages.owner == userInfo.id;
-                                                    })
-                                                    .delete()
-                                                    .catch(function(error) {
-                                                        fireEvent('error', {
-                                                            code: error.code,
-                                                            message: error.message,
-                                                            error: error
-                                                        });
+                                                })
+                                                .catch(function(error) {
+                                                    fireEvent('error', {
+                                                        code: error.code,
+                                                        message: error.message,
+                                                        error: error
                                                     });
-                                            })
-                                            .catch(function(error) {
-                                                fireEvent('error', {
-                                                    code: error.code,
-                                                    message: error.message,
-                                                    error: error
                                                 });
-                                            });
-                                    }
-                                    else {
-                                        fireEvent('error', {
-                                            code: 6601,
-                                            message: CHAT_ERRORS[6601],
-                                            error: null
-                                        });
-                                    }
-                                }
-
-                                var resultData = {
-                                    history: history,
-                                    contentCount: result.contentCount,
-                                    hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount && messageLength > 0),
-                                    nextOffset: sendMessageParams.content.offset + messageLength
-                                };
-
-                                returnData.result = resultData;
-
-                                if (sendingQueue) {
-                                    returnData.result.sending = sendingQueueMessages;
-                                }
-                                if (uploadingQueue) {
-                                    returnData.result.uploading = uploadingQueueMessages;
-                                }
-                                if (failedQueue) {
-                                    returnData.result.failed = failedQueueMessages;
-                                }
-
-                                /**
-                                 * Check Differences between Cache and Server response
-                                 */
-                                if (returnCache) {
-                                    /**
-                                     * If there are some messages in cache but they
-                                     * are not in server's response, we can assume
-                                     * that they have been removed from server, so
-                                     * we should call MESSAGE_DELETE event for them
-                                     */
-                                    for (var key in cacheResult) {
-                                        if (!serverResult.hasOwnProperty(key)) {
-                                            fireEvent('messageEvents', {
-                                                type: 'MESSAGE_DELETE',
-                                                result: {
-                                                    message: {
-                                                        id: cacheResult[key].messageId,
-                                                        threadId: cacheResult[key].threadId
-                                                    }
-                                                }
+                                        }
+                                        else {
+                                            fireEvent('error', {
+                                                code: 6601,
+                                                message: CHAT_ERRORS[6601],
+                                                error: null
                                             });
                                         }
                                     }
 
-                                    for (var key in serverResult) {
-                                        if (cacheResult.hasOwnProperty(key)) {
-                                            /**
-                                             * Check digest of cache and server response, if
-                                             * they are not the same, we should emit
-                                             */
-                                            if (cacheResult[key].data != serverResult[key].data) {
+                                    var resultData = {
+                                        history: history,
+                                        contentCount: result.contentCount,
+                                        hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount &&
+                                        messageLength > 0),
+                                        nextOffset: sendMessageParams.content.offset + messageLength
+                                    };
 
+                                    returnData.result = resultData;
+
+                                    if (sendingQueue) {
+                                        returnData.result.sending = sendingQueueMessages;
+                                    }
+                                    if (uploadingQueue) {
+                                        returnData.result.uploading = uploadingQueueMessages;
+                                    }
+                                    if (failedQueue) {
+                                        returnData.result.failed = failedQueueMessages;
+                                    }
+
+                                    /**
+                                     * Check Differences between Cache and Server response
+                                     */
+                                    if (returnCache) {
+                                        /**
+                                         * If there are some messages in cache but they
+                                         * are not in server's response, we can assume
+                                         * that they have been removed from server, so
+                                         * we should call MESSAGE_DELETE event for them
+                                         */
+                                        for (var key in cacheResult) {
+                                            if (!serverResult.hasOwnProperty(key)) {
+                                                fireEvent('messageEvents', {
+                                                    type: 'MESSAGE_DELETE',
+                                                    result: {
+                                                        message: {
+                                                            id: cacheResult[key].messageId,
+                                                            threadId: cacheResult[key].threadId
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        }
+
+                                        for (var key in serverResult) {
+                                            if (cacheResult.hasOwnProperty(key)) {
                                                 /**
-                                                 * This message is already on cache, but it's
-                                                 * content has been changed, so we emit a
-                                                 * message edit event to inform client
+                                                 * Check digest of cache and server response, if
+                                                 * they are not the same, we should emit
+                                                 */
+                                                if (cacheResult[key].data != serverResult[key].data) {
+
+                                                    /**
+                                                     * This message is already on cache, but it's
+                                                     * content has been changed, so we emit a
+                                                     * message edit event to inform client
+                                                     */
+                                                    fireEvent('messageEvents', {
+                                                        type: 'MESSAGE_EDIT',
+                                                        result: {
+                                                            message: history[serverResult[key].index]
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                            else {
+                                                /**
+                                                 * This Message has not found on cache but it has
+                                                 * came from server, so we emit it as a new message
                                                  */
                                                 fireEvent('messageEvents', {
-                                                    type: 'MESSAGE_EDIT',
+                                                    type: 'MESSAGE_NEW',
                                                     result: {
                                                         message: history[serverResult[key].index]
                                                     }
                                                 });
                                             }
                                         }
-                                        else {
-                                            /**
-                                             * This Message has not found on cache but it has
-                                             * came from server, so we emit it as a new message
-                                             */
-                                            fireEvent('messageEvents', {
-                                                type: 'MESSAGE_NEW',
-                                                result: {
-                                                    message: history[serverResult[key].index]
-                                                }
-                                            });
-                                        }
+                                    }
+                                    else {
+                                        callback && callback(returnData);
+                                        callback = undefined;
                                     }
                                 }
-                                else {
-                                    callback && callback(returnData);
-                                    callback = undefined;
-                                }
                             }
-                        }
+                        });
                     });
-                });
+                }
+
+                return;
             },
 
             /**
@@ -6255,6 +6273,8 @@
                                 });
                         }
                     }
+
+                    return '{}';
                 }
             };
 
@@ -6330,7 +6350,7 @@
             /**
              * Retrieve contacts from cache #cache
              */
-            if (canUseCache) {
+            if (canUseCache && cacheSecret.length > 0) {
                 if (db) {
 
                     /**
@@ -6475,7 +6495,7 @@
                         /**
                          * Add Contacts into cache database #cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 var cacheData = [];
 
@@ -6583,7 +6603,7 @@
             /**
              * Retrieve thread participants from cache
              */
-            if (canUseCache) {
+            if (canUseCache && cacheSecret.length > 0) {
                 if (db) {
 
                     db.participants.where('expireTime')
@@ -6717,7 +6737,7 @@
                         /**
                          * Add thread participants into cache database #cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
 
                                 var cacheData = [];
@@ -7237,7 +7257,8 @@
                                     transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
                                         chatSendQueueHandler();
                                     });
-                                } else {
+                                }
+                                else {
                                     deleteFromChatUploadQueue({message: {uniqueId: fileUniqueId}});
                                 }
                             });
@@ -7256,7 +7277,8 @@
                                     transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
                                         chatSendQueueHandler();
                                     });
-                                }  else {
+                                }
+                                else {
                                     deleteFromChatUploadQueue({message: {uniqueId: fileUniqueId}});
                                 }
                             });
@@ -7556,7 +7578,7 @@
                         /**
                          * Update Message on cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 try {
                                     var tempData = {},
@@ -8258,7 +8280,7 @@
                         /**
                          * Add Contacts into cache database #cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 var cacheData = [];
 
@@ -8423,7 +8445,7 @@
                         /**
                          * Add Contacts into cache database #cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 var cacheData = [];
 
@@ -8629,7 +8651,7 @@
             /**
              * Search contacts in cache #cache
              */
-            if (canUseCache) {
+            if (canUseCache && cacheSecret.length > 0) {
                 if (db) {
 
                     /**
@@ -8822,7 +8844,7 @@
                         /**
                          * Add Contacts into cache database #cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 var cacheData = [];
 

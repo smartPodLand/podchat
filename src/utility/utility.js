@@ -511,14 +511,18 @@
          * @return {object} Parsed JSON object
          */
         this.jsonParser = function(string) {
-            return JSON.parse(string, function(k, v) {
-                if (typeof v === 'string') {
-                    return (v.startsWith('function') ? eval('(' + v + ')') : v);
-                }
-                else {
-                    return v;
-                }
-            });
+            try {
+                return JSON.parse(string, function(k, v) {
+                    if (typeof v === 'string') {
+                        return (v.startsWith('function') ? eval('(' + v + ')') : v);
+                    }
+                    else {
+                        return v;
+                    }
+                });
+            } catch(e) {
+                console.log("Error happened at Utility.jsonParser function()", e);
+            }
         };
     }
 

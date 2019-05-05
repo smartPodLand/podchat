@@ -57,7 +57,7 @@ chatAgent.on('chatReady', function() {
     //   count: 5,
     //   offset: 0,
     //   // threadIds: [1411],
-    //   // name: "Pooria"
+    //   name: "thread"
     // });
 
     /**
@@ -83,21 +83,21 @@ chatAgent.on('chatReady', function() {
      * GET THREAD PARTICIPANTS
      * @param threadId
      */
-    // getThreadParticipants(1744);
+    // getThreadParticipants(312);
 
     /**
      * ADD PARTICIPANTS
      * @param threadId
      * @param contacts {Array}  CONTACT ID
      */
-    // addParticipants(312, [1967]);
+    // addParticipants(312, [2247]);
 
     /**
      * REMOVE PARTICIPANTS
      * @param threadId
      * @param participants {Array}  USER ID
      */
-    // removeParticipants(1744, [221]);
+    // removeParticipants(312, [221]);
 
     /**
      * LEAVE THREAD
@@ -322,7 +322,7 @@ chatAgent.on('chatReady', function() {
      * GET CONTACTS
      */
     // getContacts({
-    //   count: 2,
+    //   count: 10,
     //   // offset: 0,
     //   // query: "masodi"
     // });
