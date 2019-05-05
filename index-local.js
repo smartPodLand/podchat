@@ -8,7 +8,7 @@ var params = {
     fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
     serverName: 'chat-server', // {**REQUIRED**} Server to to register on
     grantDeviceIdFromSSO: false,
-    enableCache: true, // Enable Client side caching
+    enableCache: false, // Enable Client side caching
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "chattest",
     token: '7cba09ff83554fc98726430c30afcfc6', // {**REQUIRED**} SSO Token ZiZi
@@ -26,7 +26,7 @@ var params = {
         onMessageReceive: true, // log received messages on console
         onMessageSend: true, // log sent messaged on console
         actualTiming: true // log actual functions running time
-    },
+    }
 };
 
 var chatAgent = new Chat(params),
@@ -116,25 +116,35 @@ chatAgent.on('chatReady', function() {
      * @param query
      */
     // getHistory({
-    //   count: 5,
-    //   offset: 0,
-    //   threadId: 312,
-    //   // uniqueIds: ["5fc5b138-498c-4da4-d440-5c8bfc7159ee", "93d7991c-add1-4227-d792-ad1bfb03e094", "ad0ae288-6e11-4621-fe50-ea1b634e80c7", "d9aa1833-5f27-4a1d-f5bd-5ae298d2bfa3", "f50fda14-ef88-4071-b3f2-248a18b4ffcf", "redsf233f23rfdsfsdfs"],
-    //   // id: 17700,
-    //   // order: "ASC",
-    //   // query: "query",
-    //   // fromTime: 1254587458665,
-    //   // fromTimeNanos: 254500875,
-    //   // toTime: 1524565569025,
-    //   // toTimeNanos: 652148002,
-    //   metadataCriteria: {
-    //     "field": "type",
-    //     "has": "message",
-    //     // "and": [{
-    //     //   "field": "id",
-    //     //   "is": "1534835339446"
-    //     // }]
-    //   }
+    //     count: 10,
+    //     offset: 0,
+    //     threadId: 9481,
+    //     // uniqueIds: ["5fc5b138-498c-4da4-d440-5c8bfc7159ee", "93d7991c-add1-4227-d792-ad1bfb03e094", "ad0ae288-6e11-4621-fe50-ea1b634e80c7", "d9aa1833-5f27-4a1d-f5bd-5ae298d2bfa3", "f50fda14-ef88-4071-b3f2-248a18b4ffcf", "redsf233f23rfdsfsdfs"],
+    //     // id: 34890,
+    //     // order: "ASC",
+    //     // query: "Helllo",
+    //     // fromTime: 1557037111638,
+    //     // fromTimeNanos: 638489000,
+    //     // toTime: 1557037111638,
+    //     // toTimeNanos: 638489000,
+    //     // metadataCriteria: {
+    //     //     'field': 'id',
+    //     //     'gt': 667,
+    //     //     'and': [
+    //     //         {
+    //     //             'field': 'name',
+    //     //             'has': 'Mas'
+    //     //         },
+    //     //         {
+    //     //             'field': 'active',
+    //     //             'is': 1
+    //     //         },
+    //     //         {
+    //     //             'field': 'address.building.age',
+    //     //             'lte': 11
+    //     //         }
+    //     //     ],
+    //     // }
     // });
 
     // chatAgent.resendMessage("0c00552d-c291-4c0c-bec9-81f870edf170");
@@ -197,10 +207,19 @@ chatAgent.on('chatReady', function() {
      * @param metadata
      */
     // setInterval(() => {
-    // sendMessage(1431, "Message at " + new Date(), {
-    //   id: new Date().getTime(),
-    //   type: "message",
-    //   senderMark: "⁞⁞⁞⁞ ϟϟ ⁞⁞⁞⁞"
+    // sendMessage(9481, 'Message at ' + new Date(), {
+    //     id: 672,
+    //     type: 'message',
+    //     name: 'Masoud',
+    //     address: {
+    //         street: 'shariati',
+    //         plaque: 13,
+    //         building: {
+    //             color: 'black',
+    //             age: 11
+    //         }
+    //     },
+    //     active: 0
     // });
     // }, 1000);
 
@@ -322,9 +341,9 @@ chatAgent.on('chatReady', function() {
      * GET CONTACTS
      */
     // getContacts({
-    //   count: 10,
-    //   // offset: 0,
-    //   // query: "masodi"
+    //     count: 50,
+    //     offset: 0,
+    //     // query: "masodi"
     // });
 
     /**
@@ -332,8 +351,8 @@ chatAgent.on('chatReady', function() {
      * @param contactId
      */
     // chatAgent.block({
-    //   // contactId: 2247,
-    //   threadId: 293,
+    //   contactId: 2704,
+    //   // threadId: 293,
     //   // userId: 221
     // }, function(result) {
     //   console.log(result);
@@ -625,7 +644,7 @@ chatAgent.on('messageEvents', function(event) {
             setTimeout(function() {
                 chatAgent.seen({
                     messageId: message.id,
-                    ownerId: message.ownerId,
+                    ownerId: message.ownerId
                 });
             }, 5000);
 
@@ -677,7 +696,7 @@ function getThreadParticipants(threadId) {
     var getParticipantsParams = {
         count: 50,
         offset: 0,
-        threadId: threadId,
+        threadId: threadId
         // name: "gmail"
     };
 
@@ -694,7 +713,7 @@ function getThreadParticipants(threadId) {
 function addParticipants(threadId, contacts) {
     chatAgent.addParticipants({
         threadId: threadId,
-        contacts: contacts,
+        contacts: contacts
     }, function(result) {
         console.log(result);
     });
@@ -704,7 +723,7 @@ function addParticipants(threadId, contacts) {
 function removeParticipants(threadId, participants) {
     chatAgent.removeParticipants({
         threadId: threadId,
-        participants: participants,
+        participants: participants
     }, function(result) {
         // console.log(result);
     });
@@ -713,7 +732,7 @@ function removeParticipants(threadId, participants) {
 
 function leaveThread(threadId) {
     chatAgent.leaveThread({
-        threadId: threadId,
+        threadId: threadId
     }, function(result) {
         // console.log(result);
     });
@@ -722,7 +741,7 @@ function leaveThread(threadId) {
 function getContacts(params) {
     var getContactsParams = {
         count: params.count,
-        offset: params.offset,
+        offset: params.offset
     };
 
     if (params) {
@@ -742,7 +761,7 @@ function getSingleMessage(threadId, messageId) {
     chatAgent.getHistory({
         offset: 0,
         threadId: threadId,
-        id: messageId,
+        id: messageId
     }, function(historyResult) {
         if (!historyResult.hasError) {
             console.log(historyResult);
@@ -760,7 +779,7 @@ function getHistory(params) {
             for (var i = 0; i < historyResult.result.history.length; i++) {
                 mim.push({
                     id: historyResult.result.history[i].id,
-                    time: historyResult.result.history[i].time,
+                    time: historyResult.result.history[i].time
                 });
             }
             console.log(mim);
@@ -774,7 +793,7 @@ function sendMessage(threadId, message, metadata) {
         threadId: threadId,
         content: message,
         messageType: 0,
-        systemMetadata: metadata,
+        systemMetadata: metadata
     };
 
     var sentMesageUniqueId = chatAgent.sendTextMessage(sendChatParams, {
@@ -786,7 +805,7 @@ function sendMessage(threadId, message, metadata) {
         },
         onSeen: function(result) {
             console.log(result.uniqueId + ' \t has been Seen!');
-        },
+        }
     });
 }
 
@@ -795,7 +814,7 @@ function sendFileMessage(threadId, file, caption, metadata) {
         threadId: threadId,
         file: file,
         content: caption,
-        systemMetadata: metadata,
+        systemMetadata: metadata
     }, {
         onSent: function(result) {
             console.log(result.uniqueId + ' \t has been Sent!');
@@ -805,7 +824,7 @@ function sendFileMessage(threadId, file, caption, metadata) {
         },
         onSeen: function(result) {
             console.log(result.uniqueId + ' \t has been Seen!');
-        },
+        }
     });
 
     // console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
@@ -825,7 +844,7 @@ function sendBotMessage(messageId, receiverId, message, metadata) {
         messageId: messageId,
         content: message,
         receiver: receiverId,
-        metadata: metadata,
+        metadata: metadata
     };
 
     var mim = chatAgent.sendBotMessage(sendChatParams, {
@@ -834,7 +853,7 @@ function sendBotMessage(messageId, receiverId, message, metadata) {
         },
         onDeliver: function(result) {
             console.log(result.uniqueId + ' \t has been Delivered!');
-        },
+        }
     });
 
     console.log(mim);
@@ -843,7 +862,7 @@ function sendBotMessage(messageId, receiverId, message, metadata) {
 function editMessage(messageId, newMessage) {
     editChatParams = {
         messageId: messageId,
-        content: newMessage,
+        content: newMessage
     };
 
     chatAgent.editMessage(editChatParams, function(result) {
@@ -858,7 +877,7 @@ function deleteMessage(messageId, deleteForAll) {
 
     chatAgent.deleteMessage({
         messageId: messageId,
-        deleteForAll: deleteForAll,
+        deleteForAll: deleteForAll
     }, function(result) {
         console.log(result);
     });
@@ -868,7 +887,7 @@ function replyMessage(threadId, messageId, message) {
     replyChatParams = {
         threadId: threadId,
         repliedTo: messageId,
-        content: message,
+        content: message
     };
 
     chatAgent.replyMessage(replyChatParams, {
@@ -880,7 +899,7 @@ function replyMessage(threadId, messageId, message) {
         },
         onSeen: function(result) {
             console.log(result.uniqueId + ' \t has been Seen! (Reply)');
-        },
+        }
     });
 }
 
@@ -889,7 +908,7 @@ function replyFileMessage(threadId, messageId, file, message) {
         threadId: threadId,
         repliedTo: messageId,
         content: message,
-        file: file,
+        file: file
     };
 
     chatAgent.replyFileMessage(replyChatParams, {
@@ -901,14 +920,14 @@ function replyFileMessage(threadId, messageId, file, message) {
         },
         onSeen: function(result) {
             console.log(result.uniqueId + ' \t has been Seen! (Reply)');
-        },
+        }
     });
 }
 
 function forwardMessage(destination, messageIds) {
     chatAgent.forwardMessage({
         subjectId: destination,
-        content: JSON.stringify(messageIds),
+        content: JSON.stringify(messageIds)
     }, {
         onSent: function(result) {
             console.log(result.uniqueId + ' \t has been Sent! (FORWARD)');
@@ -918,7 +937,7 @@ function forwardMessage(destination, messageIds) {
         },
         onSeen: function(result) {
             console.log(result.uniqueId + ' \t has been Seen! (FORWARD)');
-        },
+        }
     });
 }
 
@@ -935,7 +954,7 @@ function createThread(invitees, threadType) {
         type: threadTypeText,
         invitees: [],
         image: 'http://aiesec.at/wp-content/uploads/2016/07/16-personalities-test.png',
-        description: 'This is some Description.',
+        description: 'This is some Description.'
         // metadata: {
         //   time: new Date()
         // },
@@ -956,7 +975,7 @@ function createThread(invitees, threadType) {
         for (var i = 0; i < invitees.length; i++) {
             invitee = formatDataToMakeInvitee({
                 id: invitees[i].id,
-                type: invitees[i].type,
+                type: invitees[i].type
             });
             if (invitee) {
                 createThreadParams.invitees.push(invitee);
@@ -966,7 +985,7 @@ function createThread(invitees, threadType) {
     else {
         invitee = formatDataToMakeInvitee({
             id: invitees.id,
-            type: invitees.type,
+            type: invitees.type
         });
         if (invitee) {
             createThreadParams.invitees.push(invitee);
@@ -983,7 +1002,7 @@ function createThread(invitees, threadType) {
 function renameThread(threadId, newName) {
     renameThreadParams = {
         title: newName,
-        threadId: threadId,
+        threadId: threadId
     };
 
     chatAgent.renameThread(renameThreadParams, function(renameThreadResult) {
@@ -993,7 +1012,7 @@ function renameThread(threadId, newName) {
 
 function muteThread(threadId) {
     var data = {
-        subjectId: threadId,
+        subjectId: threadId
     };
     chatAgent.muteThread(data, function(result) {
         if (!result.hasError) {
@@ -1006,7 +1025,7 @@ function muteThread(threadId) {
 function getBlockedList() {
     var data = {
         count: 50,
-        offset: 0,
+        offset: 0
     };
     chatAgent.getBlocked(data, function(result) {
         if (!result.hasError) {
@@ -1017,7 +1036,7 @@ function getBlockedList() {
 
 function unMuteThread(threadId) {
     var data = {
-        subjectId: threadId,
+        subjectId: threadId
     };
     chatAgent.unMuteThread(data, function(result) {
         if (!result.hasError) {
@@ -1030,7 +1049,7 @@ function unMuteThread(threadId) {
 function formatDataToMakeInvitee(messageContent) {
     var inviteeData = {
         id: messageContent.id,
-        idType: messageContent.type,
+        idType: messageContent.type
     };
 
     return inviteeData;
@@ -1042,7 +1061,7 @@ function uploadImage(image, xC, yC, hC, wC) {
         xC: xC,
         yC: yC,
         hC: hC,
-        wC: wC,
+        wC: wC
     }, function(result) {
         console.log(result);
         if (!result.hasError) {
@@ -1055,7 +1074,7 @@ function uploadImage(image, xC, yC, hC, wC) {
 function getImage(imageId, hashCode) {
     chatAgent.getImage({
         imageId: imageId,
-        hashCode: hashCode,
+        hashCode: hashCode
     }, function(result) {
         if (!result.hasError) {
             console.log('Image has been successfully received => \n', result.result);
@@ -1065,7 +1084,7 @@ function getImage(imageId, hashCode) {
 
 function uploadFile(file) {
     chatAgent.uploadFile({
-        file: file,
+        file: file
     }, function(result) {
         console.log(result);
         if (!result.hasError) {
@@ -1079,7 +1098,7 @@ function getFile(fileId, hashCode, downloadable) {
     chatAgent.getFile({
         fileId: fileId,
         hashCode: hashCode,
-        downloadable: downloadable,
+        downloadable: downloadable
     }, function(result) {
         if (!result.hasError) {
             console.log('File has been successfully received => \n', result.result);

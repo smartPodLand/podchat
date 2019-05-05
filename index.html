@@ -22,31 +22,29 @@
         var PodChat = window.POD.Chat;
 
         // Production
-//        var PodChat = window.PodChat;
-            var params = {
+        //        var PodChat = window.PodChat;
+        var params = {
             appId: new Date().getTime(),
-//            socketAddress: "ws://172.16.110.131:8003/ws",
-//            socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
-//            ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
-//            platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
-//            fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
+            socketAddress: "ws://172.16.110.131:8003/ws",
+            socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+            ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
+            platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
+            fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
 
+            //            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+            //            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+            //            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+            //            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
 
-            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
-            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
-            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
-
-
-//            serverName: "chat-server2",// {**REQUIRED**} Server to to register on
+            //            serverName: "chat-server2",// {**REQUIRED**} Server to to register on
             serverName: "chat-server",// {**REQUIRED**} Server to to register on
             grantDeviceIdFromSSO: false,
-            enableCache: true, // Enable Client side caching
+            enableCache: false, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-            token: "bee4a490ff624fa0a69a5669b839c090",
-//            token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-//             token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
+            //            token: "bee4a490ff624fa0a69a5669b839c090",
+            token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+            //             token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
             // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
             // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
@@ -152,23 +150,23 @@
              * @param metaQuery
              * @param query
              */
-//             getHistory({
-//               count: 10,
-//               offset: 0,
-//               threadId: 312,
-//               // firstMessageId: 17035,
-//               // order: "ASC",
-//               // lastMessageId: 17052,
-//               // metadataCriteria: {
-//               //   "field": "type",
-//               //   "has": "BOT_",
-//               //   "and": [{
-//               //     "field": "id",
-//               //     "is": "1534835339446"
-//               //   }]
-//               // },
-////               query: "query"
-//             });
+            //             getHistory({
+            //               count: 10,
+            //               offset: 0,
+            //               threadId: 312,
+            //               // firstMessageId: 17035,
+            //               // order: "ASC",
+            //               // lastMessageId: 17052,
+            //               // metadataCriteria: {
+            //               //   "field": "type",
+            //               //   "has": "BOT_",
+            //               //   "and": [{
+            //               //     "field": "id",
+            //               //     "is": "1534835339446"
+            //               //   }]
+            //               // },
+            ////               query: "query"
+            //             });
 
             /**
              * GET SINGLE MESSAGE
@@ -516,7 +514,8 @@
         /**
          * Listen to Chat State Changes
          */
-        chatAgent.on("chatState", function(chatState) {});
+        chatAgent.on("chatState", function(chatState) {
+        });
 
         /**
          * Listen to File Upload Events
@@ -711,6 +710,10 @@
             var test = chatAgent.getHistory(params, function(historyResult) {
                 if (!historyResult.hasError) {
                     console.log(historyResult);
+
+                    //                    for(var i=0; i<historyResult.result.history.length; i++) {
+                    //                        console.log(historyResult.result.history[i].id, historyResult.result.history[i].systemMetadata);
+                    //                    }
                 }
             });
             // console.log(test);
@@ -909,8 +912,9 @@
                 contactId: contactId
             }
             chatAgent.block(data, function(result) {
-                if (!result.hasError)
+                if (!result.hasError) {
                     console.log("Contact has been successfully Blocked!");
+                }
                 console.log(result);
             });
         }
@@ -1033,7 +1037,8 @@
 </head>
 
 <body style="max-width: 600px;">
-<p>POD CHAT <span id="reconnect">Reconnect...</span> | <span id="clearCache">Clear User Cache</span> | <span id="deleteCache">Delete Cache</span></p>
+<p>POD CHAT <span id="reconnect">Reconnect...</span> | <span id="clearCache">Clear User Cache</span> | <span
+        id="deleteCache">Delete Cache</span></p>
 
 <form>
     <fieldset>
@@ -1047,7 +1052,9 @@
         <br>
         <a class="btn" href="#" onclick="getContacts()">Get Contacts</a>
         <a class="btn" href="#" onclick="getThreads({count:5, offset: 0})">Get Threads</a>
-        <a class="btn" href="#" onclick="getHistory({count:document.getElementById('g-p2p-count').value, offset: document.getElementById('g-p2p-off').value, threadId: document.getElementById('g-p2p').value});">Get History</a>
+        <a class="btn" href="#"
+           onclick="getHistory({count:document.getElementById('g-p2p-count').value, offset: document.getElementById('g-p2p-off').value, threadId: document.getElementById('g-p2p').value});">Get
+            History</a>
         <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread
             Participants</a>
         <br>
@@ -1287,238 +1294,251 @@
 </body>
 
 <script>
-    document.getElementById("reconnect").addEventListener("click", function() {
-        chatAgent.reconnect();
-    });
+    document.getElementById("reconnect")
+        .addEventListener("click", function() {
+            chatAgent.reconnect();
+        });
 
-    document.getElementById("clearCache").addEventListener("click", function() {
-        chatAgent.clearCacheDatabasesOfUser();
-    });
+    document.getElementById("clearCache")
+        .addEventListener("click", function() {
+            chatAgent.clearCacheDatabasesOfUser();
+        });
 
-    document.getElementById("deleteCache").addEventListener("click", function() {
-        chatAgent.deleteCacheDatabases({storage: true,  queues: true});
-    });
+    document.getElementById("deleteCache")
+        .addEventListener("click", function() {
+            chatAgent.deleteCacheDatabases({storage: true, queues: true});
+        });
 
     /**
      * CREATE THREAD
      */
-    document.getElementById("createThreadButton").addEventListener("click", function() {
-        var invitees = JSON.parse(document.getElementById("createThreadInvitees").value);
+    document.getElementById("createThreadButton")
+        .addEventListener("click", function() {
+            var invitees = JSON.parse(document.getElementById("createThreadInvitees").value);
 
-        createThreadParams = {
-            title: document.getElementById("createThreadTitle").value,
-            type: document.getElementById("createThreadType").value,
-            invitees: [],
-            image: document.getElementById("createThreadImage").value,
-            description: document.getElementById("createThreadDesc").value,
-            metadata: document.getElementById("createThreadMetadata").value
-        };
+            createThreadParams = {
+                title: document.getElementById("createThreadTitle").value,
+                type: document.getElementById("createThreadType").value,
+                invitees: [],
+                image: document.getElementById("createThreadImage").value,
+                description: document.getElementById("createThreadDesc").value,
+                metadata: document.getElementById("createThreadMetadata").value
+            };
 
-        if (Array.isArray(invitees)) {
-            for (var i = 0; i < invitees.length; i++) {
+            if (Array.isArray(invitees)) {
+                for (var i = 0; i < invitees.length; i++) {
+                    invitee = formatDataToMakeInvitee({
+                        id: invitees[i].id,
+                        type: invitees[i].type
+                    });
+                    if (invitee) {
+                        createThreadParams.invitees.push(invitee);
+                    }
+                }
+            }
+            else {
                 invitee = formatDataToMakeInvitee({
-                    id: invitees[i].id,
-                    type: invitees[i].type
+                    id: invitees.id,
+                    type: invitees.type
                 });
                 if (invitee) {
                     createThreadParams.invitees.push(invitee);
                 }
             }
-        }
-        else {
-            invitee = formatDataToMakeInvitee({
-                id: invitees.id,
-                type: invitees.type
-            });
-            if (invitee) {
-                createThreadParams.invitees.push(invitee);
-            }
-        }
 
-        chatAgent.createThread(createThreadParams, function(createThreadResult) {
-            console.log(createThreadResult);
+            chatAgent.createThread(createThreadParams, function(createThreadResult) {
+                console.log(createThreadResult);
+            });
         });
-    });
 
     /**
      * SEND FILE
      */
-    document.getElementById("sendTextButton").addEventListener("click", function() {
-        var message = document.getElementById("sendTextMessage").value,
-            thread = document.getElementById("sendTextThread").value;
+    document.getElementById("sendTextButton")
+        .addEventListener("click", function() {
+            var message = document.getElementById("sendTextMessage").value,
+                thread = document.getElementById("sendTextThread").value;
 
-        var instantResult = chatAgent.sendTextMessage({
-            threadId: thread,
-            content: message
-        }, {
-            onSent: function(result) {
-                console.log(result.uniqueId + " \t has been Sent!");
-            },
-            onDeliver: function(result) {
-                console.log(result.uniqueId + " \t has been Delivered!");
-            },
-            onSeen: function(result) {
-                console.log(result.uniqueId + " \t has been Seen!");
-            }
+            var instantResult = chatAgent.sendTextMessage({
+                threadId: thread,
+                content: message
+            }, {
+                onSent: function(result) {
+                    console.log(result.uniqueId + " \t has been Sent!");
+                },
+                onDeliver: function(result) {
+                    console.log(result.uniqueId + " \t has been Delivered!");
+                },
+                onSeen: function(result) {
+                    console.log(result.uniqueId + " \t has been Seen!");
+                }
+            });
         });
-    });
 
     /**
      * Resend Message
      */
-    document.getElementById("resendButton").addEventListener("click", function() {
-        var uniqueId = document.getElementById("resendUid").value;
+    document.getElementById("resendButton")
+        .addEventListener("click", function() {
+            var uniqueId = document.getElementById("resendUid").value;
 
-        chatAgent.resendMessage(uniqueId);
-    });
+            chatAgent.resendMessage(uniqueId);
+        });
 
     /**
      * Cancel Message
      */
-    document.getElementById("cancelButton").addEventListener("click", function() {
-        var uniqueId = document.getElementById("resendUid").value;
+    document.getElementById("cancelButton")
+        .addEventListener("click", function() {
+            var uniqueId = document.getElementById("resendUid").value;
 
-        chatAgent.cancelMessage(uniqueId, function() {
-            console.log("Message has been canceled");
+            chatAgent.cancelMessage(uniqueId, function() {
+                console.log("Message has been canceled");
+            });
         });
-    });
 
     /**
      * SEND FILE
      */
-    document.getElementById("sendFileMessage").addEventListener("click", function() {
-        var fileInput = document.getElementById("sendFileInput"),
-            image = fileInput.files[0],
-            content = document.getElementById("sendFileDescription").value,
-            thread = document.getElementById("sendFileThread").value;
+    document.getElementById("sendFileMessage")
+        .addEventListener("click", function() {
+            var fileInput = document.getElementById("sendFileInput"),
+                image = fileInput.files[0],
+                content = document.getElementById("sendFileDescription").value,
+                thread = document.getElementById("sendFileThread").value;
 
-        var instantResult = chatAgent.sendFileMessage({
-            threadId: thread,
-            file: image,
-            content: content,
-            metadata: {
-                custom_name: "John Doe"
-            }
-        }, {
-            onSent: function(result) {
-                console.log(result.uniqueId + " \t has been Sent!");
-            },
-            onDeliver: function(result) {
-                console.log(result.uniqueId + " \t has been Delivered!");
-            },
-            onSeen: function(result) {
-                console.log(result.uniqueId + " \t has been Seen!");
-            }
+            var instantResult = chatAgent.sendFileMessage({
+                threadId: thread,
+                file: image,
+                content: content,
+                metadata: {
+                    custom_name: "John Doe"
+                }
+            }, {
+                onSent: function(result) {
+                    console.log(result.uniqueId + " \t has been Sent!");
+                },
+                onDeliver: function(result) {
+                    console.log(result.uniqueId + " \t has been Delivered!");
+                },
+                onSeen: function(result) {
+                    console.log(result.uniqueId + " \t has been Seen!");
+                }
+            });
+
+            console.log("Instant sendFile Results", instantResult)
+
+            // console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
+            // setTimeout(() => {
+            //   chatAgent.cancelFileUpload({
+            //     uniqueId: instantResult.content.file.uniqueId
+            //   }, function() {
+            //     console.log("Upload has been Canceled!");
+            //   });
+            // }, 100);
         });
-
-        console.log("Instant sendFile Results", instantResult)
-
-        // console.log("Should cancel file upload after 100ms. (uid = " + instantResult.content.file.uniqueId + ")")
-        // setTimeout(() => {
-        //   chatAgent.cancelFileUpload({
-        //     uniqueId: instantResult.content.file.uniqueId
-        //   }, function() {
-        //     console.log("Upload has been Canceled!");
-        //   });
-        // }, 100);
-    });
 
     /**
      * UPLOAD IMAGE
      */
-    document.getElementById("uploadImage").addEventListener("click", function() {
-        var imageInput = document.getElementById("imageInput"),
-            image = imageInput.files[0];
+    document.getElementById("uploadImage")
+        .addEventListener("click", function() {
+            var imageInput = document.getElementById("imageInput"),
+                image = imageInput.files[0];
 
-        var uploadResult = chatAgent.uploadImage({
-            image: image,
-            // fileName: "Test Name",
-            xC: 100,
-            yC: 100,
-            hC: 800,
-            wC: 800
-        }, function(result) {
-            console.log(result);
-            if (!result.hasError) {
-                var image = result.result;
+            var uploadResult = chatAgent.uploadImage({
+                image: image,
+                // fileName: "Test Name",
+                xC: 100,
+                yC: 100,
+                hC: 800,
+                wC: 800
+            }, function(result) {
+                console.log(result);
+                if (!result.hasError) {
+                    var image = result.result;
 
-                chatAgent.getImage({
-                    imageId: image.id,
-                    hashCode: image.hashCode
-                }, function(result) {
-                    if (!result.hasError) {
-                        document.getElementById("uploadedImage").src = result.result;
-                        document.getElementById("uploadedImageData").innerHTML = "<pre><br>Uploaded Image Id: " +
-                            image.id + "<br>Uploaded Image Name : " + image.name + "<br>Uploaded Image HashCode : " +
-                            image.hashCode + "</pre>";
-                    }
-                });
-            }
+                    chatAgent.getImage({
+                        imageId: image.id,
+                        hashCode: image.hashCode
+                    }, function(result) {
+                        if (!result.hasError) {
+                            document.getElementById("uploadedImage").src = result.result;
+                            document.getElementById("uploadedImageData").innerHTML = "<pre><br>Uploaded Image Id: " +
+                                image.id + "<br>Uploaded Image Name : " + image.name +
+                                "<br>Uploaded Image HashCode : " +
+                                image.hashCode + "</pre>";
+                        }
+                    });
+                }
+            });
+
+            console.log(uploadResult);
         });
-
-        console.log(uploadResult);
-    });
 
     /**
      * UPLOAD FILE
      */
-    document.getElementById("uploadFile").addEventListener("click", function() {
-        var fileInput = document.getElementById("fileInput"),
-            file = fileInput.files[0];
+    document.getElementById("uploadFile")
+        .addEventListener("click", function() {
+            var fileInput = document.getElementById("fileInput"),
+                file = fileInput.files[0];
 
-        var uploadResult = chatAgent.uploadFile({
-            file: file,
-            // fileName: "Test Name"
-        }, function(result) {
-            console.log(result);
-            if (!result.hasError) {
-                var file = result.result;
-                document.getElementById("uploadedFile").innerHTML = "<pre><br>Uploaded File Id: " + file.id +
-                    "<br>Uploaded File Name : " + file.name + "<br>Uploaded File HashCode : " + file.hashCode +
-                    "</pre>";
-            }
+            var uploadResult = chatAgent.uploadFile({
+                file: file,
+                // fileName: "Test Name"
+            }, function(result) {
+                console.log(result);
+                if (!result.hasError) {
+                    var file = result.result;
+                    document.getElementById("uploadedFile").innerHTML = "<pre><br>Uploaded File Id: " + file.id +
+                        "<br>Uploaded File Name : " + file.name + "<br>Uploaded File HashCode : " + file.hashCode +
+                        "</pre>";
+                }
+            });
+
+            console.log(uploadResult);
         });
-
-        console.log(uploadResult);
-    });
 
     /**
      * GET IMAGE
      */
-    document.getElementById("getImage").addEventListener("click", function() {
-        var imageId = document.getElementById("imageId").value,
-            hashCode = document.getElementById("hashCode").value;
+    document.getElementById("getImage")
+        .addEventListener("click", function() {
+            var imageId = document.getElementById("imageId").value,
+                hashCode = document.getElementById("hashCode").value;
 
-        chatAgent.getImage({
-            imageId: imageId,
-            hashCode: hashCode
-        }, function(result) {
-            console.log(result);
-            if (!result.hasError) {
-                document.getElementById("getImageResult").src = result.result;
-            }
+            chatAgent.getImage({
+                imageId: imageId,
+                hashCode: hashCode
+            }, function(result) {
+                console.log(result);
+                if (!result.hasError) {
+                    document.getElementById("getImageResult").src = result.result;
+                }
+            });
         });
-    });
 
     /**
      * GET FILE
      */
-    document.getElementById("getFile").addEventListener("click", function() {
-        var fileId = document.getElementById("fileId").value,
-            hashCode = document.getElementById("fileHashCode").value;
+    document.getElementById("getFile")
+        .addEventListener("click", function() {
+            var fileId = document.getElementById("fileId").value,
+                hashCode = document.getElementById("fileHashCode").value;
 
-        chatAgent.getFile({
-            fileId: fileId,
-            hashCode: hashCode,
-            downloadable: true
-        }, function(result) {
-            console.log(result);
-            if (!result.hasError) {
-                document.getElementById("getFileResult").innerHTML = "<a href=\"" + result.result + "\">" +
-                    result.result + "</a>";
-            }
+            chatAgent.getFile({
+                fileId: fileId,
+                hashCode: hashCode,
+                downloadable: true
+            }, function(result) {
+                console.log(result);
+                if (!result.hasError) {
+                    document.getElementById("getFileResult").innerHTML = "<a href=\"" + result.result + "\">" +
+                        result.result + "</a>";
+                }
+            });
         });
-    });
 </script>
 
 </html>

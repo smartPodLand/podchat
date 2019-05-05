@@ -91224,7 +91224,7 @@ WError.prototype.cause = function we_cause(c)
                                 .substring(10, 19));
                         }
                         else {
-                            if (parseInt(params.fromTime) > 0 && arseInt(params.fromTime) < 9999999999999) {
+                            if (parseInt(params.fromTime) > 0 && parseInt(params.fromTime) < 9999999999999) {
                                 sendMessageParams.content.fromTime = whereClause.fromTime = parseInt(params.fromTime);
                             }
 

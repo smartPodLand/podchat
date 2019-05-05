@@ -271,7 +271,7 @@ describe("Working with contacts", function(done) {
  * THREADS FUNCTIONALITY
  */
 describe("Working with threads", function(done) {
-  this.timeout(60000);
+  this.timeout(20000);
 
   var chatAgent,
     p2pThreadId,
@@ -1061,7 +1061,7 @@ describe("Working with threads", function(done) {
  * MESSAGING FUNCTIONS
  */
 describe("Messaging Functionality", function(done) {
-  this.timeout(60000);
+  this.timeout(20000);
 
   var chatAgent1,
     chatAgent2;
