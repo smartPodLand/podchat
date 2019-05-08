@@ -3515,8 +3515,8 @@
                     message.threadId = pushMessageVO.conversation.id;
                 }
 
-                if (pushMessageVO.replyInfoVO) {
-                    message.replyInfo = formatDataToMakeReplyInfo(pushMessageVO.replyInfoVO, threadId);
+                if (pushMessageVO.replyInfoVO || pushMessageVO.replyInfo) {
+                    message.replyInfo =  (pushMessageVO.replyInfoVO) ? formatDataToMakeReplyInfo(pushMessageVO.replyInfoVO, threadId) : formatDataToMakeReplyInfo(pushMessageVO.replyInfo, threadId);
                 }
 
                 if (pushMessageVO.forwardInfo) {
