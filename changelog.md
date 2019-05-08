@@ -14,14 +14,16 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 ### Added
 
 -   Function level cache control is now available. In order to disable receiving cache results for some specefic 
-request, you can simply set `cache` parameter as `False` in `param` object which you're sending to chat SDK. Below is the list of supported functions: 
+request, you can simply set `cache` parameter as `False` in `param` object which you're sending to chat SDK. 
+Default value of `cache` is `True`. Be aware that this feature only works if global `enableCache` parameter has been set as `True`.
+Below is the list of supported functions: 
     - `getHistory()`
     - `getThreads()`
     - `getThreadParticipants()`
     - `getContacts()`
     - `searchContacts()`
-
-
+      
+      
 ## [3.5.30] - 2019-04-28
 
 ### Added
