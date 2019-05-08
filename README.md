@@ -10,16 +10,17 @@ All notable changes to this project will be documented here.
 
 -   Search in threads metadata
 
-## [3.5.30] - 2019-04-28
+## [3.5.38] - 2019-05-08
 
 ### Added
 
--   Clear and Delete functionalities for cache. In order to clear current user's cache you can simply call `clearCacheDatabasesOfUser()` and if you want to delete whole cache database just call `deleteCacheDatabases()`
-
-### Changed
-
--   Turn external web workers into Inline BLOB type workers.
--   Unified message structure for all queues
+-   Function level cache control is now available. In order to disable receiving cache results for some specefic 
+request, you can simply set `cache` parameter as `False` in `param` object which you're sending to chat SDK. Below is the list of supported functions: 
+    - `getHistory()`
+    - `getThreads()`
+    - `getThreadParticipants()`
+    - `getContacts()`
+    - `searchContacts()`
 
 In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 

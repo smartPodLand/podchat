@@ -3720,6 +3720,8 @@
                     if (parseInt(params.partnerCoreContactId) > 0) {
                         content.partnerCoreContactId = whereClause.partnerCoreContactId = params.partnerCoreContactId;
                     }
+
+                    var functionLevelCache = (typeof params.cache == 'boolean') ? params.cache : true;
                 }
 
                 content.count = count;
@@ -3734,7 +3736,7 @@
                 /**
                  * Retrieve threads from cache
                  */
-                if (canUseCache && cacheSecret.length > 0) {
+                if (functionLevelCache && canUseCache && cacheSecret.length > 0) {
                     if (db) {
                         var thenAble;
 
@@ -4046,6 +4048,7 @@
                         offset = (parseInt(params.offset) > 0) ? parseInt(params.offset) : 0,
                         count = (parseInt(params.count) > 0) ? parseInt(params.count) : config.getHistoryCount,
                         order = (typeof params.order != 'undefined') ? (params.order).toLowerCase() : 'desc',
+                        functionLevelCache = (typeof params.cache == 'boolean') ? params.cache : true,
                         cacheResult = {},
                         serverResult = {},
                         cacheFirstMessage,
@@ -4191,7 +4194,7 @@
                          * on cached data, if this attribute has been set, we
                          * should not return any results from cache
                          */
-                        if (canUseCache && cacheSecret.length > 0 && !whereClause.hasOwnProperty('metadataCriteria')) {
+                        if (functionLevelCache && canUseCache && cacheSecret.length > 0 && !whereClause.hasOwnProperty('metadataCriteria')) {
                             if (db) {
                                 var table = db.messages,
                                     collection;
@@ -6336,6 +6339,8 @@
                 if (typeof params.query === 'string') {
                     content.query = whereClause.query = params.query;
                 }
+
+                var functionLevelCache = (typeof params.cache == 'boolean') ? params.cache : true;
             }
 
             content.size = count;
@@ -6350,7 +6355,7 @@
             /**
              * Retrieve contacts from cache #cache
              */
-            if (canUseCache && cacheSecret.length > 0) {
+            if (functionLevelCache && canUseCache && cacheSecret.length > 0) {
                 if (db) {
 
                     /**
@@ -6600,10 +6605,12 @@
                 sendMessageParams.content.name = whereClause.name = params.name;
             }
 
+            var functionLevelCache = (typeof params.cache == 'boolean') ? params.cache : true;
+
             /**
              * Retrieve thread participants from cache
              */
-            if (canUseCache && cacheSecret.length > 0) {
+            if (functionLevelCache && canUseCache && cacheSecret.length > 0) {
                 if (db) {
 
                     db.participants.where('expireTime')
@@ -8636,6 +8643,8 @@
                 if (parseInt(params.offset) > 0) {
                     data.offset = params.offset;
                 }
+
+                var functionLevelCache = (typeof params.cache == 'boolean') ? params.cache : true;
             }
 
             var requestParams = {
@@ -8651,7 +8660,7 @@
             /**
              * Search contacts in cache #cache
              */
-            if (canUseCache && cacheSecret.length > 0) {
+            if (functionLevelCache && canUseCache && cacheSecret.length > 0) {
                 if (db) {
 
                     /**

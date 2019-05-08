@@ -9,6 +9,19 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 -   Search in threads metadata
 
 
+## [3.5.38] - 2019-05-08
+
+### Added
+
+-   Function level cache control is now available. In order to disable receiving cache results for some specefic 
+request, you can simply set `cache` parameter as `False` in `param` object which you're sending to chat SDK. Below is the list of supported functions: 
+    - `getHistory()`
+    - `getThreads()`
+    - `getThreadParticipants()`
+    - `getContacts()`
+    - `searchContacts()`
+
+
 ## [3.5.30] - 2019-04-28
 
 ### Added
