@@ -8,7 +8,8 @@ var params = {
     fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
     serverName: 'chat-server', // {**REQUIRED**} Server to to register on
     grantDeviceIdFromSSO: false,
-    enableCache: false, // Enable Client side caching
+    enableCache: true, // Enable Client side caching
+    fullResponseObject: true,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "chattest",
     token: '7cba09ff83554fc98726430c30afcfc6', // {**REQUIRED**} SSO Token ZiZi
@@ -54,10 +55,10 @@ chatAgent.on('chatReady', function() {
      * @param name
      */
     // getThreads({
-    //   count: 5,
+    //   count: 50,
     //   offset: 0,
     //   // threadIds: [1411],
-    //   name: "thread"
+    //   // name: "thread"
     // });
 
     /**
@@ -160,13 +161,13 @@ chatAgent.on('chatReady', function() {
      * MUTE THREAD
      * @param threadId
      */
-    // muteThread(3);
+    // muteThread(1431);
 
     /**
      * UNMUTE THREAD
      * @param threadId
      */
-    // unMuteThread(3);
+    // unMuteThread(1431);
 
     /**
      * UPDATE THREAD INFO

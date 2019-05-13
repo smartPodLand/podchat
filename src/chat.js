@@ -2244,12 +2244,13 @@
                             getThreads({
                                 threadIds: [threadId]
                             }, function(threadsResult) {
-                                var threads = threadsResult.result.threads;
+                                var thread = threadsResult.result.threads[0];
+                                thread.mute = true;
 
                                 fireEvent('threadEvents', {
                                     type: 'THREAD_MUTE',
                                     result: {
-                                        thread: threads[0]
+                                        thread: thread
                                     }
                                 });
                             });
@@ -2277,12 +2278,13 @@
                             getThreads({
                                 threadIds: [threadId]
                             }, function(threadsResult) {
-                                var threads = threadsResult.result.threads;
+                                var thread = threadsResult.result.threads[0];
+                                thread.mute = false;
 
                                 fireEvent('threadEvents', {
                                     type: 'THREAD_UNMUTE',
                                     result: {
-                                        thread: threads[0]
+                                        thread: thread
                                     }
                                 });
                             });
@@ -2307,7 +2309,8 @@
 
                         if (fullResponseObject) {
                             getThreads({
-                                threadIds: [messageContent.id]
+                                threadIds: [messageContent.id],
+                                cache: false
                             }, function(threadsResult) {
                                 var thread = formatDataToMakeConversation(threadsResult.result.threads[0]);
 
