@@ -89880,7 +89880,7 @@ WError.prototype.cause = function we_cause(c)
                     }, function(threadsResult) {
                         var threads = threadsResult.result.threads;
 
-                        if (messageContent.participant.id !== userInfo.id && !threadsResult.cache) {
+                        // if (messageContent.participant.id !== userInfo.id && !threadsResult.cache) {
                             fireEvent('threadEvents', {
                                 type: 'THREAD_UNREAD_COUNT_UPDATED',
                                 result: {
@@ -89889,21 +89889,28 @@ WError.prototype.cause = function we_cause(c)
                                     senderId: messageContent.participant.id
                                 }
                             });
-                        }
+                        // }
 
-                        if (!threadsResult.cache) {
+                        // if (!threadsResult.cache) {
                             fireEvent('threadEvents', {
                                 type: 'THREAD_LAST_ACTIVITY_TIME',
                                 result: {
                                     thread: threads[0]
                                 }
                             });
-                        }
+                        // }
                     });
                 }
                 else {
                     fireEvent('threadEvents', {
                         type: 'THREAD_LAST_ACTIVITY_TIME',
+                        result: {
+                            thread: threadId
+                        }
+                    });
+
+                    fireEvent('threadEvents', {
+                        type: 'THREAD_UNREAD_COUNT_UPDATED',
                         result: {
                             thread: threadId
                         }
