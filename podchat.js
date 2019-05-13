@@ -93214,6 +93214,7 @@ WError.prototype.cause = function we_cause(c)
              */
             putInChatSendQueue = function(params, callback) {
                 chatSendQueue.push(params);
+
                 putInChatWaitQueue(params.message, function() {
                     callback && callback();
                 });
@@ -93232,28 +93233,33 @@ WError.prototype.cause = function we_cause(c)
              */
             putInChatWaitQueue = function(item, callback) {
                 if (item.uniqueId != '') {
-                    if (hasCache && typeof queueDb == 'object') {
-                        queueDb.waitQ
-                            .put({
-                                threadId: parseInt(item.subjectId),
-                                uniqueId: item.uniqueId,
-                                owner: parseInt(userInfo.id),
-                                message: Utility.crypt(item, cacheSecret)
-                            })
-                            .then(function() {
-                                callback && callback();
-                            })
-                            .catch(function(error) {
-                                fireEvent('error', {
-                                    code: error.code,
-                                    message: error.message,
-                                    error: error
+                    var waitQueueUniqueId = (typeof item.uniqueId == 'string') ? item.uniqueId : (Array.isArray(item.uniqueId)) ? item.uniqueId[0] : null;
+
+                    if(waitQueueUniqueId != null) {
+                        if (hasCache && typeof queueDb == 'object') {
+                            queueDb.waitQ
+                                .put({
+                                    threadId: parseInt(item.subjectId),
+                                    uniqueId: waitQueueUniqueId,
+                                    owner: parseInt(userInfo.id),
+                                    message: Utility.crypt(item, cacheSecret)
+                                })
+                                .then(function() {
+                                    callback && callback();
+                                })
+                                .catch(function(error) {
+                                    fireEvent('error', {
+                                        code: error.code,
+                                        message: error.message,
+                                        error: error
+                                    });
                                 });
-                            });
-                    }
-                    else {
-                        chatWaitQueue.push(item);
-                        callback && callback();
+                        }
+                        else {
+                            item.uniqueId = waitQueueUniqueId;
+                            chatWaitQueue.push(item);
+                            callback && callback();
+                        }
                     }
                 }
             },
