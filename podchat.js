@@ -89872,6 +89872,7 @@ WError.prototype.cause = function we_cause(c)
 
                 fireEvent('messageEvents', {
                     type: 'MESSAGE_NEW',
+                    cache: false,
                     result: {
                         message: message
                     }
@@ -89882,7 +89883,6 @@ WError.prototype.cause = function we_cause(c)
                         threadIds: [threadId]
                     }, function(threadsResult) {
                         var threads = threadsResult.result.threads;
-
                         // if (messageContent.participant.id !== userInfo.id && !threadsResult.cache) {
                             fireEvent('threadEvents', {
                                 type: 'THREAD_UNREAD_COUNT_UPDATED',
@@ -90982,11 +90982,9 @@ WError.prototype.cause = function we_cause(c)
                                                 case 'getThreads':
                                                     var content = JSON.parse(data.data),
                                                         userId = parseInt(data.userId);
-
                                                     for (var i = 0; i < content.length; i++) {
                                                         var lastMessageTime = (content[i].lastMessageVO) ? content[i].lastMessageVO.time : 0,
                                                             threadId = parseInt(content[i].id);
-
                                                         if (lastMessageTime > 0) {
                                                             db.messages
                                                                 .where('[threadId+owner+time]')
@@ -91313,8 +91311,8 @@ WError.prototype.cause = function we_cause(c)
 
                                         if (whereClause.hasOwnProperty('toTime')) {
                                             var toTime = (whereClause.hasOwnProperty('toTimeNanos'))
-                                                ? ((Math.floor(whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
-                                                : (whereClause.toTime + 1) * 1000000;
+                                                ? ((Math.floor(whereClause.toTime / 1000)) * 1000000000) + whereClause.toTimeNanos
+                                                : (whereClause.toTime) * 1000000;
                                             messages = messages.filter(function(message) {
                                                 return message.time <= toTime;
                                             });
@@ -91847,7 +91845,6 @@ WError.prototype.cause = function we_cause(c)
                                                              * User only set toTime
                                                              */
                                                             else {
-
                                                                 /**
                                                                  * Server response is Empty []
                                                                  */
@@ -92115,6 +92112,7 @@ WError.prototype.cause = function we_cause(c)
                                                  */
                                                 fireEvent('messageEvents', {
                                                     type: 'MESSAGE_NEW',
+                                                    cache: true,
                                                     result: {
                                                         message: history[serverResult[key].index]
                                                     }
@@ -92845,35 +92843,35 @@ WError.prototype.cause = function we_cause(c)
                         .equals(userInfo.id)
                         .delete()
                         .then(function() {
-                            console.log('threads table deleted');
+                            console.log('Threads table deleted');
 
                             db.contacts
                                 .where('owner')
                                 .equals(userInfo.id)
                                 .delete()
                                 .then(function() {
-                                    console.log('contacts table deleted');
+                                    console.log('Contacts table deleted');
 
                                     db.messages
                                         .where('owner')
                                         .equals(userInfo.id)
                                         .delete()
                                         .then(function() {
-                                            console.log('messages table deleted');
+                                            console.log('Messages table deleted');
 
                                             db.participants
                                                 .where('owner')
                                                 .equals(userInfo.id)
                                                 .delete()
                                                 .then(function() {
-                                                    console.log('participants table deleted');
+                                                    console.log('Participants table deleted');
 
                                                     db.messageGaps
                                                         .where('owner')
                                                         .equals(userInfo.id)
                                                         .delete()
                                                         .then(function() {
-                                                            console.log('messageGaps table deleted');
+                                                            console.log('MessageGaps table deleted');
                                                             cacheDeletingInProgress = false;
                                                             callback && callback();
                                                         });

@@ -12,8 +12,8 @@ var params = {
     fullResponseObject: true,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "chattest",
-    token: '7cba09ff83554fc98726430c30afcfc6', // {**REQUIRED**} SSO Token ZiZi
-    // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
+    // token: '7cba09ff83554fc98726430c30afcfc6', // {**REQUIRED**} SSO Token ZiZi
+    token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
     // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
     // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
@@ -214,7 +214,7 @@ chatAgent.on('chatReady', function() {
      * @param metadata
      */
     // setInterval(() => {
-    // sendMessage(9481, 'Message at ' + new Date(), {
+    // sendMessage(1431, 'Message at ' + new Date(), {
     //     id: 672,
     //     type: 'message',
     //     name: 'Masoud',
@@ -295,7 +295,7 @@ chatAgent.on('chatReady', function() {
      * @param {int}      messageId
      * @param {boolean}  deleteForAll
      */
-    // deleteMessage(31651, true);
+    // deleteMessage(35116, true);
 
     /**
      * REPLY TO MESSAGE
