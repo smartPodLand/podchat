@@ -25,7 +25,8 @@ var TOKENS = {
         ssoHost: 'http://172.16.110.76',
         // platformHost: 'http://172.16.106.26:8080/hamsam',
         platformHost: 'http://172.16.110.131:8080',
-        fileServer: 'http://172.16.106.26:8080/hamsam',
+        // fileServer: 'http://172.16.106.26:8080/hamsam',
+        fileServer: 'http://172.16.110.131:8080',
         // serverName: "chat-server",
         serverName: 'chat-server2',
 
@@ -678,13 +679,9 @@ describe('Working with threads', function(done) {
     it('Should GET Thread Admins', function(done) {
         chatAgent.on('chatReady', function() {
             var time = new Date().getTime();
-            chatAgent.getThreadParticipants({
-                count: 50,
-                offset: 0,
-                threadId: GROUP_THREAD,
-                admin: true
+            chatAgent.getThreadAdmins({
+                threadId: GROUP_THREAD
             }, function(participantsResult) {
-                console.log(participantsResult.result.participants);
                 if (!participantsResult.hasError) {
                     if (timingLog) {
                         console.log('\x1b[33m    ★ Get Participants \x1b[0m \x1b[33m(%sms)\x1b[0m', new Date().getTime() - time);
@@ -760,34 +757,36 @@ describe('Working with threads', function(done) {
                                     }
 
                                     if (adminCandidate > 0) {
-                                        chatAgent.setAdmin({
-                                            threadId: groupThreadId,
-                                            admins: [
-                                                {
-                                                    userId: adminCandidate,
-                                                    roleOperation: 'add',
-                                                    roles: [
-                                                        'post_channel_message',
-                                                        'edit_message_of_others',
-                                                        'delete_message_of_others',
-                                                        'add_new_user',
-                                                        'remove_user',
-                                                        'thread_admin',
-                                                        'add_rule_to_user',
-                                                        'remove_role_from_user',
-                                                        'read_thread',
-                                                        'edit_thread'
-                                                    ]
-                                                }]
-                                        }, function(result) {
-                                            if (!result.hasError) {
-                                                if (timingLog) {
-                                                    console.log('\x1b[33m    ★ Set Admin \x1b[0m \x1b[33m(%sms)\x1b[0m', new Date().getTime() - time5);
+                                        setTimeout(function() {
+                                            chatAgent.setAdmin({
+                                                threadId: groupThreadId,
+                                                admins: [
+                                                    {
+                                                        userId: adminCandidate,
+                                                        roleOperation: 'add',
+                                                        roles: [
+                                                            'post_channel_message',
+                                                            'edit_message_of_others',
+                                                            'delete_message_of_others',
+                                                            'add_new_user',
+                                                            'remove_user',
+                                                            'thread_admin',
+                                                            'add_rule_to_user',
+                                                            'remove_role_from_user',
+                                                            'read_thread',
+                                                            'edit_thread'
+                                                        ]
+                                                    }]
+                                            }, function(result) {
+                                                if (!result.hasError) {
+                                                    if (timingLog) {
+                                                        console.log('\x1b[33m    ★ Set Admin \x1b[0m \x1b[33m(%sms)\x1b[0m', new Date().getTime() - time5 - 500);
+                                                    }
+                                                    done();
+                                                    console.log('\n');
                                                 }
-                                                done();
-                                                console.log('\n');
-                                            }
-                                        });
+                                            });
+                                        }, 500);
                                     }
                                 }
                             });
@@ -862,64 +861,68 @@ describe('Working with threads', function(done) {
                                     }
 
                                     if (adminCandidate > 0) {
-                                        chatAgent.setAdmin({
-                                            threadId: groupThreadId,
-                                            admins: [
-                                                {
-                                                    userId: adminCandidate,
-                                                    roleOperation: 'add',
-                                                    roles: [
-                                                        'post_channel_message',
-                                                        'edit_message_of_others',
-                                                        'delete_message_of_others',
-                                                        'add_new_user',
-                                                        'remove_user',
-                                                        'thread_admin',
-                                                        'add_rule_to_user',
-                                                        'remove_role_from_user',
-                                                        'read_thread',
-                                                        'edit_thread'
-                                                    ]
-                                                }]
-                                        }, function(result) {
-                                            if (!result.hasError) {
-                                                if (timingLog) {
-                                                    console.log('\x1b[90m    ☰ Set Admin \x1b[0m \x1b[90m(%sms)\x1b[0m', new Date().getTime() - time5);
-                                                }
-
-                                                var time6 = new Date().getTime();
-                                                chatAgent.setAdmin({
-                                                    threadId: groupThreadId,
-                                                    admins: [
-                                                        {
-                                                            userId: adminCandidate,
-                                                            roleOperation: 'remove',
-                                                            roles: [
-                                                                'post_channel_message',
-                                                                'edit_message_of_others',
-                                                                'delete_message_of_others',
-                                                                'add_new_user',
-                                                                'remove_user',
-                                                                'thread_admin',
-                                                                'add_rule_to_user',
-                                                                'remove_role_from_user',
-                                                                'read_thread',
-                                                                'edit_thread'
-                                                            ]
-                                                        }]
-                                                }, function(result) {
-                                                    if (!result.hasError) {
-                                                        if (timingLog) {
-                                                            console.log('\x1b[33m    ★ Remove Admin \x1b[0m \x1b[33m(%sms)\x1b[0m', new Date().getTime() -
-                                                                time6);
-                                                        }
-
-                                                        done();
-                                                        console.log('\n');
+                                        setTimeout(function() {
+                                            chatAgent.setAdmin({
+                                                threadId: groupThreadId,
+                                                admins: [
+                                                    {
+                                                        userId: adminCandidate,
+                                                        roleOperation: 'add',
+                                                        roles: [
+                                                            'post_channel_message',
+                                                            'edit_message_of_others',
+                                                            'delete_message_of_others',
+                                                            'add_new_user',
+                                                            'remove_user',
+                                                            'thread_admin',
+                                                            'add_rule_to_user',
+                                                            'remove_role_from_user',
+                                                            'read_thread',
+                                                            'edit_thread'
+                                                        ]
+                                                    }]
+                                            }, function(result) {
+                                                if (!result.hasError) {
+                                                    if (timingLog) {
+                                                        console.log('\x1b[90m    ☰ Set Admin \x1b[0m \x1b[90m(%sms)\x1b[0m', new Date().getTime() - time5 - 500);
                                                     }
-                                                });
-                                            }
-                                        });
+
+                                                    var time6 = new Date().getTime();
+                                                    setTimeout(function() {
+                                                        chatAgent.setAdmin({
+                                                            threadId: groupThreadId,
+                                                            admins: [
+                                                                {
+                                                                    userId: adminCandidate,
+                                                                    roleOperation: 'remove',
+                                                                    roles: [
+                                                                        'post_channel_message',
+                                                                        'edit_message_of_others',
+                                                                        'delete_message_of_others',
+                                                                        'add_new_user',
+                                                                        'remove_user',
+                                                                        'thread_admin',
+                                                                        'add_rule_to_user',
+                                                                        'remove_role_from_user',
+                                                                        'read_thread',
+                                                                        'edit_thread'
+                                                                    ]
+                                                                }]
+                                                        }, function(result) {
+                                                            if (!result.hasError) {
+                                                                if (timingLog) {
+                                                                    console.log('\x1b[33m    ★ Remove Admin \x1b[0m \x1b[33m(%sms)\x1b[0m', new Date().getTime() -
+                                                                        time6 - 500);
+                                                                }
+
+                                                                done();
+                                                                console.log('\n');
+                                                            }
+                                                        });
+                                                    }, 500);
+                                                }
+                                            });
+                                        }, 500);
                                     }
                                 }
                             });

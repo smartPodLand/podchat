@@ -131,6 +131,7 @@
                 SET_ROLE_TO_USER: 42,
                 CLEAR_HISTORY: 44,
                 SYSTEM_MESSAGE: 46,
+                GET_NOT_SEEN_DURATION: 47,
                 LOGOUT: 100,
                 ERROR: 999
             },
@@ -2673,7 +2674,15 @@
                                 user: messageContent
                             }
                         });
+                        break;
 
+                    /**
+                     * Type 47    Get Not Seen Duration
+                     */
+                    case chatMessageVOTypes.GET_NOT_SEEN_DURATION:
+                        if (messagesCallbacks[uniqueId]) {
+                            messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent));
+                        }
                         break;
 
                     /**
@@ -8526,6 +8535,42 @@
             });
         };
 
+        this.getNotSeenDuration = function(params, callback) {
+            var content = {};
+
+            if (params) {
+                if (Array.isArray(params.userIds)) {
+                    content.userIds = params.userIds;
+                }
+            }
+
+            var getNotSeenDurationData = {
+                chatMessageVOType: chatMessageVOTypes.GET_NOT_SEEN_DURATION,
+                typeCode: params.typeCode,
+                content: content,
+                pushMsgType: 4,
+                token: token,
+                timeout: params.timeout
+            };
+
+            return sendMessage(getNotSeenDurationData, {
+                onResult: function(result) {
+                    var returnData = {
+                        hasError: result.hasError,
+                        cache: false,
+                        errorMessage: result.errorMessage,
+                        errorCode: result.errorCode
+                    };
+
+                    if (!returnData.hasError) {
+                        returnData.result = result.result;
+                    }
+
+                    callback && callback(returnData);
+                }
+            });
+        };
+
         this.addContacts = function(params, callback) {
             var data = {};
 
@@ -8572,7 +8617,6 @@
             };
 
             httpRequest(requestParams, function(result) {
-                console.log("add result", result);
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 

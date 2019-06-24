@@ -2,16 +2,28 @@ var Chat = require('./src/chat.js');
 
 var params = {
     appId: new Date().getTime(),
+
+    /**
+     * Hamed Mehrara
+     */
     // socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
-    socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
-    //
-    ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
     // platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
-    platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
-    fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
-    serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+    // fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
     // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
+    /**
+     * Mehdi Sheikh Hosseini
+     */
+    socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+    ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+    platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
+    fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
+    serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+
+    /**
+     * Sand Box
+     */
     // socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
     // ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
     // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
@@ -23,7 +35,6 @@ var params = {
     fullResponseObject: true,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "chattest",
-    // token: "f5569353539c4daba3914c329fae2d0a",
     token: '7cba09ff83554fc98726430c30afcfc6', // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -63,6 +74,15 @@ chatAgent.on('chatReady', function() {
      *  Get User Info
      */
     // getUserInfo();
+
+    /**
+     * Get Unseen Duration of users
+     */
+    // chatAgent.getNotSeenDuration({
+    //     userIds: [122, 123]
+    // }, function(result) {
+    //     console.log(result);
+    // });
 
     /*******************************************************
      *                    T H R E A D S                    *
@@ -245,34 +265,34 @@ chatAgent.on('chatReady', function() {
     //   console.log(result);
     // });
 
-    /**
-     * SET ADMIN
-     * @param threadId
-     * @param userId
-     * @param roles
-     */
-    // chatAgent.setAdmin({
-    //     threadId: 10349,
-    //     admins: [
-    //         {
-    //             userId: 123,
-    //             roleOperation: 'add',
-    //             roles: [
-    //                 // 'post_channel_message',
-    //                 // 'edit_message_of_others',
-    //                 // 'delete_message_of_others',
-    //                 // 'add_new_user',
-    //                 // 'remove_user',
-    //                 // 'thread_admin',
-    //                 // 'add_rule_to_user',
-    //                 // 'remove_role_from_user',
-    //                 // 'read_thread',
-    //                 'edit_thread'
-    //             ]
-    //         }]
-    // }, function(result) {
-    //     console.log(result);
-    // });
+/**
+ * SET ADMIN
+ * @param threadId
+ * @param userId
+ * @param roles
+ */
+// chatAgent.setAdmin({
+//     threadId: 10349,
+//     admins: [
+//         {
+//             userId: 123,
+//             roleOperation: 'add',
+//             roles: [
+//                 'post_channel_message',
+//                 'edit_message_of_others',
+//                 'delete_message_of_others',
+//                 'add_new_user',
+//                 'remove_user',
+//                 'thread_admin',
+//                 'add_rule_to_user',
+//                 'remove_role_from_user',
+//                 'read_thread',
+//                 'edit_thread'
+//             ]
+//         }]
+// }, function(result) {
+//     console.log(result);
+// });
 
     /*******************************************************
      *                   M E S S A G E S                   *

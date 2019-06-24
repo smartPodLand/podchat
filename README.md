@@ -10,20 +10,17 @@ All notable changes to this project will be documented here.
 
 -   Search in threads metadata
 
-## [3.5.38] - 2019-05-08
+## [4.10.0] - 2019-06-24
 
 ### Added
 
--   Function level cache control is now available. In order to disable receiving cache results for some specefic 
-request, you can simply set `cache` parameter as `False` in `param` object which you're sending to chat SDK. 
-Default value of `cache` is `True`. Be aware that this feature only works if global `enableCache` parameter has been set as `True`.
-Below is the list of supported functions: 
-    - `getHistory()`
-    - `getThreads()`
-    - `getThreadParticipants()`
-    - `getContacts()`
-    - `searchContacts()`
-      
+-   ACL functionalities
+    - Getting admins list, `getThreadAdmins()`
+    - Setting / Removing new admin with roles, `setAdmin()`
+-   `isTyping` for users, you can call `startTyping()` and `stopTyping()` to handle typing system messages
+-   `clearHistory()` function to fully clear thread's history
+-   `deleteMultipleMessages()` function to delete an array of message at once
+-   `getNotSeenDuration()` function to get the not seen time duration of user being off the application in miliseconds
 
 In order to see complete list of changelog please visit [ChangeLog](https://github.com/masoudmanson/pod-chat/blob/master/changelog.md)
 
@@ -202,6 +199,22 @@ chatAgent.getUserInfo(function(userInfo) {
 });
 ```
 
+### getNotSeenDuration
+Takes an Array of user Ids and Returns the time which those users were away in miliseconds
+
+```javascript
+/**
+ * Get Unseen Duration of users
+ * 
+ * @param   {list}  usersIds    An array of userIds
+ */
+chatAgent.getNotSeenDuration({
+    userIds: [122, 123]
+}, function(result) {
+    console.log(result);
+});
+```
+
 ## Thread Functions
 
 ### createThread
@@ -276,6 +289,21 @@ chatAgent.getHistory({
 );
 ```
 
+### clearHistory
+This functions clears history of a given thread.
+
+```javascript
+/**
+ * CLEAR THREAD HISTORY
+ * @param threadId
+ */
+chatAgent.clearHistory({
+    threadId: 1431
+}, function(result) {
+    console.log("Clear history result", result);
+});
+```
+
 ### getThreadParticipants
 
 ```javascript
@@ -289,6 +317,65 @@ chatAgent.getThreadParticipants({
   }
 );
 ```
+
+### getThreadAdmins
+Returns a list of thread admins
+
+```javascript
+chatAgent.getThreadAdmins({
+    count: 50,
+    offset: 0,
+    threadId: threadId
+  }, function(adminsResult) {
+    var admins = adminsResult.result.participants;
+    console.log(admins);
+  }
+);
+```
+
+### setAdmin
+You can make an user an admin for a thread who is already a participant of that thread. In order to change a participant into
+an admin, all you have to do is to call `setAdmin()` and set parameters as needed.
+One important point is that if you set `roleOperation` parameter as `add`, the user will grant the roles you gave, and if
+you set `roleOperation` parameter as `remove`, those roles will be ungranted.
+
+```javascript
+chatAgent.setAdmin({
+    threadId: 10349,
+    admins: [
+        {
+            userId: 123,
+            roleOperation: 'add',
+            roles: [
+                'post_channel_message',
+                'edit_message_of_others',
+                'delete_message_of_others',
+                'add_new_user',
+                'remove_user',
+                'thread_admin',
+                'add_rule_to_user',
+                'remove_role_from_user',
+                'read_thread',
+                'edit_thread'
+            ]
+        }]
+}, function(result) {
+    console.log(result);
+});
+```
+
+These roles are currently available to be set or unset:
+
+- post_channel_message
+- edit_message_of_others
+- delete_message_of_others
+- add_new_user
+- remove_user
+- thread_admin
+- add_rule_to_user
+- remove_role_from_user
+- read_thread
+- edit_thread
 
 ### addParticipants
 
@@ -610,6 +697,28 @@ chatAgent.deleteMessage({
 });
 ```
 
+### deleteMultipleMessages
+
+In order to delete an array of messages for all, set `deleteForAll` parameter as `TRUE`.
+
+```javascript
+/**
+ * DELETE MESSAGE IN THREAD
+ * 
+ * @param {int}      messageId
+ * @param {boolean}  deleteForAll
+ */
+chatAgent.deleteMultipleMessages({
+    threadId: 10298,
+    messageIds: [47710, 47709, 47708],
+    deleteForAll: true
+}, function(result) {
+    console.log("Delete Multiple Message Result", result);
+});
+```
+
+
+
 ### replyMessage
 
 ```javascript
@@ -839,6 +948,39 @@ chatAgent.getImage({
   }
 });
 ```
+
+## System Messages
+
+### isTyping
+To indicate that some one is currently typing in some specific thread, you can use `startTyping()` and `stopTyping()`
+
+#### startTyping
+This function sets an interval and sends `isTyping` system message to server every 1 second
+
+```javascript
+/**
+* Sending isTyping message to server with an interval of 1 sec
+* 
+* @param    {int}   threadId    Id of thread that user is typing in
+*/
+
+chatAgent.startTyping({
+    threadId: 1431
+});
+```
+
+#### stopTyping
+Because user can only type in one thread at time, so there will be only one isTypingInterval available. This function
+clears it and stops sending the system messages.
+
+```javascript
+/**
+* Stops Sending isTyping message to server
+*/
+
+chatAgent.stopTyping();
+```
+
 
 ## Embedded Map Service functions
 

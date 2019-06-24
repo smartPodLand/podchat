@@ -9,6 +9,19 @@ to see complete list of changelog please visit [ChangeLog](https://github.com/ma
 -   Search in threads metadata
 
 
+## [4.10.0] - 2019-06-24
+
+### Added
+
+-   ACL functionalities
+    - Getting admins list
+    - Setting / Removing new admin with roles
+-   `isTyping` for users, you can call `startTyping()` and `stopTyping()` to handle typing system messages
+-   `clearHistory()` function to fully clear thread's history
+-   `deleteMultipleMessages()` function to delete an array of message at once
+-   `getNotSeenDuration()` function to get the time of user being off the application in miliseconds
+
+
 ## [3.5.38] - 2019-05-08
 
 ### Added
