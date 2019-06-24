@@ -28,12 +28,11 @@
   "dependencies": {
     "crypto-js": "^3.1.9-1",
     "dexie": "^2.0.4",
-    "faker": "^4.1.0",
-    "form-data": "^2.3.3",
+    "form-data": "^2.4.0",
     "indexeddbshim": "^3.10.0",
-    "mime": "^2.4.2",
-    "podasync": "^2.6.5",
-    "query-string": "^6.4.2",
+    "mime": "^2.4.4",
+    "podasync": "^2.7.0",
+    "query-string": "^6.8.1",
     "request": "^2.88.0"
   },
   "devDependencies": {

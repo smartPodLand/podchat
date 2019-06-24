@@ -26,24 +26,30 @@
         var params = {
             appId: new Date().getTime(),
 
-            socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+            //            socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+            socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+
             ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
             platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
             fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
 
-//            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
-//            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
-//            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-//            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+            //            serverName: "chat-server",// {**REQUIRED**} Server to to register on
+            serverName: "chat-server2",// {**REQUIRED**} Server to to register on
 
-            serverName: "chat-server",// {**REQUIRED**} Server to to register on
+            //            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+            //            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+            //            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+            //            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+            //            serverName: "chat-server", // {**REQUIRED**} Server to to register on
+
             grantDeviceIdFromSSO: false,
-            enableCache: false, // Enable Client side caching
+            enableCache: true, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-//            token: "b2c961c5adf24423a5ffc37799ce8ca9",
-            token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-//             token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
+
+            // token: "c2e504f7e1514c0e843d85de051a443b",
+             token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+//            token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
             // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
             // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
@@ -613,6 +619,23 @@
         });
 
         /**
+         * Listen to System Events
+         */
+        chatAgent.on("systemEvents", function(event) {
+            var type = event.type;
+            console.log(event);
+
+            switch (type) {
+                case "IS_TYPING":
+                    console.log(event.result.user.user + " is typing in thread #" + event.result.thread);
+                    break;
+
+                default:
+                    break;
+            }
+        });
+
+        /**
          * Local Functions
          */
 
@@ -677,7 +700,7 @@
 
         function getContacts(params) {
             var getContactsParams = {
-                count: 5,
+                count: 50,
                 offset: 0
             };
 
@@ -923,8 +946,9 @@
                 blockId: blockId
             }
             chatAgent.unblock(data, function(result) {
-                if (!result.hasError)
+                if (!result.hasError) {
                     console.log("Contact has been successfully unBlocked!");
+                }
                 console.log(result);
             });
         }
@@ -935,8 +959,9 @@
                 offset: 0
             }
             chatAgent.getBlocked(data, function(result) {
-                if (!result.hasError)
+                if (!result.hasError) {
                     console.log(result);
+                }
             });
         }
 
@@ -1010,6 +1035,14 @@
                 }
             });
         }
+
+        function removeContacts(id) {
+            chatAgent.removeContacts({
+                id: id
+            }, function(result) {
+                console.log(result);
+            });
+        }
     </script>
 
     <style>
@@ -1050,7 +1083,7 @@
         <input type="text" name="p2pcount" id="g-p2p-count" value="10" size="2">
         <br>
         <a class="btn" href="#" onclick="getContacts()">Get Contacts</a>
-        <a class="btn" href="#" onclick="getThreads({count:5, offset: 0})">Get Threads</a>
+        <a class="btn" href="#" onclick="getThreads({count:50, offset: 0})">Get Threads</a>
         <a class="btn" href="#" onclick="getHistory({
 //            fromTimeFull: 1557830885624256000,
 //            toTimeFull: 1557830885624256000,
@@ -1059,6 +1092,10 @@
             threadId: document.getElementById('g-p2p').value});">Get History</a>
         <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread
             Participants</a>
+        <a class="btn" href="#" onclick="chatAgent.getThreadAdmins({threadId:document.getElementById('g-p2p').value}, function(res){
+            console.log(res);
+        })">Get Thread Admins</a>
+        <a class="btn" href="#" onclick="leaveThread(document.getElementById('g-p2p').value)">Leave Thread</a>
         <br>
         <br>
     </fieldset>
@@ -1103,7 +1140,7 @@
         <textarea name="createThreadInvitees" id="createThreadInvitees" rows="10" cols="70">
 [{
   "id": 122,
-  "type": "TO_BE_USER_SSO_ID"
+  "type": "TO_BE_USER_CONTACT_ID"
 }, {
   "id": 1102,
   "type": "TO_BE_USER_CONTACT_ID"
@@ -1120,9 +1157,25 @@
 
 <form>
     <fieldset>
+        <legend>Add Participant to Thread</legend>
+        <label for="apThread">Thread Id</label>
+        <input type="text" name="apThread" id="apThread">
+        <br>
+        <label for="apList">Participants (Array of IDs):</label>
+        <input type="text" name="apList" id="apList" placeholder="1, 2, 3, ...">
+        <button type="button" name="button" id="apButton">Add Participants</button>
+    </fieldset>
+</form>
+
+<br>
+<hr>
+<br>
+
+<form>
+    <fieldset>
         <legend>Send Text Message</legend>
         <label for="sendTextThread">Thread Id</label>
-        <input type="text" name="sendTextThread" id="sendTextThread" value="1431">
+        <input type="text" name="sendTextThread" id="sendTextThread">
         <br>
         <label for="sendTextMessage">Message :</label>
         <input type="text" name="sendTextMessage" id="sendTextMessage" value="Helllo AH :|">
@@ -1153,7 +1206,7 @@
     <fieldset>
         <legend>Send File Message</legend>
         <label for="sendFileThread">Thread Id</label>
-        <input type="text" name="sendFileThread" id="sendFileThread" value="1431">
+        <input type="text" name="sendFileThread" id="sendFileThread">
         <br>
         <input type="file" name="sendFileInput" id="sendFileInput">
         <br>
@@ -1294,6 +1347,26 @@
         <button type="submit">Update Contact</button>
     </fieldset>
 </form>
+
+<br>
+<hr>
+<br>
+
+<form action="">
+    <fieldset>
+        <legend>Remove Contact</legend>
+        <label for="contact_id">id : </label>
+        <input type="text" name="contact_id" id="contact_id" value="">
+        <br>
+        <label for="_token_">Token : </label>
+        <input type="text" name="_token_">
+        <br>
+        <input type="hidden" name="_token_issuer_" value="1">
+        <button type="button" onclick="removeContacts(document.getElementById('contact_id').value)">Remove Contact
+        </button>
+    </fieldset>
+</form>
+
 </body>
 
 <script>
@@ -1375,6 +1448,24 @@
                 onSeen: function(result) {
                     console.log(result.uniqueId + " \t has been Seen!");
                 }
+            });
+        });
+
+    /**
+     * ADD PARTICIPANTS
+     */
+    document.getElementById("apButton")
+        .addEventListener("click", function() {
+            var participants = document.getElementById("apList")
+                    .value
+                    .split(","),
+                thread = document.getElementById("apThread").value;
+
+            chatAgent.addParticipants({
+                threadId: thread,
+                contacts: participants
+            }, function(result) {
+                console.log(result);
             });
         });
 
