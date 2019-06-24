@@ -8572,6 +8572,7 @@
             };
 
             httpRequest(requestParams, function(result) {
+                console.log("add result", result);
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 

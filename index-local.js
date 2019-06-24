@@ -6,7 +6,8 @@ var params = {
     socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
     //
     ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
+    // platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
+    platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
     fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
     serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
     // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
