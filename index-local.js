@@ -134,8 +134,8 @@ chatAgent.on('chatReady', function() {
      */
     // getThreadParticipants(1576);
 
-    // chatAgent.getThreadAdmins({threadId: 1431}, function(result){
-    //     console.log("Get Thread Admins result", result);
+    // chatAgent.getThreadAdmins({threadId: 10585}, function(result){
+    //     console.log("Get Thread Admins result", result.result.participants);
     // });
 
     /**
@@ -389,8 +389,8 @@ chatAgent.on('chatReady', function() {
     // deleteMessage(35116, true);
 
     // chatAgent.deleteMultipleMessages({
-    //     threadId: 10298,
-    //     messageIds: [47710, 47709, 47708],
+    //     threadId: 10424,
+    //     messageIds: [49226, 49227, 49228],
     //     deleteForAll: true
     // }, function(result) {
     //     console.log("Delete Multiple Message Result", result);

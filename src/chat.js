@@ -3564,7 +3564,7 @@
                  *    - timeNanos                    {long}
                  */
 
-                if (fromCache) {
+                if (fromCache || pushMessageVO.time.toString().length > 14) {
                     var time = pushMessageVO.time,
                         timeMiliSeconds = parseInt(pushMessageVO.time / 1000000);
                 }
