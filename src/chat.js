@@ -3876,7 +3876,6 @@
                                         if (cacheData.length > 0) {
                                             callback && callback(returnData);
                                             callback = undefined;
-                                            debugger;
                                             returnCache = true;
                                         }
                                     });
@@ -4383,7 +4382,6 @@
                                          */
                                         if (offset > 0) {
                                             if (typeof messages[offset - 1] == 'object' && messages[offset - 1].hasGap) {
-                                                debugger;
                                                 returnCache = false;
                                             }
                                         }
@@ -4392,7 +4390,6 @@
                                             messages = messages.slice(offset, offset + count);
 
                                             if (messages.length == 0) {
-                                                debugger;
                                                 returnCache = false;
                                             }
 
@@ -4443,7 +4440,6 @@
                                                              * wait for server's response to hit in
                                                              */
                                                             if (i != 0 && i != messages.length - 1 && messages[i].hasGap) {
-                                                                debugger;
                                                                 returnCache = false;
                                                                 break;
                                                             }
@@ -5446,7 +5442,6 @@
                                                 if (cacheData.length > 0) {
                                                     callback && callback(returnData);
                                                     callback = undefined;
-                                                    debugger;
                                                     returnCache = true;
                                                 }
                                             });

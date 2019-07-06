@@ -98357,7 +98357,6 @@ arguments[4][188][0].apply(exports,arguments)
                                         if (cacheData.length > 0) {
                                             callback && callback(returnData);
                                             callback = undefined;
-                                            debugger;
                                             returnCache = true;
                                         }
                                     });
@@ -98731,7 +98730,6 @@ arguments[4][188][0].apply(exports,arguments)
                             failedQueueMessages = [];
                         }
 
-
                         //console.table({name: "After Getting Chat Failed Q", time: Date.now() - startTime });
 
                         if (dynamicHistoryCount) {
@@ -98865,7 +98863,6 @@ arguments[4][188][0].apply(exports,arguments)
                                          */
                                         if (offset > 0) {
                                             if (typeof messages[offset - 1] == 'object' && messages[offset - 1].hasGap) {
-                                                debugger;
                                                 returnCache = false;
                                             }
                                         }
@@ -98874,7 +98871,6 @@ arguments[4][188][0].apply(exports,arguments)
                                             messages = messages.slice(offset, offset + count);
 
                                             if (messages.length == 0) {
-                                                debugger;
                                                 returnCache = false;
                                             }
 
@@ -98925,7 +98921,6 @@ arguments[4][188][0].apply(exports,arguments)
                                                              * wait for server's response to hit in
                                                              */
                                                             if (i != 0 && i != messages.length - 1 && messages[i].hasGap) {
-                                                                debugger;
                                                                 returnCache = false;
                                                                 break;
                                                             }
@@ -99928,7 +99923,6 @@ arguments[4][188][0].apply(exports,arguments)
                                                 if (cacheData.length > 0) {
                                                     callback && callback(returnData);
                                                     callback = undefined;
-                                                    debugger;
                                                     returnCache = true;
                                                 }
                                             });
