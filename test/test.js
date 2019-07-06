@@ -12,23 +12,33 @@ var TOKENS = {
     GROUP_THREAD = 10349,//312,
     timingLog = true,
     params1 = {
-        // Sandbox
-        // socketAddress: "wss://chat-sandbox.pod.land/ws",
-        // ssoHost: "https://accounts.pod.land",
-        // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform",
-        // fileServer: "http://sandbox.fanapium.com:8080",
-        // serverName: "chat-server",
 
-        // Local Developement
-        // socketAddress: "ws://172.16.106.26:8003/ws",
-        socketAddress: 'ws://172.16.110.131:8003/ws',
-        ssoHost: 'http://172.16.110.76',
-        // platformHost: 'http://172.16.106.26:8080/hamsam',
-        platformHost: 'http://172.16.110.131:8080',
-        // fileServer: 'http://172.16.106.26:8080/hamsam',
-        fileServer: 'http://172.16.110.131:8080',
-        // serverName: "chat-server",
-        serverName: 'chat-server2',
+        /**
+         * Hamed Mehrara
+         */
+        // socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
+        // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+        // platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
+        // fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
+        // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+
+        /**
+         * Mehdi Sheikh Hosseini
+         */
+        socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+        ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+        platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
+        fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
+        serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+
+        /**
+         * Sand Box
+         */
+        // socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+        // ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+        // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+        // fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+        // serverName: "chat-server", // {**REQUIRED**} Server to to register on
 
         enableCache: false,
         token: TOKENS.TOKEN_1,

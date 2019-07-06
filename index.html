@@ -23,33 +23,44 @@
 
         // Production
         //        var PodChat = window.PodChat;
+
         var params = {
             appId: new Date().getTime(),
 
-            //            socketAddress: "ws://172.16.106.26:8003/ws", // {**REQUIRED**} Socket Address
+            /**
+             * Hamed Mehrara
+             */
+            // socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
+            // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+            // platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
+            // fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
+            // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+
+            /**
+             * Mehdi Sheikh Hosseini
+             */
             socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+            ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+            platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
+            fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
+            serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
 
-            ssoHost: "http://172.16.110.76", // {**REQUIRED**} Socket Address
-            platformHost: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} Platform Core Address
-            fileServer: "http://172.16.106.26:8080/hamsam", // {**REQUIRED**} File Server Address
-
-            //            serverName: "chat-server",// {**REQUIRED**} Server to to register on
-            serverName: "chat-server2",// {**REQUIRED**} Server to to register on
-
-            //            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
-            //            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
-            //            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-            //            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
-            //            serverName: "chat-server", // {**REQUIRED**} Server to to register on
+            /**
+             * Sand Box
+             */
+            // socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+            // ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+            // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+            // fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+            // serverName: "chat-server", // {**REQUIRED**} Server to to register on
 
             grantDeviceIdFromSSO: false,
             enableCache: true, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
 
-            // token: "c2e504f7e1514c0e843d85de051a443b",
              token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-//            token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
+            // token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
             // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
             // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
@@ -71,7 +82,6 @@
             P2P_THREAD_ID = 293;
 
         chatAgent.on("chatReady", function() {
-
 
             /*******************************************************
              *                       U S E R                       *
@@ -1076,7 +1086,7 @@
     <fieldset>
         <legend>General Functionalities</legend>
         <label for="g-p2p">P2P Thread Id : </label>
-        <input type="text" name="p2p" id="g-p2p" value="1431">
+        <input type="text" name="p2p" id="g-p2p" value="312">
         <label for="g-p2p-off">offset: </label>
         <input type="text" name="p2poff" id="g-p2p-off" value="0" size="2">
         <label for="g-p2p-count">Count: </label>

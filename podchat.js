@@ -94776,24 +94776,23 @@ arguments[4][188][0].apply(exports,arguments)
                 /**
                  * Initialize Cache Databases
                  */
-                startCacheDatabases();
+                startCacheDatabases(function() {
+                    if (grantDeviceIdFromSSO) {
+                        var getDeviceIdWithTokenTime = new Date().getTime();
+                        getDeviceIdWithToken(function(retrievedDeviceId) {
+                            if (actualTimingLog) {
+                                Utility.chatStepLogger('Get Device ID ', new Date().getTime() - getDeviceIdWithTokenTime);
+                            }
 
-                if (grantDeviceIdFromSSO) {
-                    var getDeviceIdWithTokenTime = new Date().getTime();
-                    getDeviceIdWithToken(function(retrievedDeviceId) {
+                            deviceId = retrievedDeviceId;
 
-                        if (actualTimingLog) {
-                            Utility.chatStepLogger('Get Device ID ', new Date().getTime() - getDeviceIdWithTokenTime);
-                        }
-
-                        deviceId = retrievedDeviceId;
-
+                            initAsync();
+                        });
+                    }
+                    else {
                         initAsync();
-                    });
-                }
-                else {
-                    initAsync();
-                }
+                    }
+                });
             },
 
             /**
@@ -94897,6 +94896,10 @@ arguments[4][188][0].apply(exports,arguments)
                                                     generateEncryptionKey({
                                                         keyAlgorithm: 'AES',
                                                         keySize: 256
+                                                    }, function() {
+                                                        chatState = true;
+                                                        fireEvent('chatReady');
+                                                        chatSendQueueHandler();
                                                     });
                                                 }
                                             })
@@ -95059,7 +95062,7 @@ arguments[4][188][0].apply(exports,arguments)
              *
              * @return {undefined}
              */
-            generateEncryptionKey = function(params) {
+            generateEncryptionKey = function(params, callback) {
                 var data = {
                     validity: 10 * 365 * 24 * 60 * 60, // 10 Years
                     renew: false,
@@ -95108,6 +95111,7 @@ arguments[4][188][0].apply(exports,arguments)
                                         }, function(result) {
                                             if (!result.hasError) {
                                                 cacheSecret = result.secretKey;
+                                                callback && callback();
                                             }
                                         });
                                     })
@@ -95127,19 +95131,8 @@ arguments[4][188][0].apply(exports,arguments)
                                 });
                             }
                         }
-
-                        // callback && callback({
-                        //     hasError: false,
-                        //     keyId: response.keyId
-                        // });
                     }
                     else {
-                        // callback && callback({
-                        //     hasError: true,
-                        //     code: result.error,
-                        //     message: result.error_description
-                        // });
-
                         fireEvent('error', {
                             code: result.error,
                             message: result.error_description,
@@ -96946,7 +96939,7 @@ arguments[4][188][0].apply(exports,arguments)
                         /**
                          * Remove Message from cache
                          */
-                        if (canUseCache) {
+                        if (canUseCache && cacheSecret.length > 0) {
                             if (db) {
                                 db.messages.where('id')
                                     .equals(messageContent)
@@ -98364,6 +98357,7 @@ arguments[4][188][0].apply(exports,arguments)
                                         if (cacheData.length > 0) {
                                             callback && callback(returnData);
                                             callback = undefined;
+                                            debugger;
                                             returnCache = true;
                                         }
                                     });
@@ -98638,6 +98632,8 @@ arguments[4][188][0].apply(exports,arguments)
              * @return {object} Instant result of sendMessage
              */
             getHistory = function(params, callback) {
+                var startTime = Date.now();
+
                 if (parseInt(params.threadId) > 0) {
                     var sendMessageParams = {
                             chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
@@ -98672,6 +98668,7 @@ arguments[4][188][0].apply(exports,arguments)
                         failedQueueMessages = [],
                         uploadingQueueMessages = [];
 
+                    //console.table({name: "Params Setting", time: Date.now() - startTime });
                     if (sendingQueue) {
                         getChatSendQueue(parseInt(params.threadId), function(sendQueueMessages) {
                             for (var i = 0; i < sendQueueMessages.length; i++) {
@@ -98692,6 +98689,8 @@ arguments[4][188][0].apply(exports,arguments)
                         });
                     }
 
+                    //console.table({name: "After Getting Send Q", time: Date.now() - startTime });
+
                     if (uploadingQueue) {
                         getChatUploadQueue(parseInt(params.threadId), function(uploadQueueMessages) {
                             for (var i = 0; i < uploadQueueMessages.length; i++) {
@@ -98703,6 +98702,8 @@ arguments[4][188][0].apply(exports,arguments)
                             }
                         });
                     }
+
+                    //console.table({name: "After Getting Upload Q", time: Date.now() - startTime });
 
                     getChatWaitQueue(parseInt(params.threadId), failedQueue, function(waitQueueMessages) {
                         if (cacheSecret.length > 0) {
@@ -98729,6 +98730,9 @@ arguments[4][188][0].apply(exports,arguments)
                         else {
                             failedQueueMessages = [];
                         }
+
+
+                        //console.table({name: "After Getting Chat Failed Q", time: Date.now() - startTime });
 
                         if (dynamicHistoryCount) {
                             var tempCount = count - (sendingQueueMessages.length + failedQueueMessages.length + uploadingQueueMessages.length);
@@ -98789,6 +98793,8 @@ arguments[4][188][0].apply(exports,arguments)
                             sendMessageParams.content.metadataCriteria = whereClause.metadataCriteria = params.metadataCriteria;
                         }
 
+                        //console.table({name: "After Setting Cache Parameters", time: Date.now() - startTime });
+
                         /**
                          * Get Thread Messages from cache
                          *
@@ -98796,7 +98802,13 @@ arguments[4][188][0].apply(exports,arguments)
                          * on cached data, if this attribute has been set, we
                          * should not return any results from cache
                          */
-                        if (functionLevelCache && canUseCache && cacheSecret.length > 0 && !whereClause.hasOwnProperty('metadataCriteria')) {
+
+                        // TODO ASC order?!
+                        if (functionLevelCache
+                            && canUseCache
+                            && cacheSecret.length > 0
+                            && !whereClause.hasOwnProperty('metadataCriteria')
+                            && order.toLowerCase() != "asc") {
                             if (db) {
                                 var table = db.messages,
                                     collection;
@@ -98853,6 +98865,7 @@ arguments[4][188][0].apply(exports,arguments)
                                          */
                                         if (offset > 0) {
                                             if (typeof messages[offset - 1] == 'object' && messages[offset - 1].hasGap) {
+                                                debugger;
                                                 returnCache = false;
                                             }
                                         }
@@ -98861,11 +98874,44 @@ arguments[4][188][0].apply(exports,arguments)
                                             messages = messages.slice(offset, offset + count);
 
                                             if (messages.length == 0) {
+                                                debugger;
                                                 returnCache = false;
                                             }
 
                                             cacheFirstMessage = messages[0];
                                             cacheLastMessage = messages[messages.length - 1];
+
+                                            /**
+                                             * There should not be any GAPs before
+                                             * firstMessage of requested messages in cache
+                                             * if there is a gap or more, the cache is not
+                                             * valid, therefore we wont return any values
+                                             * from cache and wait for server's response
+                                             *
+                                             * To find out if there is a gap or not, all we
+                                             * have to do is to check messageGaps table and
+                                             * query it for gaps with time bigger than
+                                             * firstMessage's time
+                                             */
+                                            if(cacheFirstMessage && cacheFirstMessage.time > 0) {
+                                                db.messageGaps
+                                                    .where('time')
+                                                    .above(cacheFirstMessage.time)
+                                                    .toArray()
+                                                    .then(function(gaps) {
+                                                        // TODO fill these gaps in a worker
+                                                        if(gaps.length > 0) {
+                                                            returnCache = false;
+                                                        }
+                                                    })
+                                                    .catch(function(error) {
+                                                        fireEvent('error', {
+                                                            code: error.code,
+                                                            message: error.message,
+                                                            error: error
+                                                        });
+                                                    });
+                                            }
 
                                             if (returnCache) {
                                                 collection.count()
@@ -98879,6 +98925,7 @@ arguments[4][188][0].apply(exports,arguments)
                                                              * wait for server's response to hit in
                                                              */
                                                             if (i != 0 && i != messages.length - 1 && messages[i].hasGap) {
+                                                                debugger;
                                                                 returnCache = false;
                                                                 break;
                                                             }
@@ -98913,6 +98960,7 @@ arguments[4][188][0].apply(exports,arguments)
                                                             }
                                                         }
 
+                                                        //console.table({name: "After Getting Messages From Cache", time: Date.now() - startTime });
                                                         /**
                                                          * If there is a GAP between messages of cache result
                                                          * WE should not return data from cache, cause it is not valid!
@@ -98973,11 +99021,14 @@ arguments[4][188][0].apply(exports,arguments)
                             }
                         }
 
+                        //console.table({name: "After Returning Data From Cache", time: Date.now() - startTime });
                         /**
                          * Get Thread Messages From Server
                          */
                         return sendMessage(sendMessageParams, {
                             onResult: function(result) {
+
+                                //console.table({name: "Data Received From Server", time: Date.now() - startTime });
                                 var returnData = {
                                         hasError: result.hasError,
                                         cache: false,
@@ -99010,6 +99061,7 @@ arguments[4][188][0].apply(exports,arguments)
                                         }
                                     }
 
+                                    //console.table({name: "After Reformating Received Messages From Server", time: Date.now() - startTime });
                                     /**
                                      * Add Thread Messages into cache database
                                      * and remove deleted messages from cache database
@@ -99529,13 +99581,38 @@ arguments[4][188][0].apply(exports,arguments)
                                                      * We should check to see if any GAPs have been
                                                      * filled with these messages or not?
                                                      */
+
                                                     db.messageGaps
                                                         .where('waitsFor')
                                                         .anyOf(resultMessagesId)
                                                         .and(function(messages) {
                                                             return messages.owner == userInfo.id;
                                                         })
-                                                        .delete()
+                                                        .toArray()
+                                                        .then(function(needsToBeDeleted) {
+                                                            /**
+                                                             * These messages have to be deleted from messageGaps table
+                                                             */
+                                                            var messagesToBeDeleted = needsToBeDeleted.map(function(msg) {
+                                                                /**
+                                                                 * We have to update messages table and
+                                                                 * set hasGap for those messages as false
+                                                                 */
+                                                                db.messages
+                                                                    .update([userInfo.id, msg.id], {hasGap: false})
+                                                                    .catch(function(error) {
+                                                                        fireEvent('error', {
+                                                                            code: error.code,
+                                                                            message: error.message,
+                                                                            error: error
+                                                                        });
+                                                                    });
+
+                                                                return [userInfo.id, msg.id];
+                                                            });
+
+                                                            db.messageGaps.bulkDelete(messagesToBeDeleted);
+                                                        })
                                                         .catch(function(error) {
                                                             fireEvent('error', {
                                                                 code: error.code,
@@ -99561,6 +99638,7 @@ arguments[4][188][0].apply(exports,arguments)
                                         }
                                     }
 
+                                    //console.table({name: "After Adding New Messages Into Cache Database", time: Date.now() - startTime });
                                     var resultData = {
                                         history: history,
                                         contentCount: result.contentCount,
@@ -99581,6 +99659,8 @@ arguments[4][188][0].apply(exports,arguments)
                                         returnData.result.failed = failedQueueMessages;
                                     }
 
+
+                                    //console.table({name: "Before Check Differences between Cache and Server response", time: Date.now() - startTime });
                                     /**
                                      * Check Differences between Cache and Server response
                                      */
@@ -99612,7 +99692,6 @@ arguments[4][188][0].apply(exports,arguments)
                                                  * they are not the same, we should emit
                                                  */
                                                 if (cacheResult[key].data != serverResult[key].data) {
-
                                                     /**
                                                      * This message is already on cache, but it's
                                                      * content has been changed, so we emit a
@@ -99640,10 +99719,13 @@ arguments[4][188][0].apply(exports,arguments)
                                                 });
                                             }
                                         }
+
+                                        //console.table({name: "After Check Differences between Cache and Server response (1)", time: Date.now() - startTime });
                                     }
                                     else {
                                         callback && callback(returnData);
                                         callback = undefined;
+                                        //console.table({name: "After Check Differences between Cache and Server response (2)", time: Date.now() - startTime });
                                     }
                                 }
                             }
@@ -99846,6 +99928,7 @@ arguments[4][188][0].apply(exports,arguments)
                                                 if (cacheData.length > 0) {
                                                     callback && callback(returnData);
                                                     callback = undefined;
+                                                    debugger;
                                                     returnCache = true;
                                                 }
                                             });
@@ -100549,6 +100632,13 @@ arguments[4][188][0].apply(exports,arguments)
              * @return {undefined}
              */
             fireEvent = function(eventName, param) {
+                if(eventName == "chatReady") {
+                    if (typeof navigator == "undefined") {
+                        console.log("\x1b[90m    ☰ \x1b[0m\x1b[90m%s\x1b[0m", "Chat is Ready 😉");
+                    } else {
+                        console.log("%c   Chat is Ready 😉", 'border-left: solid #666 10px; color: #666;');
+                    }
+                }
                 for (var id in eventCallbacks[eventName]) {
                     eventCallbacks[eventName][id](param);
                 }
@@ -100671,7 +100761,7 @@ arguments[4][188][0].apply(exports,arguments)
              *
              * @return {undefined}
              */
-            startCacheDatabases = function() {
+            startCacheDatabases = function(callback) {
                 if (hasCache) {
                     queueDb = new Dexie('podQueues');
 
@@ -100700,11 +100790,14 @@ arguments[4][188][0].apply(exports,arguments)
 
                         db.on('ready', function() {
                             isCacheReady = true;
+                            callback && callback();
                         }, true);
 
                         db.on('versionchange', function(event) {
                             window.location.reload();
                         });
+                    } else {
+                        callback && callback();
                     }
                 }
                 else {
