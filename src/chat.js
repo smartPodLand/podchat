@@ -1,4 +1,4 @@
-(function() {
+(function () {
     /*
      * Pod Chat Module
      * @module chat
@@ -291,14 +291,14 @@
          *            P R I V A T E   M E T H O D S            *
          *******************************************************/
 
-        var init = function() {
+        var init = function () {
                 /**
                  * Initialize Cache Databases
                  */
-                startCacheDatabases(function() {
+                startCacheDatabases(function () {
                     if (grantDeviceIdFromSSO) {
                         var getDeviceIdWithTokenTime = new Date().getTime();
-                        getDeviceIdWithToken(function(retrievedDeviceId) {
+                        getDeviceIdWithToken(function (retrievedDeviceId) {
                             if (actualTimingLog) {
                                 Utility.chatStepLogger('Get Device ID ', new Date().getTime() - getDeviceIdWithTokenTime);
                             }
@@ -324,7 +324,7 @@
              * @return {undefined}
              * @return {undefined}
              */
-            initAsync = function() {
+            initAsync = function () {
                 var asyncGetReadyTime = new Date().getTime();
 
                 asyncClient = new Async({
@@ -348,7 +348,7 @@
                     asyncLogging: asyncLogging
                 });
 
-                asyncClient.on('asyncReady', function() {
+                asyncClient.on('asyncReady', function () {
                     if (actualTimingLog) {
                         Utility.chatStepLogger('Async Connection ', new Date().getTime() - asyncGetReadyTime);
                     }
@@ -358,7 +358,7 @@
                     if (!userInfo) {
                         var getUserInfoTime = new Date().getTime();
 
-                        getUserInfo(function(userInfoResult) {
+                        getUserInfo(function (userInfoResult) {
                             if (actualTimingLog) {
                                 Utility.chatStepLogger('Get User Info ', new Date().getTime() - getUserInfoTime);
                             }
@@ -379,13 +379,13 @@
                                             .where('id')
                                             .equals(parseInt(userInfo.id))
                                             .toArray()
-                                            .then(function(users) {
+                                            .then(function (users) {
                                                 if (users.length > 0 && typeof users[0].keyId != 'undefined') {
                                                     var user = users[0];
 
                                                     getEncryptionKey({
                                                         keyId: user.keyId
-                                                    }, function(result) {
+                                                    }, function (result) {
                                                         if (!result.hasError) {
                                                             cacheSecret = result.secretKey;
 
@@ -415,14 +415,14 @@
                                                     generateEncryptionKey({
                                                         keyAlgorithm: 'AES',
                                                         keySize: 256
-                                                    }, function() {
+                                                    }, function () {
                                                         chatState = true;
                                                         fireEvent('chatReady');
                                                         chatSendQueueHandler();
                                                     });
                                                 }
                                             })
-                                            .catch(function(error) {
+                                            .catch(function (error) {
                                                 fireEvent('error', {
                                                     code: error.errorCode,
                                                     message: error.errorMessage,
@@ -453,7 +453,7 @@
                     }
                 });
 
-                asyncClient.on('stateChange', function(state) {
+                asyncClient.on('stateChange', function (state) {
                     fireEvent('chatState', state);
                     chatFullStateObject = state;
 
@@ -472,30 +472,30 @@
                     }
                 });
 
-                asyncClient.on('connect', function(newPeerId) {
+                asyncClient.on('connect', function (newPeerId) {
                     asyncGetReadyTime = new Date().getTime();
                     peerId = newPeerId;
                     fireEvent('connect');
                     ping();
                 });
 
-                asyncClient.on('disconnect', function(event) {
+                asyncClient.on('disconnect', function (event) {
                     oldPeerId = peerId;
                     peerId = undefined;
                     fireEvent('disconnect', event);
                 });
 
-                asyncClient.on('reconnect', function(newPeerId) {
+                asyncClient.on('reconnect', function (newPeerId) {
                     peerId = newPeerId;
                     fireEvent('reconnect');
                 });
 
-                asyncClient.on('message', function(params, ack) {
+                asyncClient.on('message', function (params, ack) {
                     receivedAsyncMessageHandler(params);
                     ack && ack();
                 });
 
-                asyncClient.on('error', function(error) {
+                asyncClient.on('error', function (error) {
                     fireEvent('error', {
                         code: error.errorCode,
                         message: error.errorMessage,
@@ -516,7 +516,7 @@
              *
              * @return {undefined}
              */
-            getDeviceIdWithToken = function(callback) {
+            getDeviceIdWithToken = function (callback) {
                 var deviceId;
 
                 var params = {
@@ -527,7 +527,7 @@
                     }
                 };
 
-                httpRequest(params, function(result) {
+                httpRequest(params, function (result) {
                     if (!result.hasError) {
                         var devices = JSON.parse(result.result.responseText).devices;
                         if (devices && devices.length > 0) {
@@ -581,7 +581,7 @@
              *
              * @return {undefined}
              */
-            generateEncryptionKey = function(params, callback) {
+            generateEncryptionKey = function (params, callback) {
                 var data = {
                     validity: 10 * 365 * 24 * 60 * 60, // 10 Years
                     renew: false,
@@ -608,7 +608,7 @@
                     }
                 };
 
-                httpRequest(httpRequestParams, function(result) {
+                httpRequest(httpRequestParams, function (result) {
                     if (!result.hasError) {
                         try {
                             var response = JSON.parse(result.result.responseText);
@@ -624,17 +624,17 @@
                             if (db) {
                                 db.users
                                     .update(userInfo.id, {keyId: response.keyId})
-                                    .then(function() {
+                                    .then(function () {
                                         getEncryptionKey({
                                             keyId: response.keyId
-                                        }, function(result) {
+                                        }, function (result) {
                                             if (!result.hasError) {
                                                 cacheSecret = result.secretKey;
                                                 callback && callback();
                                             }
                                         });
                                     })
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -674,7 +674,7 @@
              *
              * @return {undefined}
              */
-            getEncryptionKey = function(params, callback) {
+            getEncryptionKey = function (params, callback) {
                 var keyId;
 
                 if (params) {
@@ -689,7 +689,7 @@
                             }
                         };
 
-                        httpRequest(httpRequestParams, function(result) {
+                        httpRequest(httpRequestParams, function (result) {
                             if (!result.hasError) {
                                 try {
                                     var response = JSON.parse(result.result.responseText);
@@ -733,7 +733,7 @@
              *
              * @return {undefined}
              */
-            httpRequest = function(params, callback) {
+            httpRequest = function (params, callback) {
                 var url = params.url,
                     fileSize,
                     originalFileName,
@@ -784,7 +784,7 @@
                                 url: url,
                                 formData: postFormData,
                                 headers: headers
-                            }, function(error, response, body) {
+                            }, function (error, response, body) {
                                 if (!error) {
                                     if (response.statusCode == 200) {
                                         var body = JSON.parse(body);
@@ -883,7 +883,7 @@
                                     });
                                 }
                             })
-                                .on('abort', function() {
+                                .on('abort', function () {
                                     hasError = true;
                                     fireEvent('fileUploadEvents', {
                                         threadId: threadId,
@@ -907,7 +907,7 @@
 
                             var oldPercent = 0;
 
-                            var q = setInterval(function() {
+                            var q = setInterval(function () {
                                 if (r.req && r.req.connection) {
                                     var dispatched = r.req.connection._bytesDispatched;
                                     var percent = Math.round(dispatched * 100 / fileSize);
@@ -940,7 +940,7 @@
                                 url: url,
                                 body: data,
                                 headers: headers
-                            }, function(error, response, body) {
+                            }, function (error, response, body) {
                                 if (!error) {
                                     if (response.statusCode == 200) {
                                         callback && callback({
@@ -981,7 +981,7 @@
                         Request.get({
                             url: url,
                             headers: headers
-                        }, function(error, response, body) {
+                        }, function (error, response, body) {
                             if (!error) {
                                 if (response.statusCode == 200) {
                                     callback && callback({
@@ -1022,7 +1022,7 @@
                         : httpRequestTimeout;
 
                     httpRequestObject[eval('fileUploadUniqueId')]
-                        .addEventListener('error', function(event) {
+                        .addEventListener('error', function (event) {
                             if (callback) {
                                 if (hasFile) {
                                     hasError = true;
@@ -1049,7 +1049,7 @@
                         }, false);
 
                     httpRequestObject[eval('fileUploadUniqueId')].addEventListener('abort',
-                        function(event) {
+                        function (event) {
                             if (callback) {
                                 if (hasFile) {
                                     hasError = true;
@@ -1133,7 +1133,7 @@
                                         ? data['image']
                                         : data['file'];
 
-                                    httpRequestObject[eval('fileUploadUniqueId')].upload.onprogress = function(event) {
+                                    httpRequestObject[eval('fileUploadUniqueId')].upload.onprogress = function (event) {
                                         if (event.lengthComputable && !hasError) {
                                             fireEvent('fileUploadEvents', {
                                                 threadId: threadId,
@@ -1187,7 +1187,7 @@
                         });
                     }
 
-                    httpRequestObject[eval('fileUploadUniqueId')].onreadystatechange = function() {
+                    httpRequestObject[eval('fileUploadUniqueId')].onreadystatechange = function () {
                         if (httpRequestObject[eval('fileUploadUniqueId')].readyState == 4) {
                             if (httpRequestObject[eval('fileUploadUniqueId')].status == 200) {
                                 if (hasFile) {
@@ -1274,7 +1274,7 @@
                 else {
                     getUserInfoTimeout && clearTimeout(getUserInfoTimeout);
 
-                    getUserInfoTimeout = setTimeout(function() {
+                    getUserInfoTimeout = setTimeout(function () {
                         getUserInfoRecursive(callback);
                     }, getUserInfoRetryCount * 10000);
 
@@ -1282,7 +1282,7 @@
                         chatMessageVOType: chatMessageVOTypes.USER_INFO,
                         typeCode: params.typeCode
                     }, {
-                        onResult: function(result) {
+                        onResult: function (result) {
                             var returnData = {
                                 hasError: result.hasError,
                                 cache: false,
@@ -1305,7 +1305,7 @@
                                             .where('id')
                                             .equals(parseInt(currentUser.id))
                                             .toArray()
-                                            .then(function(users) {
+                                            .then(function (users) {
                                                 if (users.length > 0 && users[0].id > 0) {
                                                     db.users
                                                         .update(currentUser.id, {
@@ -1314,7 +1314,7 @@
                                                             image: currentUser.image,
                                                             name: currentUser.name
                                                         })
-                                                        .catch(function(error) {
+                                                        .catch(function (error) {
                                                             fireEvent('error', {
                                                                 code: error.code,
                                                                 message: error.message,
@@ -1324,7 +1324,7 @@
                                                 }
                                                 else {
                                                     db.users.put(currentUser)
-                                                        .catch(function(error) {
+                                                        .catch(function (error) {
                                                             fireEvent('error', {
                                                                 code: error.code,
                                                                 message: error.message,
@@ -1386,7 +1386,7 @@
              *
              * @return {object} Instant Function Return
              */
-            sendMessage = function(params, callbacks, recursiveCallback) {
+            sendMessage = function (params, callbacks, recursiveCallback) {
                 /**
                  * + ChatMessage        {object}
                  *    - token           {string}
@@ -1531,7 +1531,7 @@
                     }
                 };
 
-                asyncClient.send(data, function(res) {
+                asyncClient.send(data, function (res) {
                     if (res.hasError && callbacks) {
                         if (typeof callbacks == 'function') {
                             callbacks(res);
@@ -1547,7 +1547,7 @@
                 });
 
                 sendPingTimeout && clearTimeout(sendPingTimeout);
-                sendPingTimeout = setTimeout(function() {
+                sendPingTimeout = setTimeout(function () {
                     ping();
                 }, chatPingMessageInterval);
 
@@ -1561,7 +1561,7 @@
                 };
             },
 
-            sendSystemMessage = function(params) {
+            sendSystemMessage = function (params) {
                 return sendMessage({
                     chatMessageVOType: chatMessageVOTypes.SYSTEM_MESSAGE,
                     subjectId: params.subjectId,
@@ -1582,7 +1582,7 @@
              *
              * @return {undefined}
              */
-            chatSendQueueHandler = function() {
+            chatSendQueueHandler = function () {
                 chatSendQueueHandlerTimeout && clearTimeout(chatSendQueueHandlerTimeout);
                 if (chatSendQueue.length) {
                     var messageToBeSend = chatSendQueue[0];
@@ -1606,10 +1606,10 @@
                      * messages history.
                      */
                     if (chatState) {
-                        getChatSendQueue(0, function(chatSendQueue) {
+                        getChatSendQueue(0, function (chatSendQueue) {
                             deleteFromChatSentQueue(messageToBeSend,
-                                function() {
-                                    sendMessage(messageToBeSend.message, messageToBeSend.callbacks, function() {
+                                function () {
+                                    sendMessage(messageToBeSend.message, messageToBeSend.callbacks, function () {
                                         if (chatSendQueue.length) {
                                             chatSendQueueHandler();
                                         }
@@ -1630,7 +1630,7 @@
              *
              * @return {undefined}
              */
-            ping = function() {
+            ping = function () {
                 if (chatState && userInfo !== undefined) {
                     /**
                      * Ping messages should be sent ASAP, because
@@ -1657,7 +1657,7 @@
              *
              * @return {undefined}
              */
-            clearChatServerCaches = function() {
+            clearChatServerCaches = function () {
                 sendMessage({
                     chatMessageVOType: chatMessageVOTypes.LOGOUT,
                     pushMsgType: 4
@@ -1675,7 +1675,7 @@
              *
              * @return {undefined}
              */
-            receivedAsyncMessageHandler = function(asyncMessage) {
+            receivedAsyncMessageHandler = function (asyncMessage) {
                 /**
                  * + Message Received From Async      {object}
                  *    - id                            {long}
@@ -1701,7 +1701,7 @@
              *
              * @return {undefined}
              */
-            chatMessageHandler = function(chatMessage) {
+            chatMessageHandler = function (chatMessage) {
                 var threadId = chatMessage.subjectId,
                     type = chatMessage.type,
                     messageContent = (typeof chatMessage.content === 'string')
@@ -1753,7 +1753,7 @@
                                 offset: 0,
                                 threadId: threadId,
                                 id: messageContent.messageId
-                            }, function(result) {
+                            }, function (result) {
                                 if (!result.hasError && !result.cache) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_DELIVERY',
@@ -1789,7 +1789,7 @@
                                 offset: 0,
                                 threadId: threadId,
                                 id: messageContent.messageId
-                            }, function(result) {
+                            }, function (result) {
                                 if (!result.hasError && !result.cache) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_SEEN',
@@ -1859,11 +1859,11 @@
                                  */
                                 db.participants.where('threadId')
                                     .equals(parseInt(threadId))
-                                    .and(function(participant) {
+                                    .and(function (participant) {
                                         return (participant.id == messageContent.id || participant.owner == userInfo.id);
                                     })
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -1885,7 +1885,7 @@
                                     db.threads.where('[owner+id]')
                                         .equals([userInfo.id, threadId])
                                         .delete()
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -1899,11 +1899,11 @@
                                      */
                                     db.messages.where('threadId')
                                         .equals(parseInt(threadId))
-                                        .and(function(message) {
+                                        .and(function (message) {
                                             return message.owner == userInfo.id;
                                         })
                                         .delete()
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -1924,7 +1924,7 @@
                         if (fullResponseObject) {
                             getThreads({
                                 threadIds: [threadId]
-                            }, function(threadsResult) {
+                            }, function (threadsResult) {
                                 if (!threadsResult.cache) {
                                     var threads = threadsResult.result.threads;
                                     if (threads.length > 0) {
@@ -2017,7 +2017,7 @@
                                 }
 
                                 db.participants.bulkPut(cacheData)
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -2037,7 +2037,7 @@
                         if (fullResponseObject) {
                             getThreads({
                                 threadIds: [messageContent.id]
-                            }, function(threadsResult) {
+                            }, function (threadsResult) {
                                 var threads = threadsResult.result.threads;
 
                                 if (!threadsResult.cache) {
@@ -2126,7 +2126,7 @@
                                 db.threads.where('[owner+id]')
                                     .equals([userInfo.id, threadId])
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -2140,11 +2140,11 @@
                                  */
                                 db.messages.where('threadId')
                                     .equals(parseInt(threadId))
-                                    .and(function(message) {
+                                    .and(function (message) {
                                         return message.owner == userInfo.id;
                                     })
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -2158,11 +2158,11 @@
                                  */
                                 db.participants.where('threadId')
                                     .equals(parseInt(threadId))
-                                    .and(function(participant) {
+                                    .and(function (participant) {
                                         return participant.owner == userInfo.id;
                                     })
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -2198,11 +2198,11 @@
                                 for (var i = 0; i < messageContent.length; i++) {
                                     db.participants.where('id')
                                         .equals(parseInt(messageContent[i].id))
-                                        .and(function(participants) {
+                                        .and(function (participants) {
                                             return participants.threadId == threadId;
                                         })
                                         .delete()
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -2223,7 +2223,7 @@
                         if (fullResponseObject) {
                             getThreads({
                                 threadIds: [threadId]
-                            }, function(threadsResult) {
+                            }, function (threadsResult) {
                                 var threads = threadsResult.result.threads;
 
                                 if (!threadsResult.cache) {
@@ -2271,7 +2271,7 @@
                         if (fullResponseObject) {
                             getThreads({
                                 threadIds: [threadId]
-                            }, function(threadsResult) {
+                            }, function (threadsResult) {
                                 var thread = threadsResult.result.threads[0];
                                 thread.mute = true;
 
@@ -2305,7 +2305,7 @@
                         if (fullResponseObject) {
                             getThreads({
                                 threadIds: [threadId]
-                            }, function(threadsResult) {
+                            }, function (threadsResult) {
                                 var thread = threadsResult.result.threads[0];
                                 thread.mute = false;
 
@@ -2339,7 +2339,7 @@
                             getThreads({
                                 threadIds: [messageContent.id],
                                 cache: false
-                            }, function(threadsResult) {
+                            }, function (threadsResult) {
                                 var thread = formatDataToMakeConversation(threadsResult.result.threads[0]);
 
                                 /**
@@ -2368,7 +2368,7 @@
                                         }
 
                                         db.threads.put(tempData)
-                                            .catch(function(error) {
+                                            .catch(function (error) {
                                                 fireEvent('error', {
                                                     code: error.code,
                                                     message: error.message,
@@ -2462,11 +2462,11 @@
                             if (db) {
                                 db.messages.where('id')
                                     .equals(messageContent)
-                                    .and(function(message) {
+                                    .and(function (message) {
                                         return message.owner == userInfo.id;
                                     })
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: 6602,
                                             message: CHAT_ERRORS[6602],
@@ -2525,7 +2525,7 @@
                                 }
 
                                 db.threads.put(tempData)
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -2557,7 +2557,7 @@
                         if (fullResponseObject) {
                             getThreads({
                                 threadIds: [messageContent.conversationId]
-                            }, function(threadsResult) {
+                            }, function (threadsResult) {
                                 var threads = threadsResult.result.threads;
 
                                 if (!threadsResult.cache) {
@@ -2722,7 +2722,7 @@
              *
              * @return {undefined}
              */
-            sendMessageCallbacksHandler = function(actionType, threadId, uniqueId) {
+            sendMessageCallbacksHandler = function (actionType, threadId, uniqueId) {
                 switch (actionType) {
 
                     case chatMessageVOTypes.DELIVERY:
@@ -2808,7 +2808,7 @@
              *
              * @return {undefined}
              */
-            newMessageHandler = function(threadId, messageContent) {
+            newMessageHandler = function (threadId, messageContent) {
 
                 var message = formatDataToMakeMessage(threadId, messageContent);
                 deliver({
@@ -2848,7 +2848,7 @@
                         }
 
                         db.messages.put(tempData)
-                            .catch(function(error) {
+                            .catch(function (error) {
                                 fireEvent('error', {
                                     code: error.code,
                                     message: error.message,
@@ -2876,7 +2876,7 @@
                 if (fullResponseObject) {
                     getThreads({
                         threadIds: [threadId]
-                    }, function(threadsResult) {
+                    }, function (threadsResult) {
                         var threads = threadsResult.result.threads;
                         // if (messageContent.participant.id !== userInfo.id && !threadsResult.cache) {
                         fireEvent('threadEvents', {
@@ -2921,11 +2921,11 @@
                 if (hasCache && typeof queueDb == 'object') {
                     queueDb.waitQ.where('uniqueId')
                         .equals(message.uniqueId)
-                        .and(function(item) {
+                        .and(function (item) {
                             return item.owner == parseInt(userInfo.id);
                         })
                         .delete()
-                        .catch(function(error) {
+                        .catch(function (error) {
                             fireEvent('error', {
                                 code: error.code,
                                 message: error.message,
@@ -2954,7 +2954,7 @@
              *
              * @return {undefined}
              */
-            chatEditMessageHandler = function(threadId, messageContent) {
+            chatEditMessageHandler = function (threadId, messageContent) {
                 var message = formatDataToMakeMessage(threadId, messageContent);
 
                 /**
@@ -2977,7 +2977,7 @@
                              * Insert Message into cache database
                              */
                             db.messages.put(tempData)
-                                .catch(function(error) {
+                                .catch(function (error) {
                                     fireEvent('error', {
                                         code: error.code,
                                         message: error.message,
@@ -3024,7 +3024,7 @@
              *
              * @return {object} Formatted Thread Object
              */
-            createThread = function(messageContent, addFromService) {
+            createThread = function (messageContent, addFromService) {
                 var threadData = formatDataToMakeConversation(messageContent);
 
                 if (addFromService) {
@@ -3061,7 +3061,7 @@
                             }
 
                             db.threads.put(tempData)
-                                .catch(function(error) {
+                                .catch(function (error) {
                                     fireEvent('error', {
                                         code: error.code,
                                         message: error.message,
@@ -3092,7 +3092,7 @@
              *
              * @return {object} linkedUser Object
              */
-            formatDataToMakeLinkedUser = function(messageContent) {
+            formatDataToMakeLinkedUser = function (messageContent) {
                 /**
                  * + RelatedUserVO                 {object}
                  *   - coreUserId                  {long}
@@ -3124,7 +3124,7 @@
              *
              * @return {object} contact Object
              */
-            formatDataToMakeContact = function(messageContent) {
+            formatDataToMakeContact = function (messageContent) {
                 /**
                  * + ContactVO                        {object}
                  *    - id                            {long}
@@ -3176,7 +3176,7 @@
              *
              * @return {object} user Object
              */
-            formatDataToMakeUser = function(messageContent) {
+            formatDataToMakeUser = function (messageContent) {
                 /**
                  * + User                     {object}
                  *    - id                    {long}
@@ -3214,7 +3214,7 @@
              *
              * @return {object} blockedUser Object
              */
-            formatDataToMakeBlockedUser = function(messageContent) {
+            formatDataToMakeBlockedUser = function (messageContent) {
                 /**
                  * + BlockedUser              {object}
                  *    - id                    {long}
@@ -3246,7 +3246,7 @@
              *
              * @return {object} inviteeData Object
              */
-            formatDataToMakeInvitee = function(messageContent) {
+            formatDataToMakeInvitee = function (messageContent) {
                 /**
                  * + InviteeVO       {object}
                  *    - id           {string}
@@ -3272,7 +3272,7 @@
              *
              * @return {object} participant Object
              */
-            formatDataToMakeParticipant = function(messageContent, threadId) {
+            formatDataToMakeParticipant = function (messageContent, threadId) {
                 /**
                  * + ParticipantVO                   {object}
                  *    - id                           {long}
@@ -3338,7 +3338,7 @@
              *
              * @return {object} Conversation Object
              */
-            formatDataToMakeConversation = function(messageContent) {
+            formatDataToMakeConversation = function (messageContent) {
 
                 /**
                  * + Conversation                           {object}
@@ -3398,12 +3398,12 @@
                     partnerLastSeenMessageId: messageContent.partnerLastSeenMessageId,
                     partnerLastSeenMessageTime: (messageContent.partnerLastSeenMessageNanos)
                         ? (parseInt(parseInt(messageContent.partnerLastSeenMessageTime) / 1000) * 1000000000) +
-                                                parseInt(messageContent.partnerLastSeenMessageNanos)
+                        parseInt(messageContent.partnerLastSeenMessageNanos)
                         : (parseInt(messageContent.partnerLastSeenMessageTime)),
                     partnerLastDeliveredMessageId: messageContent.partnerLastDeliveredMessageId,
                     partnerLastDeliveredMessageTime: (messageContent.partnerLastDeliveredMessageNanos)
                         ? (parseInt(parseInt(messageContent.partnerLastDeliveredMessageTime) / 1000) * 1000000000) +
-                                                     parseInt(messageContent.partnerLastDeliveredMessageNanos)
+                        parseInt(messageContent.partnerLastDeliveredMessageNanos)
                         : (parseInt(messageContent.partnerLastDeliveredMessageTime)),
                     type: messageContent.type,
                     metadata: messageContent.metadata,
@@ -3450,7 +3450,7 @@
              *
              * @return {object} replyInfo Object
              */
-            formatDataToMakeReplyInfo = function(messageContent, threadId) {
+            formatDataToMakeReplyInfo = function (messageContent, threadId) {
                 /**
                  * + replyInfoVO                  {object : replyInfoVO}
                  *   - participant                {object : ParticipantVO}
@@ -3498,7 +3498,7 @@
              *
              * @return {object} forwardInfo Object
              */
-            formatDataToMakeForwardInfo = function(messageContent, threadId) {
+            formatDataToMakeForwardInfo = function (messageContent, threadId) {
                 /**
                  * + forwardInfo                  {object : forwardInfoVO}
                  *   - participant                {object : ParticipantVO}
@@ -3532,7 +3532,7 @@
              *
              * @return {object} message Object
              */
-            formatDataToMakeMessage = function(threadId, pushMessageVO, fromCache) {
+            formatDataToMakeMessage = function (threadId, pushMessageVO, fromCache) {
                 /**
                  * + MessageVO                       {object}
                  *    - id                           {long}
@@ -3563,8 +3563,8 @@
                 }
                 else {
                     var time = (pushMessageVO.timeNanos)
-                            ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
-                            : (parseInt(pushMessageVO.time)),
+                        ? (parseInt(parseInt(pushMessageVO.time) / 1000) * 1000000000) + parseInt(pushMessageVO.timeNanos)
+                        : (parseInt(pushMessageVO.time)),
                         timeMiliSeconds = parseInt(pushMessageVO.time);
                 }
 
@@ -3633,7 +3633,7 @@
              *
              * @return {object} Formatted Thread History
              */
-            reformatThreadHistory = function(threadId, historyContent) {
+            reformatThreadHistory = function (threadId, historyContent) {
                 var returnData = [];
 
                 for (var i = 0; i < historyContent.length; i++) {
@@ -3656,7 +3656,7 @@
              *
              * @return {object} Formatted Thread Participant Array
              */
-            reformatThreadParticipants = function(participantsContent, threadId) {
+            reformatThreadParticipants = function (participantsContent, threadId) {
                 var returnData = [];
 
                 for (var i = 0; i < participantsContent.length; i++) {
@@ -3677,7 +3677,7 @@
              *
              * @return {object}
              */
-            unsetNotSeenDuration = function(content) {
+            unsetNotSeenDuration = function (content) {
                 /**
                  * Make a copy from original object to modify it's
                  * attributes, because we don't want to change
@@ -3711,7 +3711,7 @@
              *
              * @return {object} Cloned object
              */
-            cloneObject = function(original) {
+            cloneObject = function (original) {
                 var out, value, key;
                 out = Array.isArray(original) ? [] : {};
 
@@ -3743,7 +3743,7 @@
              *
              * @return {object} Instant sendMessage result
              */
-            getThreads = function(params, callback) {
+            getThreads = function (params, callback) {
                 var count = 50,
                     offset = 0,
                     content = {},
@@ -3811,7 +3811,7 @@
                             if (whereClause.hasOwnProperty('threadIds')) {
                                 thenAble = db.threads.where('id')
                                     .anyOf(whereClause.threadIds)
-                                    .and(function(thread) {
+                                    .and(function (thread) {
                                         return thread.owner == userInfo.id;
                                     });
                             }
@@ -3819,7 +3819,7 @@
                             if (whereClause.hasOwnProperty('name')) {
                                 thenAble = db.threads.where('owner')
                                     .equals(parseInt(userInfo.id))
-                                    .filter(function(thread) {
+                                    .filter(function (thread) {
                                         var reg = new RegExp(whereClause.name);
                                         return reg.test(chatDecrypt(thread.title, cacheSecret, thread.salt));
                                     });
@@ -3828,7 +3828,7 @@
                             if (whereClause.hasOwnProperty('creatorCoreUserId')) {
                                 thenAble = db.threads.where('owner')
                                     .equals(parseInt(userInfo.id))
-                                    .filter(function(thread) {
+                                    .filter(function (thread) {
                                         return parseInt(thread.inviter.id) == parseInt(whereClause.creatorCoreUserId);
                                     });
                             }
@@ -3837,11 +3837,11 @@
                         thenAble.offset(offset)
                             .limit(count)
                             .toArray()
-                            .then(function(threads) {
+                            .then(function (threads) {
                                 db.threads.where('owner')
                                     .equals(parseInt(userInfo.id))
                                     .count()
-                                    .then(function(threadsCount) {
+                                    .then(function (threadsCount) {
                                         var cacheData = [];
 
                                         for (var i = 0; i < threads.length; i++) {
@@ -3880,7 +3880,7 @@
                                         }
                                     });
                             })
-                            .catch(function(error) {
+                            .catch(function (error) {
                                 fireEvent('error', {
                                     code: error.code,
                                     message: error.message,
@@ -3901,7 +3901,7 @@
                  * Retrive get threads response from server
                  */
                 return sendMessage(sendMessageParams, {
-                    onResult: function(result) {
+                    onResult: function (result) {
                         var returnData = {
                             hasError: result.hasError,
                             cache: false,
@@ -3941,7 +3941,7 @@
 
                             if (typeof Worker !== 'undefined' && productEnv != 'ReactNative' && canUseCache && cacheSecret.length > 0) {
                                 if (typeof(cacheSyncWorker) == 'undefined') {
-                                    var plainWorker = function() {
+                                    var plainWorker = function () {
                                         self.importScripts('https://npmcdn.com/dexie@2.0.4/dist/dexie.min.js');
                                         db = new Dexie('podChat');
                                         db.version(1)
@@ -3951,10 +3951,11 @@
                                                 threads: '[owner+id] ,id, owner, title, time, [owner+time]',
                                                 participants: '[owner+id], id, owner, threadId, notSeenDuration, admin, name, contactName, email, expireTime',
                                                 messages: '[owner+id], id, owner, threadId, time, [threadId+id], [threadId+owner+time]',
-                                                messageGaps: '[owner+id], [owner+waitsFor], id, waitsFor, owner, threadId, time, [threadId+owner+time]'
+                                                messageGaps: '[owner+id], [owner+waitsFor], id, waitsFor, owner, threadId, time, [threadId+owner+time]',
+                                                contentCount: 'threadId, contentCount'
                                             });
 
-                                        addEventListener('message', function(event) {
+                                        addEventListener('message', function (event) {
                                             var data = JSON.parse(event.data);
 
                                             switch (data.type) {
@@ -3992,14 +3993,14 @@
 
                                 cacheSyncWorker.postMessage(JSON.stringify(workerCommand));
 
-                                cacheSyncWorker.onmessage = function(event) {
+                                cacheSyncWorker.onmessage = function (event) {
                                     if (event.data == 'terminate') {
                                         cacheSyncWorker.terminate();
                                         cacheSyncWorker = undefined;
                                     }
                                 };
 
-                                cacheSyncWorker.onerror = function(event) {
+                                cacheSyncWorker.onerror = function (event) {
                                     console.log(event);
                                 };
                             }
@@ -4035,7 +4036,7 @@
                                     }
 
                                     db.threads.bulkPut(cacheData)
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -4070,7 +4071,7 @@
                 });
             },
 
-            getAllThreadList = function(params, callback) {
+            getAllThreadList = function (params, callback) {
                 var sendMessageParams = {
                     chatMessageVOType: chatMessageVOTypes.GET_THREADS,
                     typeCode: params.typeCode,
@@ -4084,7 +4085,7 @@
                 }
 
                 return sendMessage(sendMessageParams, {
-                    onResult: function(result) {
+                    onResult: function (result) {
 
                         if (!result.hasError) {
                             if (canUseCache) {
@@ -4096,11 +4097,11 @@
                                     db.threads
                                         .where('owner')
                                         .equals(parseInt(userInfo.id))
-                                        .and(function(thread) {
+                                        .and(function (thread) {
                                             return allThreads.indexOf(thread.id) < 0;
                                         })
                                         .delete()
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -4149,7 +4150,7 @@
              *
              * @return {object} Instant result of sendMessage
              */
-            getHistory = function(params, callback) {
+            getHistory = function (params, callback) {
                 var startTime = Date.now();
 
                 if (parseInt(params.threadId) > 0) {
@@ -4186,9 +4187,8 @@
                         failedQueueMessages = [],
                         uploadingQueueMessages = [];
 
-                    //console.table({name: "Params Setting", time: Date.now() - startTime });
                     if (sendingQueue) {
-                        getChatSendQueue(parseInt(params.threadId), function(sendQueueMessages) {
+                        getChatSendQueue(parseInt(params.threadId), function (sendQueueMessages) {
                             for (var i = 0; i < sendQueueMessages.length; i++) {
                                 var time = new Date().getTime();
 
@@ -4207,10 +4207,9 @@
                         });
                     }
 
-                    //console.table({name: "After Getting Send Q", time: Date.now() - startTime });
 
                     if (uploadingQueue) {
-                        getChatUploadQueue(parseInt(params.threadId), function(uploadQueueMessages) {
+                        getChatUploadQueue(parseInt(params.threadId), function (uploadQueueMessages) {
                             for (var i = 0; i < uploadQueueMessages.length; i++) {
                                 uploadQueueMessages[i].message.participant = userInfo;
                                 var time = new Date().getTime();
@@ -4221,9 +4220,8 @@
                         });
                     }
 
-                    //console.table({name: "After Getting Upload Q", time: Date.now() - startTime });
 
-                    getChatWaitQueue(parseInt(params.threadId), failedQueue, function(waitQueueMessages) {
+                    getChatWaitQueue(parseInt(params.threadId), failedQueue, function (waitQueueMessages) {
                         if (cacheSecret.length > 0) {
                             for (var i = 0; i < waitQueueMessages.length; i++) {
                                 var decryptedEnqueuedMessage = Utility.jsonParser(chatDecrypt(waitQueueMessages[i].message, cacheSecret));
@@ -4249,7 +4247,6 @@
                             failedQueueMessages = [];
                         }
 
-                        //console.table({name: "After Getting Chat Failed Q", time: Date.now() - startTime });
 
                         if (dynamicHistoryCount) {
                             var tempCount = count - (sendingQueueMessages.length + failedQueueMessages.length + uploadingQueueMessages.length);
@@ -4310,8 +4307,6 @@
                             sendMessageParams.content.metadataCriteria = whereClause.metadataCriteria = params.metadataCriteria;
                         }
 
-                        //console.table({name: "After Setting Cache Parameters", time: Date.now() - startTime });
-
                         /**
                          * Get Thread Messages from cache
                          *
@@ -4334,7 +4329,7 @@
                                 if (whereClause.hasOwnProperty('id') && whereClause.id > 0) {
                                     collection = table.where('id')
                                         .equals(parseInt(params.id))
-                                        .and(function(message) {
+                                        .and(function (message) {
                                             return message.owner == userInfo.id;
                                         })
                                         .reverse();
@@ -4347,14 +4342,14 @@
                                 }
 
                                 collection.toArray()
-                                    .then(function(resultMessages) {
+                                    .then(function (resultMessages) {
                                         messages = resultMessages.sort(Utility.dynamicSort('time', !(order === 'asc')));
 
                                         if (whereClause.hasOwnProperty('fromTime')) {
                                             var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
                                                 ? (Math.floor(whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
                                                 : whereClause.fromTime * 1000000;
-                                            messages = messages.filter(function(message) {
+                                            messages = messages.filter(function (message) {
                                                 return message.time >= fromTime;
                                             });
                                         }
@@ -4363,13 +4358,13 @@
                                             var toTime = (whereClause.hasOwnProperty('toTimeNanos'))
                                                 ? ((Math.floor(whereClause.toTime / 1000)) * 1000000000) + whereClause.toTimeNanos
                                                 : (whereClause.toTime) * 1000000;
-                                            messages = messages.filter(function(message) {
+                                            messages = messages.filter(function (message) {
                                                 return message.time <= toTime;
                                             });
                                         }
 
                                         if (whereClause.hasOwnProperty('query') && typeof whereClause.query == 'string') {
-                                            messages = messages.filter(function(message) {
+                                            messages = messages.filter(function (message) {
                                                 var reg = new RegExp(whereClause.query);
                                                 return reg.test(chatDecrypt(message.message, cacheSecret, message.salt));
                                             });
@@ -4408,18 +4403,18 @@
                                              * query it for gaps with time bigger than
                                              * firstMessage's time
                                              */
-                                            if(cacheFirstMessage && cacheFirstMessage.time > 0) {
+                                            if (cacheFirstMessage && cacheFirstMessage.time > 0) {
                                                 db.messageGaps
                                                     .where('time')
                                                     .above(cacheFirstMessage.time)
                                                     .toArray()
-                                                    .then(function(gaps) {
+                                                    .then(function (gaps) {
                                                         // TODO fill these gaps in a worker
-                                                        if(gaps.length > 0) {
+                                                        if (gaps.length > 0) {
                                                             returnCache = false;
                                                         }
                                                     })
-                                                    .catch(function(error) {
+                                                    .catch(function (error) {
                                                         fireEvent('error', {
                                                             code: error.code,
                                                             message: error.message,
@@ -4430,7 +4425,8 @@
 
                                             if (returnCache) {
                                                 collection.count()
-                                                    .then(function(contentCount) {
+                                                    .then(function (collectionContentCount) {
+                                                        var contentCount = 0;
                                                         var cacheData = [];
 
                                                         for (var i = 0; i < messages.length; i++) {
@@ -4474,41 +4470,63 @@
                                                             }
                                                         }
 
-                                                        //console.table({name: "After Getting Messages From Cache", time: Date.now() - startTime });
                                                         /**
                                                          * If there is a GAP between messages of cache result
                                                          * WE should not return data from cache, cause it is not valid!
                                                          * Therefore we wait for server's response and edit cache afterwards
                                                          */
                                                         if (returnCache) {
-                                                            var returnData = {
-                                                                hasError: false,
-                                                                cache: true,
-                                                                errorCode: 0,
-                                                                errorMessage: '',
-                                                                result: {
-                                                                    history: cacheData,
-                                                                    contentCount: contentCount,
-                                                                    hasNext: (offset + count < contentCount && messages.length > 0),
-                                                                    nextOffset: offset + messages.length
-                                                                }
-                                                            };
 
-                                                            if (sendingQueue) {
-                                                                returnData.result.sending = sendingQueueMessages;
-                                                            }
-                                                            if (uploadingQueue) {
-                                                                returnData.result.uploading = uploadingQueueMessages;
-                                                            }
-                                                            if (failedQueue) {
-                                                                returnData.result.failed = failedQueueMessages;
-                                                            }
+                                                            /**
+                                                             * Get contentCount of this thread from cache
+                                                             */
+                                                            db.contentCount
+                                                                .where('threadId')
+                                                                .equals(parseInt(params.threadId))
+                                                                .toArray()
+                                                                .then(function (res) {
+                                                                    if (res[0].threadId == parseInt(params.threadId)) {
+                                                                        contentCount = res[0].contentCount;
+                                                                    } else {
+                                                                        contentCount = collectionContentCount;
+                                                                    }
 
-                                                            callback && callback(returnData);
-                                                            callback = undefined;
+                                                                    var returnData = {
+                                                                        hasError: false,
+                                                                        cache: true,
+                                                                        errorCode: 0,
+                                                                        errorMessage: '',
+                                                                        result: {
+                                                                            history: cacheData,
+                                                                            contentCount: contentCount,
+                                                                            hasNext: (offset + count < contentCount && messages.length > 0),
+                                                                            nextOffset: offset + messages.length
+                                                                        }
+                                                                    };
+
+                                                                    if (sendingQueue) {
+                                                                        returnData.result.sending = sendingQueueMessages;
+                                                                    }
+                                                                    if (uploadingQueue) {
+                                                                        returnData.result.uploading = uploadingQueueMessages;
+                                                                    }
+                                                                    if (failedQueue) {
+                                                                        returnData.result.failed = failedQueueMessages;
+                                                                    }
+
+                                                                    callback && callback(returnData);
+                                                                    callback = undefined;
+                                                                })
+                                                                .catch(function (error) {
+                                                                    fireEvent('error', {
+                                                                        code: error.code,
+                                                                        message: error.message,
+                                                                        error: error
+                                                                    });
+                                                                });
                                                         }
                                                     })
-                                                    .catch(function(error) {
+                                                    .catch(function (error) {
                                                         fireEvent('error', {
                                                             code: error.code,
                                                             message: error.message,
@@ -4518,7 +4536,7 @@
                                             }
                                         }
                                     })
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -4535,14 +4553,12 @@
                             }
                         }
 
-                        //console.table({name: "After Returning Data From Cache", time: Date.now() - startTime });
                         /**
                          * Get Thread Messages From Server
                          */
                         return sendMessage(sendMessageParams, {
-                            onResult: function(result) {
+                            onResult: function (result) {
 
-                                //console.table({name: "Data Received From Server", time: Date.now() - startTime });
                                 var returnData = {
                                         hasError: result.hasError,
                                         cache: false,
@@ -4575,7 +4591,6 @@
                                         }
                                     }
 
-                                    //console.table({name: "After Reformating Received Messages From Server", time: Date.now() - startTime });
                                     /**
                                      * Add Thread Messages into cache database
                                      * and remove deleted messages from cache database
@@ -4633,7 +4648,7 @@
                                                                 .between([parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime],
                                                                     [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], true, false)
                                                                 .delete()
-                                                                .catch(function(error) {
+                                                                .catch(function (error) {
                                                                     fireEvent('error', {
                                                                         code: error.code,
                                                                         message: error.message,
@@ -4657,7 +4672,7 @@
                                                                 .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
                                                                     [parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime], true, true)
                                                                 .delete()
-                                                                .catch(function(error) {
+                                                                .catch(function (error) {
                                                                     fireEvent('error', {
                                                                         code: error.code,
                                                                         message: error.message,
@@ -4696,7 +4711,7 @@
                                                                 .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
                                                                     [parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime], true, false)
                                                                 .delete()
-                                                                .catch(function(error) {
+                                                                .catch(function (error) {
                                                                     fireEvent('error', {
                                                                         code: error.code,
                                                                         message: error.message,
@@ -4731,7 +4746,7 @@
                                                                     .between([parseInt(params.threadId), parseInt(userInfo.id), 0],
                                                                         [parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime], true, false)
                                                                     .delete()
-                                                                    .catch(function(error) {
+                                                                    .catch(function (error) {
                                                                         fireEvent('error', {
                                                                             code: error.code,
                                                                             message: error.message,
@@ -4757,7 +4772,7 @@
                                                                     .between([parseInt(params.threadId), parseInt(userInfo.id), finalMessageTime],
                                                                         [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], false, true)
                                                                     .delete()
-                                                                    .catch(function(error) {
+                                                                    .catch(function (error) {
                                                                         fireEvent('error', {
                                                                             code: error.code,
                                                                             message: error.message,
@@ -4776,8 +4791,8 @@
                                                          * result   [..., n-1, n, n+1, ...]
                                                          */
                                                         var boundryStartMessageTime = (firstMessage.time < lastMessage.time)
-                                                                ? firstMessage.time
-                                                                : lastMessage.time,
+                                                            ? firstMessage.time
+                                                            : lastMessage.time,
                                                             boundryEndMessageTime = (firstMessage.time > lastMessage.time)
                                                                 ? firstMessage.time
                                                                 : lastMessage.time;
@@ -4786,7 +4801,7 @@
                                                             .between([parseInt(params.threadId), parseInt(userInfo.id), boundryStartMessageTime],
                                                                 [parseInt(params.threadId), parseInt(userInfo.id), boundryEndMessageTime], true, true)
                                                             .delete()
-                                                            .catch(function(error) {
+                                                            .catch(function (error) {
                                                                 fireEvent('error', {
                                                                     code: error.code,
                                                                     message: error.message,
@@ -4817,11 +4832,11 @@
                                                     if (whereClause.hasOwnProperty('id') && whereClause.id > 0) {
                                                         db.messages.where('id')
                                                             .equals(parseInt(whereClause.id))
-                                                            .and(function(message) {
+                                                            .and(function (message) {
                                                                 return message.owner == userInfo.id;
                                                             })
                                                             .delete()
-                                                            .catch(function(error) {
+                                                            .catch(function (error) {
                                                                 fireEvent('error', {
                                                                     code: error.code,
                                                                     message: error.message,
@@ -4842,12 +4857,12 @@
                                                         db.messages.where('[threadId+owner+time]')
                                                             .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
                                                                 [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000])
-                                                            .and(function(message) {
+                                                            .and(function (message) {
                                                                 var reg = new RegExp(whereClause.query);
                                                                 return reg.test(chatDecrypt(message.message, cacheSecret, message.salt));
                                                             })
                                                             .delete()
-                                                            .catch(function(error) {
+                                                            .catch(function (error) {
                                                                 fireEvent('error', {
                                                                     code: error.code,
                                                                     message: error.message,
@@ -4884,8 +4899,8 @@
                                                                  * Server response is Empty []
                                                                  */
                                                                 var fromTime = (whereClause.hasOwnProperty('fromTimeNanos'))
-                                                                        ? ((whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
-                                                                        : whereClause.fromTime * 1000000,
+                                                                    ? ((whereClause.fromTime / 1000) * 1000000000) + whereClause.fromTimeNanos
+                                                                    : whereClause.fromTime * 1000000,
                                                                     toTime = (whereClause.hasOwnProperty('toTimeNanos'))
                                                                         ? (((whereClause.toTime / 1000) + 1) * 1000000000) + whereClause.toTimeNanos
                                                                         : (whereClause.toTime + 1) * 1000000;
@@ -4894,7 +4909,7 @@
                                                                     .between([parseInt(params.threadId), parseInt(userInfo.id), fromTime],
                                                                         [parseInt(params.threadId), parseInt(userInfo.id), toTime], true, true)
                                                                     .delete()
-                                                                    .catch(function(error) {
+                                                                    .catch(function (error) {
                                                                         fireEvent('error', {
                                                                             code: error.code,
                                                                             message: error.message,
@@ -4919,7 +4934,7 @@
                                                                     .between([parseInt(params.threadId), parseInt(userInfo.id), fromTime],
                                                                         [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], true, false)
                                                                     .delete()
-                                                                    .catch(function(error) {
+                                                                    .catch(function (error) {
                                                                         fireEvent('error', {
                                                                             code: error.code,
                                                                             message: error.message,
@@ -4943,7 +4958,7 @@
                                                                     .between([parseInt(params.threadId), parseInt(userInfo.id), minIntegerValue],
                                                                         [parseInt(params.threadId), parseInt(userInfo.id), toTime], true, true)
                                                                     .delete()
-                                                                    .catch(function(error) {
+                                                                    .catch(function (error) {
                                                                         fireEvent('error', {
                                                                             code: error.code,
                                                                             message: error.message,
@@ -4964,8 +4979,8 @@
                                                              * [..., n-1, n, n+1, ...]
                                                              */
                                                             var boundryStartMessageTime = (firstMessage.time < lastMessage.time)
-                                                                    ? firstMessage.time
-                                                                    : lastMessage.time,
+                                                                ? firstMessage.time
+                                                                : lastMessage.time,
                                                                 boundryEndMessageTime = (firstMessage.time > lastMessage.time)
                                                                     ? firstMessage.time
                                                                     : lastMessage.time;
@@ -4974,7 +4989,7 @@
                                                                 .between([parseInt(params.threadId), parseInt(userInfo.id), boundryStartMessageTime],
                                                                     [parseInt(params.threadId), parseInt(userInfo.id), boundryEndMessageTime], true, true)
                                                                 .delete()
-                                                                .catch(function(error) {
+                                                                .catch(function (error) {
                                                                     fireEvent('error', {
                                                                         code: error.code,
                                                                         message: error.message,
@@ -5030,7 +5045,7 @@
                                             }
 
                                             db.messages.bulkPut(cacheData)
-                                                .then(function() {
+                                                .then(function () {
                                                     if (typeof lastMessage == 'object' &&
                                                         lastMessage != null &&
                                                         lastMessage.id > 0 &&
@@ -5045,7 +5060,7 @@
                                                             .where('[owner+id]')
                                                             .between([userInfo.id, lastMessage.previousId], [userInfo.id, lastMessage.previousId], true, true)
                                                             .toArray()
-                                                            .then(function(messages) {
+                                                            .then(function (messages) {
                                                                 if (messages.length == 0) {
                                                                     /**
                                                                      * Previous Message of last message is not in cache database
@@ -5061,10 +5076,10 @@
                                                                             threadId: parseInt(lastMessage.threadId),
                                                                             time: lastMessage.time
                                                                         })
-                                                                        .then(function() {
+                                                                        .then(function () {
                                                                             db.messages
                                                                                 .update([userInfo.id, lastMessage.id], {hasGap: true})
-                                                                                .catch(function(error) {
+                                                                                .catch(function (error) {
                                                                                     fireEvent('error', {
                                                                                         code: error.code,
                                                                                         message: error.message,
@@ -5072,7 +5087,7 @@
                                                                                     });
                                                                                 });
                                                                         })
-                                                                        .catch(function(error) {
+                                                                        .catch(function (error) {
                                                                             fireEvent('error', {
                                                                                 code: error.code,
                                                                                 message: error.message,
@@ -5081,7 +5096,7 @@
                                                                         });
                                                                 }
                                                             })
-                                                            .catch(function(error) {
+                                                            .catch(function (error) {
                                                                 fireEvent('error', {
                                                                     code: error.code,
                                                                     message: error.message,
@@ -5099,22 +5114,22 @@
                                                     db.messageGaps
                                                         .where('waitsFor')
                                                         .anyOf(resultMessagesId)
-                                                        .and(function(messages) {
+                                                        .and(function (messages) {
                                                             return messages.owner == userInfo.id;
                                                         })
                                                         .toArray()
-                                                        .then(function(needsToBeDeleted) {
+                                                        .then(function (needsToBeDeleted) {
                                                             /**
                                                              * These messages have to be deleted from messageGaps table
                                                              */
-                                                            var messagesToBeDeleted = needsToBeDeleted.map(function(msg) {
+                                                            var messagesToBeDeleted = needsToBeDeleted.map(function (msg) {
                                                                 /**
                                                                  * We have to update messages table and
                                                                  * set hasGap for those messages as false
                                                                  */
                                                                 db.messages
                                                                     .update([userInfo.id, msg.id], {hasGap: false})
-                                                                    .catch(function(error) {
+                                                                    .catch(function (error) {
                                                                         fireEvent('error', {
                                                                             code: error.code,
                                                                             message: error.message,
@@ -5127,7 +5142,7 @@
 
                                                             db.messageGaps.bulkDelete(messagesToBeDeleted);
                                                         })
-                                                        .catch(function(error) {
+                                                        .catch(function (error) {
                                                             fireEvent('error', {
                                                                 code: error.code,
                                                                 message: error.message,
@@ -5135,7 +5150,23 @@
                                                             });
                                                         });
                                                 })
-                                                .catch(function(error) {
+                                                .catch(function (error) {
+                                                    fireEvent('error', {
+                                                        code: error.code,
+                                                        message: error.message,
+                                                        error: error
+                                                    });
+                                                });
+
+                                            /**
+                                             * Update contentCount of this thread in cache
+                                             */
+                                            db.contentCount
+                                                .put({
+                                                    threadId: parseInt(params.threadId),
+                                                    contentCount: result.contentCount
+                                                })
+                                                .catch(function (error) {
                                                     fireEvent('error', {
                                                         code: error.code,
                                                         message: error.message,
@@ -5152,12 +5183,11 @@
                                         }
                                     }
 
-                                    //console.table({name: "After Adding New Messages Into Cache Database", time: Date.now() - startTime });
                                     var resultData = {
                                         history: history,
                                         contentCount: result.contentCount,
                                         hasNext: (sendMessageParams.content.offset + sendMessageParams.content.count < result.contentCount &&
-                                        messageLength > 0),
+                                            messageLength > 0),
                                         nextOffset: sendMessageParams.content.offset + messageLength
                                     };
 
@@ -5174,7 +5204,6 @@
                                     }
 
 
-                                    //console.table({name: "Before Check Differences between Cache and Server response", time: Date.now() - startTime });
                                     /**
                                      * Check Differences between Cache and Server response
                                      */
@@ -5234,12 +5263,10 @@
                                             }
                                         }
 
-                                        //console.table({name: "After Check Differences between Cache and Server response (1)", time: Date.now() - startTime });
                                     }
                                     else {
                                         callback && callback(returnData);
                                         callback = undefined;
-                                        //console.table({name: "After Check Differences between Cache and Server response (2)", time: Date.now() - startTime });
                                     }
                                 }
                             }
@@ -5266,7 +5293,7 @@
              *
              * @return {object} Instant sendMessage result
              */
-            updateThreadInfo = function(params, callback) {
+            updateThreadInfo = function (params, callback) {
                 var updateThreadInfoData = {
                     chatMessageVOType: chatMessageVOTypes.UPDATE_THREAD_INFO,
                     typeCode: params.typeCode,
@@ -5308,7 +5335,7 @@
                 }
 
                 return sendMessage(updateThreadInfoData, {
-                    onResult: function(result) {
+                    onResult: function (result) {
                         callback && callback(result);
                     }
                 });
@@ -5328,7 +5355,7 @@
              *
              * @return {object} Instant Response
              */
-            getThreadParticipants = function(params, callback) {
+            getThreadParticipants = function (params, callback) {
                 var sendMessageParams = {
                         chatMessageVOType: chatMessageVOTypes.THREAD_PARTICIPANTS,
                         typeCode: params.typeCode,
@@ -5339,8 +5366,8 @@
                     returnCache = false;
 
                 var offset = (parseInt(params.offset) > 0)
-                        ? parseInt(params.offset)
-                        : 0,
+                    ? parseInt(params.offset)
+                    : 0,
                     count = (parseInt(params.count) > 0)
                         ? parseInt(params.count)
                         : config.getHistoryCount;
@@ -5367,14 +5394,14 @@
                         db.participants.where('expireTime')
                             .below(new Date().getTime())
                             .delete()
-                            .then(function() {
+                            .then(function () {
 
                                 var thenAble;
 
                                 if (Object.keys(whereClause).length === 0) {
                                     thenAble = db.participants.where('threadId')
                                         .equals(parseInt(params.threadId))
-                                        .and(function(participant) {
+                                        .and(function (participant) {
                                             return participant.owner == userInfo.id;
                                         });
                                 }
@@ -5382,10 +5409,10 @@
                                     if (whereClause.hasOwnProperty('name')) {
                                         thenAble = db.participants.where('threadId')
                                             .equals(parseInt(params.threadId))
-                                            .and(function(participant) {
+                                            .and(function (participant) {
                                                 return participant.owner == userInfo.id;
                                             })
-                                            .filter(function(contact) {
+                                            .filter(function (contact) {
                                                 var reg = new RegExp(whereClause.name);
                                                 return reg.test(chatDecrypt(contact.contactName, cacheSecret, contact.salt) + ' '
                                                     + chatDecrypt(contact.name, cacheSecret, contact.salt) + ' '
@@ -5398,14 +5425,14 @@
                                     .limit(count)
                                     .reverse()
                                     .toArray()
-                                    .then(function(participants) {
+                                    .then(function (participants) {
                                         db.participants.where('threadId')
                                             .equals(parseInt(params.threadId))
-                                            .and(function(participant) {
+                                            .and(function (participant) {
                                                 return participant.owner == userInfo.id;
                                             })
                                             .count()
-                                            .then(function(participantsCount) {
+                                            .then(function (participantsCount) {
 
                                                 var cacheData = [];
 
@@ -5446,7 +5473,7 @@
                                                 }
                                             });
                                     })
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -5454,7 +5481,7 @@
                                         });
                                     });
                             })
-                            .catch(function(error) {
+                            .catch(function (error) {
                                 fireEvent('error', {
                                     code: error.code,
                                     message: error.message,
@@ -5472,7 +5499,7 @@
                 }
 
                 return sendMessage(sendMessageParams, {
-                    onResult: function(result) {
+                    onResult: function (result) {
                         var returnData = {
                             hasError: result.hasError,
                             cache: false,
@@ -5529,7 +5556,7 @@
                                     }
 
                                     db.participants.bulkPut(cacheData)
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -5577,7 +5604,7 @@
              *
              * @return {object} Instant sendMessage result
              */
-            deliver = function(params) {
+            deliver = function (params) {
                 if (userInfo && params.ownerId !== userInfo.id) {
                     return sendMessage({
                         chatMessageVOType: chatMessageVOTypes.DELIVERY,
@@ -5605,7 +5632,7 @@
              *
              * @return {object} Image Object
              */
-            getImage = function(params, callback) {
+            getImage = function (params, callback) {
                 getImageData = {};
 
                 if (params) {
@@ -5638,7 +5665,7 @@
                     url: SERVICE_ADDRESSES.FILESERVER_ADDRESS + SERVICES_PATH.GET_IMAGE,
                     method: 'GET',
                     data: getImageData
-                }, function(result) {
+                }, function (result) {
                     if (!result.hasError) {
                         var queryString = '?';
                         for (var i in params) {
@@ -5673,7 +5700,7 @@
              *
              * @return {object} File Object
              */
-            getFile = function(params, callback) {
+            getFile = function (params, callback) {
                 getFileData = {};
 
                 if (params) {
@@ -5692,10 +5719,10 @@
 
                 httpRequest({
                     url: SERVICE_ADDRESSES.FILESERVER_ADDRESS +
-                    SERVICES_PATH.GET_FILE,
+                        SERVICES_PATH.GET_FILE,
                     method: 'GET',
                     data: getFileData
-                }, function(result) {
+                }, function (result) {
                     if (!result.hasError) {
                         var queryString = '?';
                         for (var i in params) {
@@ -5731,7 +5758,7 @@
              *
              * @return {object} Uploaded File Object
              */
-            uploadFile = function(params, callback) {
+            uploadFile = function (params, callback) {
                 var fileName,
                     fileType,
                     fileSize,
@@ -5806,7 +5833,7 @@
                     },
                     data: uploadFileData,
                     uniqueId: uploadUniqueId
-                }, function(result) {
+                }, function (result) {
                     if (!result.hasError) {
                         try {
                             var response = (typeof result.result.responseText == 'string')
@@ -5865,7 +5892,7 @@
              *
              * @return {object} Uploaded File Object
              */
-            uploadFileFromUrl = function(params, callback) {
+            uploadFileFromUrl = function (params, callback) {
                 var uploadUniqueId,
                     uploadThreadId;
 
@@ -5917,7 +5944,7 @@
                     },
                     data: uploadFileData,
                     uniqueId: uploadUniqueId
-                }, function(result) {
+                }, function (result) {
                     if (!result.hasError) {
                         try {
                             var response = (typeof result.result.responseText == 'string')
@@ -5978,7 +6005,7 @@
              *
              * @return {object} Uploaded Image Object
              */
-            uploadImage = function(params, callback) {
+            uploadImage = function (params, callback) {
                 var fileName,
                     fileType,
                     fileSize,
@@ -6071,7 +6098,7 @@
                         },
                         data: uploadImageData,
                         uniqueId: uploadUniqueId
-                    }, function(result) {
+                    }, function (result) {
                         if (!result.hasError) {
                             try {
                                 var response = (typeof result.result.responseText == 'string')
@@ -6144,8 +6171,8 @@
              *
              * @return {undefined}
              */
-            fireEvent = function(eventName, param) {
-                if(eventName == "chatReady") {
+            fireEvent = function (eventName, param) {
+                if (eventName == "chatReady") {
                     if (typeof navigator == "undefined") {
                         console.log("\x1b[90m    ☰ \x1b[0m\x1b[90m%s\x1b[0m", "Chat is Ready 😉");
                     } else {
@@ -6167,7 +6194,7 @@
              *
              * @return {undefined}
              */
-            deleteCacheDatabases = function() {
+            deleteCacheDatabases = function () {
                 if (db) {
                     db.close();
                 }
@@ -6179,22 +6206,22 @@
                 var chatCacheDB = new Dexie('podChat');
                 if (chatCacheDB) {
                     chatCacheDB.delete()
-                        .then(function() {
+                        .then(function () {
                             console.log('PodChat Database successfully deleted!');
 
                             var queueDb = new Dexie('podQueues');
                             if (queueDb) {
                                 queueDb.delete()
-                                    .then(function() {
+                                    .then(function () {
                                         console.log('PodQueues Database successfully deleted!');
                                         startCacheDatabases();
                                     })
-                                    .catch(function(err) {
+                                    .catch(function (err) {
                                         console.log(err);
                                     });
                             }
                         })
-                        .catch(function(err) {
+                        .catch(function (err) {
                             console.log(err);
                         });
                 }
@@ -6210,42 +6237,42 @@
              *
              * @return {undefined}
              */
-            clearCacheDatabasesOfUser = function(callback) {
+            clearCacheDatabasesOfUser = function (callback) {
                 if (db && !cacheDeletingInProgress) {
                     cacheDeletingInProgress = true;
                     db.threads
                         .where('owner')
                         .equals(parseInt(userInfo.id))
                         .delete()
-                        .then(function() {
+                        .then(function () {
                             console.log('Threads table deleted');
 
                             db.contacts
                                 .where('owner')
                                 .equals(parseInt(userInfo.id))
                                 .delete()
-                                .then(function() {
+                                .then(function () {
                                     console.log('Contacts table deleted');
 
                                     db.messages
                                         .where('owner')
                                         .equals(parseInt(userInfo.id))
                                         .delete()
-                                        .then(function() {
+                                        .then(function () {
                                             console.log('Messages table deleted');
 
                                             db.participants
                                                 .where('owner')
                                                 .equals(parseInt(userInfo.id))
                                                 .delete()
-                                                .then(function() {
+                                                .then(function () {
                                                     console.log('Participants table deleted');
 
                                                     db.messageGaps
                                                         .where('owner')
                                                         .equals(parseInt(userInfo.id))
                                                         .delete()
-                                                        .then(function() {
+                                                        .then(function () {
                                                             console.log('MessageGaps table deleted');
                                                             cacheDeletingInProgress = false;
                                                             callback && callback();
@@ -6254,7 +6281,7 @@
                                         });
                                 });
                         })
-                        .catch(function(error) {
+                        .catch(function (error) {
                             fireEvent('error', {
                                 code: error.code,
                                 message: error.message,
@@ -6274,7 +6301,7 @@
              *
              * @return {undefined}
              */
-            startCacheDatabases = function(callback) {
+            startCacheDatabases = function (callback) {
                 if (hasCache) {
                     queueDb = new Dexie('podQueues');
 
@@ -6293,20 +6320,21 @@
                                 threads: '[owner+id] ,id, owner, title, time, [owner+time]',
                                 participants: '[owner+id], id, owner, threadId, notSeenDuration, admin, name, contactName, email, expireTime',
                                 messages: '[owner+id], id, owner, threadId, time, [threadId+id], [threadId+owner+time]',
-                                messageGaps: '[owner+id], [owner+waitsFor], id, waitsFor, owner, threadId, time, [threadId+owner+time]'
+                                messageGaps: '[owner+id], [owner+waitsFor], id, waitsFor, owner, threadId, time, [threadId+owner+time]',
+                                contentCount: 'threadId, contentCount'
                             });
 
                         db.open()
-                            .catch(function(e) {
+                            .catch(function (e) {
                                 console.log('Open failed: ' + e.stack);
                             });
 
-                        db.on('ready', function() {
+                        db.on('ready', function () {
                             isCacheReady = true;
                             callback && callback();
                         }, true);
 
-                        db.on('versionchange', function(event) {
+                        db.on('versionchange', function (event) {
                             window.location.reload();
                         });
                     } else {
@@ -6327,7 +6355,7 @@
              *
              * @return {array}  An array of messages on sendQueue
              */
-            getChatSendQueue = function(threadId, callback) {
+            getChatSendQueue = function (threadId, callback) {
                 if (threadId) {
                     var tempSendQueue = [];
 
@@ -6357,16 +6385,16 @@
              *
              * @return {array}  An array of messages on sendQueue
              */
-            getChatWaitQueue = function(threadId, active, callback) {
+            getChatWaitQueue = function (threadId, active, callback) {
                 if (active && threadId > 0) {
                     if (hasCache && typeof queueDb == 'object') {
                         queueDb.waitQ.where('threadId')
                             .equals(threadId)
-                            .and(function(item) {
+                            .and(function (item) {
                                 return item.owner == parseInt(userInfo.id);
                             })
                             .toArray()
-                            .then(function(waitQueueOnCache) {
+                            .then(function (waitQueueOnCache) {
                                 var uniqueIds = [];
 
                                 for (var i = 0; i < waitQueueOnCache.length; i++) {
@@ -6381,7 +6409,7 @@
                                         },
                                         subjectId: threadId
                                     }, {
-                                        onResult: function(result) {
+                                        onResult: function (result) {
                                             if (!result.hasError) {
                                                 var messageContent = result.result;
 
@@ -6393,7 +6421,7 @@
                                                 for (var i = 0; i < messageContent.length; i++) {
                                                     for (var j = 0; j < uniqueIds.length; j++) {
                                                         if (uniqueIds[j] == messageContent[i].uniqueId) {
-                                                            deleteFromChatWaitQueue(messageContent[i], function() {
+                                                            deleteFromChatWaitQueue(messageContent[i], function () {
                                                             });
                                                             uniqueIds.splice(j, 1);
                                                             waitQueueOnCache.splice(j, 1);
@@ -6409,7 +6437,7 @@
                                                 for (var i = 0; i < chatSendQueue.length; i++) {
                                                     for (var j = 0; j < uniqueIds.length; j++) {
                                                         if (uniqueIds[j] == chatSendQueue[i].message.uniqueId) {
-                                                            deleteFromChatWaitQueue(chatSendQueue[i].message, function() {
+                                                            deleteFromChatWaitQueue(chatSendQueue[i].message, function () {
                                                             });
                                                             uniqueIds.splice(j, 1);
                                                             waitQueueOnCache.splice(j, 1);
@@ -6426,7 +6454,7 @@
                                     callback && callback(waitQueueOnCache);
                                 }
                             })
-                            .catch(function(error) {
+                            .catch(function (error) {
                                 fireEvent('error', {
                                     code: error.code,
                                     message: error.message,
@@ -6449,7 +6477,7 @@
                                 },
                                 subjectId: threadId
                             }, {
-                                onResult: function(result) {
+                                onResult: function (result) {
                                     if (!result.hasError) {
                                         var messageContent = result.result;
 
@@ -6487,7 +6515,7 @@
              *
              * @return {array}  An array of messages on uploadQueue
              */
-            getChatUploadQueue = function(threadId, callback) {
+            getChatUploadQueue = function (threadId, callback) {
                 var uploadQ = [];
                 for (var i = 0; i < chatUploadQueue.length; i++) {
                     if (parseInt(chatUploadQueue[i].message.subjectId) == threadId) {
@@ -6508,7 +6536,7 @@
              *
              * @return {undefined}
              */
-            deleteFromChatSentQueue = function(item, callback) {
+            deleteFromChatSentQueue = function (item, callback) {
                 for (var i = 0; i < chatSendQueue.length; i++) {
                     if (chatSendQueue[i].message.uniqueId == item.message.uniqueId) {
                         chatSendQueue.splice(i, 1);
@@ -6528,18 +6556,18 @@
              *
              * @return {undefined}
              */
-            deleteFromChatWaitQueue = function(item, callback) {
+            deleteFromChatWaitQueue = function (item, callback) {
                 if (hasCache && typeof queueDb == 'object') {
                     queueDb.waitQ.where('uniqueId')
                         .equals(item.uniqueId)
-                        .and(function(item) {
+                        .and(function (item) {
                             return item.owner == parseInt(userInfo.id);
                         })
                         .delete()
-                        .then(function() {
+                        .then(function () {
                             callback && callback();
                         })
-                        .catch(function(error) {
+                        .catch(function (error) {
                             fireEvent('error', {
                                 code: error.code,
                                 message: error.message,
@@ -6567,7 +6595,7 @@
              *
              * @return {undefined}
              */
-            deleteFromChatUploadQueue = function(item, callback) {
+            deleteFromChatUploadQueue = function (item, callback) {
                 for (var i = 0; i < chatUploadQueue.length; i++) {
                     if (chatUploadQueue[i].message.uniqueId == item.message.uniqueId) {
                         chatUploadQueue.splice(i, 1);
@@ -6588,10 +6616,10 @@
              *
              * @return {undefined}
              */
-            putInChatSendQueue = function(params, callback) {
+            putInChatSendQueue = function (params, callback) {
                 chatSendQueue.push(params);
 
-                putInChatWaitQueue(params.message, function() {
+                putInChatWaitQueue(params.message, function () {
                     callback && callback();
                 });
             },
@@ -6607,7 +6635,7 @@
              *
              * @return {undefined}
              */
-            putInChatWaitQueue = function(item, callback) {
+            putInChatWaitQueue = function (item, callback) {
                 if (item.uniqueId != '') {
                     var waitQueueUniqueId = (typeof item.uniqueId == 'string') ? item.uniqueId : (Array.isArray(item.uniqueId)) ? item.uniqueId[0] : null;
 
@@ -6620,10 +6648,10 @@
                                     owner: parseInt(userInfo.id),
                                     message: Utility.crypt(item, cacheSecret)
                                 })
-                                .then(function() {
+                                .then(function () {
                                     callback && callback();
                                 })
-                                .catch(function(error) {
+                                .catch(function (error) {
                                     fireEvent('error', {
                                         code: error.code,
                                         message: error.message,
@@ -6650,7 +6678,7 @@
              *
              * @return {undefined}
              */
-            putInChatUploadQueue = function(params, callback) {
+            putInChatUploadQueue = function (params, callback) {
                 chatUploadQueue.push(params);
                 callback && callback();
             },
@@ -6667,8 +6695,8 @@
              *
              * @return {undefined}
              */
-            transferFromUploadQToSendQ = function(threadId, uniqueId, metadata, callback) {
-                getChatUploadQueue(threadId, function(uploadQueue) {
+            transferFromUploadQToSendQ = function (threadId, uniqueId, metadata, callback) {
+                getChatUploadQueue(threadId, function (uploadQueue) {
                     for (var i = 0; i < uploadQueue.length; i++) {
                         if (uploadQueue[i].message.uniqueId == uniqueId) {
                             try {
@@ -6682,11 +6710,11 @@
                             }
 
                             deleteFromChatUploadQueue(uploadQueue[i],
-                                function() {
+                                function () {
                                     putInChatSendQueue({
                                         message: message,
                                         callbacks: callbacks
-                                    }, function() {
+                                    }, function () {
                                         callback && callback();
                                     });
                                 });
@@ -6706,7 +6734,7 @@
              *
              * @return  string  Decrypted string
              */
-            chatDecrypt = function(string, secret, salt) {
+            chatDecrypt = function (string, secret, salt) {
                 var decryptedString = Utility.decrypt(string, secret, salt);
                 if (!decryptedString.hasError) {
                     return decryptedString.result;
@@ -6730,14 +6758,14 @@
                                 .where('owner')
                                 .equals(parseInt(userInfo.id))
                                 .count()
-                                .then(function(threadsCount) {
+                                .then(function (threadsCount) {
                                     if (threadsCount > 0) {
-                                        clearCacheDatabasesOfUser(function() {
+                                        clearCacheDatabasesOfUser(function () {
                                             console.log('All cache databases have been cleared.');
                                         });
                                     }
                                 })
-                                .catch(function(e) {
+                                .catch(function (e) {
                                     console.log(e);
                                 });
                         }
@@ -6751,7 +6779,7 @@
          *             P U B L I C   M E T H O D S            *
          ******************************************************/
 
-        this.on = function(eventName, callback) {
+        this.on = function (eventName, callback) {
             if (eventCallbacks[eventName]) {
                 var id = Utility.generateUUID();
                 eventCallbacks[eventName][id] = callback;
@@ -6759,11 +6787,11 @@
             }
         };
 
-        this.getPeerId = function() {
+        this.getPeerId = function () {
             return peerId;
         };
 
-        this.getCurrentUser = function() {
+        this.getCurrentUser = function () {
             return userInfo;
         };
 
@@ -6788,7 +6816,7 @@
          *
          * @return {object} Instant Response
          */
-        this.getContacts = function(params, callback) {
+        this.getContacts = function (params, callback) {
             var count = 50,
                 offset = 0,
                 content = {},
@@ -6835,7 +6863,7 @@
                     db.contacts.where('expireTime')
                         .below(new Date().getTime())
                         .delete()
-                        .then(function() {
+                        .then(function () {
 
                             /**
                              * Query cache database to get contacts
@@ -6850,7 +6878,7 @@
                                 if (whereClause.hasOwnProperty('query')) {
                                     thenAble = db.contacts.where('owner')
                                         .equals(parseInt(userInfo.id))
-                                        .filter(function(contact) {
+                                        .filter(function (contact) {
                                             var reg = new RegExp(whereClause.query);
                                             return reg.test(chatDecrypt(contact.firstName, cacheSecret, contact.salt) + ' '
                                                 + chatDecrypt(contact.lastName, cacheSecret, contact.salt) + ' '
@@ -6863,11 +6891,11 @@
                                 .offset(offset)
                                 .limit(count)
                                 .toArray()
-                                .then(function(contacts) {
+                                .then(function (contacts) {
                                     db.contacts.where('owner')
                                         .equals(parseInt(userInfo.id))
                                         .count()
-                                        .then(function(contactsCount) {
+                                        .then(function (contactsCount) {
                                             var cacheData = [];
 
                                             for (var i = 0; i < contacts.length; i++) {
@@ -6906,7 +6934,7 @@
                                             }
                                         });
                                 })
-                                .catch(function(error) {
+                                .catch(function (error) {
                                     fireEvent('error', {
                                         code: error.code,
                                         message: error.message,
@@ -6914,7 +6942,7 @@
                                     });
                                 });
                         })
-                        .catch(function(error) {
+                        .catch(function (error) {
                             fireEvent('error', {
                                 code: error.code,
                                 message: error.message,
@@ -6935,7 +6963,7 @@
              * Retrieve Contacts from server
              */
             return sendMessage(sendMessageParams, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -6951,7 +6979,7 @@
                                 contacts: [],
                                 contentCount: result.contentCount,
                                 hasNext: (offset + count <
-                                result.contentCount && messageLength > 0),
+                                    result.contentCount && messageLength > 0),
                                 nextOffset: offset + messageLength
                             },
                             contactData;
@@ -7000,7 +7028,7 @@
                                 }
 
                                 db.contacts.bulkPut(cacheData)
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -7048,7 +7076,7 @@
          *
          * @return {object} Instant Response
          */
-        this.getThreadAdmins = function(params, callback) {
+        this.getThreadAdmins = function (params, callback) {
             getThreadParticipants({
                 threadId: params.threadId,
                 admin: true,
@@ -7056,7 +7084,7 @@
             }, callback);
         };
 
-        this.addParticipants = function(params, callback) {
+        this.addParticipants = function (params, callback) {
 
             /**
              * + AddParticipantsRequest   {object}
@@ -7082,7 +7110,7 @@
             }
 
             return sendMessage(sendMessageParams, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -7104,7 +7132,7 @@
             });
         };
 
-        this.removeParticipants = function(params, callback) {
+        this.removeParticipants = function (params, callback) {
 
             /**
              * + RemoveParticipantsRequest    {object}
@@ -7130,7 +7158,7 @@
             }
 
             return sendMessage(sendMessageParams, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -7152,7 +7180,7 @@
             });
         };
 
-        this.leaveThread = function(params, callback) {
+        this.leaveThread = function (params, callback) {
 
             /**
              * + LeaveThreadRequest    {object}
@@ -7172,7 +7200,7 @@
             }
 
             return sendMessage(sendMessageParams, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -7194,7 +7222,7 @@
             });
         };
 
-        this.createThread = function(params, callback) {
+        this.createThread = function (params, callback) {
 
             /**
              * + CreateThreadRequest      {object}
@@ -7311,7 +7339,7 @@
             };
 
             return sendMessage(sendMessageParams, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -7334,7 +7362,7 @@
 
         };
 
-        this.sendTextMessage = function(params, callbacks) {
+        this.sendTextMessage = function (params, callbacks) {
             var metadata = {},
                 uniqueId;
 
@@ -7359,7 +7387,7 @@
                     pushMsgType: 5
                 },
                 callbacks: callbacks
-            }, function() {
+            }, function () {
                 chatSendQueueHandler();
             });
 
@@ -7371,7 +7399,7 @@
             };
         };
 
-        this.sendBotMessage = function(params, callbacks) {
+        this.sendBotMessage = function (params, callbacks) {
             var metadata = {};
 
             return sendMessage({
@@ -7388,7 +7416,7 @@
             }, callbacks);
         };
 
-        this.sendFileMessage = function(params, callbacks) {
+        this.sendFileMessage = function (params, callbacks) {
             var metadata = {},
                 fileUploadParams = {},
                 fileUniqueId = Utility.generateUUID();
@@ -7488,9 +7516,9 @@
                             pushMsgType: 4
                         },
                         callbacks: callbacks
-                    }, function() {
+                    }, function () {
                         if (imageMimeTypes.indexOf(fileType) > 0 || imageExtentions.indexOf(fileExtension) > 0) {
-                            uploadImage(fileUploadParams, function(result) {
+                            uploadImage(fileUploadParams, function (result) {
                                 if (!result.hasError) {
                                     metadata['file']['actualHeight'] = result.result.actualHeight;
                                     metadata['file']['actualWidth'] = result.result.actualWidth;
@@ -7504,7 +7532,7 @@
                                         result.result.id + '&hashCode=' +
                                         result.result.hashCode;
 
-                                    transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
+                                    transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function () {
                                         chatSendQueueHandler();
                                     });
                                 }
@@ -7514,7 +7542,7 @@
                             });
                         }
                         else {
-                            uploadFile(fileUploadParams, function(result) {
+                            uploadFile(fileUploadParams, function (result) {
                                 if (!result.hasError) {
                                     metadata['file']['name'] = result.result.name;
                                     metadata['file']['hashCode'] = result.result.hashCode;
@@ -7524,7 +7552,7 @@
                                         result.result.id + '&hashCode=' +
                                         result.result.hashCode;
 
-                                    transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function() {
+                                    transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId, JSON.stringify(metadata), function () {
                                         chatSendQueueHandler();
                                     });
                                 }
@@ -7566,7 +7594,7 @@
             };
         };
 
-        this.sendLocationMessage = function(params, callbacks) {
+        this.sendLocationMessage = function (params, callbacks) {
             var data = {},
                 url = SERVICE_ADDRESSES.MAP_ADDRESS + SERVICES_PATH.STATIC_IMAGE,
                 hasError = false;
@@ -7667,8 +7695,8 @@
                                 pushMsgType: 4
                             },
                             callbacks: callbacks
-                        }, function() {
-                            uploadFileFromUrl(fileUploadParams, function(result) {
+                        }, function () {
+                            uploadFileFromUrl(fileUploadParams, function (result) {
                                 if (!result.hasError) {
                                     metadata['location']['center'] = params.center;
                                     metadata['location']['zoom'] = params.zoom;
@@ -7683,7 +7711,7 @@
                                         SERVICES_PATH.DRIVE_DOWNLOAD_FILE + '?hash=' + result.result.hashCode;
 
                                     transferFromUploadQToSendQ(parseInt(params.threadId), fileUniqueId,
-                                        JSON.stringify(metadata), function() {
+                                        JSON.stringify(metadata), function () {
                                             chatSendQueueHandler();
                                         });
                                 }
@@ -7720,25 +7748,25 @@
             };
         };
 
-        this.resendMessage = function(uniqueId, callbacks) {
+        this.resendMessage = function (uniqueId, callbacks) {
             if (hasCache && typeof queueDb == 'object') {
                 queueDb.waitQ.where('uniqueId')
                     .equals(uniqueId)
-                    .and(function(item) {
+                    .and(function (item) {
                         return item.owner == parseInt(userInfo.id);
                     })
                     .toArray()
-                    .then(function(messages) {
+                    .then(function (messages) {
                         if (messages.length) {
                             putInChatSendQueue({
                                 message: Utility.jsonParser(chatDecrypt(messages[0].message, cacheSecret)),
                                 callbacks: callbacks
-                            }, function() {
+                            }, function () {
                                 chatSendQueueHandler();
                             });
                         }
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         fireEvent('error', {
                             code: error.code,
                             message: error.message,
@@ -7752,7 +7780,7 @@
                         putInChatSendQueue({
                             message: chatWaitQueue[i].message,
                             callbacks: callbacks
-                        }, function() {
+                        }, function () {
                             chatSendQueueHandler();
                         });
                         break;
@@ -7761,19 +7789,19 @@
             }
         };
 
-        this.cancelMessage = function(uniqueId, callback) {
+        this.cancelMessage = function (uniqueId, callback) {
             deleteFromChatSentQueue({
                 message: {
                     uniqueId: uniqueId
                 }
-            }, function() {
+            }, function () {
                 deleteFromChatWaitQueue({
                     uniqueId: uniqueId
                 }, callback);
             });
         };
 
-        this.clearHistory = function(params, callback) {
+        this.clearHistory = function (params, callback) {
 
             /**
              * + Clear History Request Object    {object}
@@ -7792,7 +7820,7 @@
             }
 
             return sendMessage(clearHistoryParams, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -7814,11 +7842,11 @@
                             if (db) {
                                 db.messages.where('threadId')
                                     .equals(parseInt(result.result))
-                                    .and(function(message) {
+                                    .and(function (message) {
                                         return message.owner == userInfo.id;
                                     })
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -7849,7 +7877,7 @@
 
         this.uploadImage = uploadImage;
 
-        this.cancelFileUpload = function(params, callback) {
+        this.cancelFileUpload = function (params, callback) {
             if (params) {
                 if (typeof params.uniqueId == 'string') {
                     var uniqueId = params.uniqueId;
@@ -7866,7 +7894,7 @@
             return;
         };
 
-        this.editMessage = function(params, callback) {
+        this.editMessage = function (params, callback) {
             return sendMessage({
                 chatMessageVOType: chatMessageVOTypes.EDIT_MESSAGE,
                 typeCode: params.typeCode,
@@ -7879,7 +7907,7 @@
                 systemMetadata: params.systemMetadata,
                 pushMsgType: 4
             }, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -7915,7 +7943,7 @@
                                      * Insert Message into cache database
                                      */
                                     db.messages.put(tempData)
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -7946,7 +7974,7 @@
             });
         };
 
-        this.deleteMessage = function(params, callback) {
+        this.deleteMessage = function (params, callback) {
             return sendMessage({
                 chatMessageVOType: chatMessageVOTypes.DELETE_MESSAGE,
                 typeCode: params.typeCode,
@@ -7957,7 +7985,7 @@
                 }),
                 pushMsgType: 4
             }, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -7983,7 +8011,7 @@
                                 db.messages.where('id')
                                     .equals(parseInt(result.result))
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: 6602,
                                             message: CHAT_ERRORS[6602],
@@ -8007,7 +8035,7 @@
             });
         };
 
-        this.deleteMultipleMessages = function(params, callback) {
+        this.deleteMultipleMessages = function (params, callback) {
             var messageIdsList = params.messageIds,
                 uniqueIdsList = [],
                 threadId = params.threadId;
@@ -8022,7 +8050,7 @@
                 var uniqueId = Utility.generateUUID();
                 uniqueIdsList.push(uniqueId);
 
-                messagesCallbacks[uniqueId] = function(result) {
+                messagesCallbacks[uniqueId] = function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -8048,7 +8076,7 @@
                                 db.messages.where('id')
                                     .equals(parseInt(result.result))
                                     .delete()
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: 6602,
                                             message: CHAT_ERRORS[6602],
@@ -8084,7 +8112,7 @@
             });
         };
 
-        this.replyMessage = function(params, callbacks) {
+        this.replyMessage = function (params, callbacks) {
             var uniqueId;
 
             if (typeof params.uniqueId != 'undefined') {
@@ -8107,12 +8135,12 @@
                     pushMsgType: 5
                 },
                 callbacks: callbacks
-            }, function() {
+            }, function () {
                 chatSendQueueHandler();
             });
         };
 
-        this.replyFileMessage = function(params, callbacks) {
+        this.replyFileMessage = function (params, callbacks) {
             var metadata = {},
                 fileUploadParams = {},
                 fileUniqueId = Utility.generateUUID();
@@ -8215,9 +8243,9 @@
                             pushMsgType: 4
                         },
                         callbacks: callbacks
-                    }, function() {
+                    }, function () {
                         if (imageMimeTypes.indexOf(fileType) > 0 || imageExtentions.indexOf(fileExtension) > 0) {
-                            uploadImage(fileUploadParams, function(result) {
+                            uploadImage(fileUploadParams, function (result) {
                                 if (!result.hasError) {
                                     metadata['file']['actualHeight'] = result.result.actualHeight;
                                     metadata['file']['actualWidth'] = result.result.actualWidth;
@@ -8233,14 +8261,14 @@
 
                                     transferFromUploadQToSendQ(
                                         parseInt(params.threadId), fileUniqueId,
-                                        JSON.stringify(metadata), function() {
+                                        JSON.stringify(metadata), function () {
                                             chatSendQueueHandler();
                                         });
                                 }
                             });
                         }
                         else {
-                            uploadFile(fileUploadParams, function(result) {
+                            uploadFile(fileUploadParams, function (result) {
                                 if (!result.hasError) {
                                     metadata['file']['name'] = result.result.name;
                                     metadata['file']['hashCode'] = result.result.hashCode;
@@ -8252,7 +8280,7 @@
 
                                     transferFromUploadQToSendQ(
                                         parseInt(params.threadId), fileUniqueId,
-                                        JSON.stringify(metadata), function() {
+                                        JSON.stringify(metadata), function () {
                                             chatSendQueueHandler();
                                         });
                                 }
@@ -8284,7 +8312,7 @@
             }
         };
 
-        this.forwardMessage = function(params, callbacks) {
+        this.forwardMessage = function (params, callbacks) {
             var threadId = params.subjectId,
                 messageIdsList = JSON.parse(params.content),
                 uniqueIdsList = [];
@@ -8332,14 +8360,14 @@
                     pushMsgType: 5
                 },
                 callbacks: callbacks
-            }, function() {
+            }, function () {
                 chatSendQueueHandler();
             });
         };
 
         this.deliver = deliver(params);
 
-        this.seen = function(params) {
+        this.seen = function (params) {
             if (userInfo && params.ownerId !== userInfo.id) {
                 return sendMessage({
                     chatMessageVOType: chatMessageVOTypes.SEEN,
@@ -8350,7 +8378,7 @@
             }
         };
 
-        this.startTyping = function(params) {
+        this.startTyping = function (params) {
             var uniqueId = Utility.generateUUID();
 
             if (parseInt(params.threadId) > 0) {
@@ -8358,7 +8386,7 @@
             }
             isTypingInterval && clearInterval(isTypingInterval);
 
-            isTypingInterval = setInterval(function() {
+            isTypingInterval = setInterval(function () {
                 sendSystemMessage({
                     content: JSON.stringify({
                         type: systemMessageTypes.IS_TYPING
@@ -8369,11 +8397,11 @@
             }, systemMessageIntervalPitch);
         };
 
-        this.stopTyping = function() {
+        this.stopTyping = function () {
             isTypingInterval && clearInterval(isTypingInterval);
         };
 
-        this.getMessageDeliveredList = function(params, callback) {
+        this.getMessageDeliveredList = function (params, callback) {
 
             var deliveryListData = {
                 chatMessageVOType: chatMessageVOTypes.GET_MESSAGE_DELEVERY_PARTICIPANTS,
@@ -8391,7 +8419,7 @@
             }
 
             return sendMessage(deliveryListData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     if (typeof result.result == 'object') {
                         for (var i = 0; i < result.result.length; i++) {
                             result.result[i] = formatDataToMakeUser(result.result[i]);
@@ -8402,7 +8430,7 @@
             });
         };
 
-        this.getMessageSeenList = function(params, callback) {
+        this.getMessageSeenList = function (params, callback) {
             var seenListData = {
                 chatMessageVOType: chatMessageVOTypes.GET_MESSAGE_SEEN_PARTICIPANTS,
                 typeCode: params.typeCode,
@@ -8419,7 +8447,7 @@
             }
 
             return sendMessage(seenListData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     if (typeof result.result == 'object') {
                         for (var i = 0; i < result.result.length; i++) {
                             result.result[i] = formatDataToMakeUser(result.result[i]);
@@ -8432,7 +8460,7 @@
 
         this.updateThreadInfo = updateThreadInfo;
 
-        this.muteThread = function(params, callback) {
+        this.muteThread = function (params, callback) {
             return sendMessage({
                 chatMessageVOType: chatMessageVOTypes.MUTE_THREAD,
                 typeCode: params.typeCode,
@@ -8442,13 +8470,13 @@
                 token: token,
                 timeout: params.timeout
             }, {
-                onResult: function(result) {
+                onResult: function (result) {
                     callback && callback(result);
                 }
             });
         };
 
-        this.unMuteThread = function(params, callback) {
+        this.unMuteThread = function (params, callback) {
             return sendMessage({
                 chatMessageVOType: chatMessageVOTypes.UNMUTE_THREAD,
                 typeCode: params.typeCode,
@@ -8458,13 +8486,13 @@
                 token: token,
                 timeout: params.timeout
             }, {
-                onResult: function(result) {
+                onResult: function (result) {
                     callback && callback(result);
                 }
             });
         };
 
-        this.spamPvThread = function(params, callback) {
+        this.spamPvThread = function (params, callback) {
             var spamData = {
                 chatMessageVOType: chatMessageVOTypes.SPAM_PV_THREAD,
                 typeCode: params.typeCode,
@@ -8480,13 +8508,13 @@
             }
 
             return sendMessage(spamData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     callback && callback(result);
                 }
             });
         };
 
-        this.block = function(params, callback) {
+        this.block = function (params, callback) {
 
             var blockData = {
                 chatMessageVOType: chatMessageVOTypes.BLOCK,
@@ -8512,7 +8540,7 @@
             }
 
             return sendMessage(blockData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     if (typeof result.result == 'object') {
                         result.result = formatDataToMakeBlockedUser(result.result);
                     }
@@ -8521,7 +8549,7 @@
             });
         };
 
-        this.unblock = function(params, callback) {
+        this.unblock = function (params, callback) {
             var unblockData = {
                 chatMessageVOType: chatMessageVOTypes.UNBLOCK,
                 typeCode: params.typeCode,
@@ -8550,7 +8578,7 @@
             }
 
             return sendMessage(unblockData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     if (typeof result.result == 'object') {
                         result.result = formatDataToMakeBlockedUser(result.result);
                     }
@@ -8560,7 +8588,7 @@
             });
         };
 
-        this.getBlocked = function(params, callback) {
+        this.getBlocked = function (params, callback) {
             var count = 50,
                 offset = 0,
                 content = {};
@@ -8588,7 +8616,7 @@
             };
 
             return sendMessage(getBlockedData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -8622,7 +8650,7 @@
             });
         };
 
-        this.getNotSeenDuration = function(params, callback) {
+        this.getNotSeenDuration = function (params, callback) {
             var content = {};
 
             if (params) {
@@ -8641,7 +8669,7 @@
             };
 
             return sendMessage(getNotSeenDurationData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     var returnData = {
                         hasError: result.hasError,
                         cache: false,
@@ -8658,7 +8686,7 @@
             });
         };
 
-        this.addContacts = function(params, callback) {
+        this.addContacts = function (params, callback) {
             var data = {};
 
             if (params) {
@@ -8703,7 +8731,7 @@
                 }
             };
 
-            httpRequest(requestParams, function(result) {
+            httpRequest(requestParams, function (result) {
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 
@@ -8767,7 +8795,7 @@
                                 }
 
                                 db.contacts.bulkPut(cacheData)
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -8799,7 +8827,7 @@
             });
         };
 
-        this.updateContacts = function(params, callback) {
+        this.updateContacts = function (params, callback) {
             var data = {};
 
             if (params) {
@@ -8859,7 +8887,7 @@
 
             var requestParams = {
                 url: SERVICE_ADDRESSES.PLATFORM_ADDRESS +
-                SERVICES_PATH.UPDATE_CONTACTS,
+                    SERVICES_PATH.UPDATE_CONTACTS,
                 method: 'GET',
                 data: data,
                 headers: {
@@ -8868,7 +8896,7 @@
                 }
             };
 
-            httpRequest(requestParams, function(result) {
+            httpRequest(requestParams, function (result) {
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 
@@ -8932,7 +8960,7 @@
                                 }
 
                                 db.contacts.bulkPut(cacheData)
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -8964,7 +8992,7 @@
             });
         };
 
-        this.removeContacts = function(params, callback) {
+        this.removeContacts = function (params, callback) {
             var data = {};
 
             if (params) {
@@ -8990,7 +9018,7 @@
                 }
             };
 
-            httpRequest(requestParams, function(result) {
+            httpRequest(requestParams, function (result) {
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 
@@ -9013,7 +9041,7 @@
                             db.contacts.where('id')
                                 .equals(parseInt(params.id))
                                 .delete()
-                                .catch(function(error) {
+                                .catch(function (error) {
                                     fireEvent('error', {
                                         code: 6602,
                                         message: CHAT_ERRORS[6602],
@@ -9043,7 +9071,7 @@
             });
         };
 
-        this.searchContacts = function(params, callback) {
+        this.searchContacts = function (params, callback) {
             var data = {
                     size: 50,
                     offset: 0
@@ -9120,7 +9148,7 @@
                     db.contacts.where('expireTime')
                         .below(new Date().getTime())
                         .delete()
-                        .then(function() {
+                        .then(function () {
 
                             /**
                              * Query cache database to get contacts
@@ -9136,14 +9164,14 @@
                                 if (whereClause.hasOwnProperty('id')) {
                                     thenAble = db.contacts.where('owner')
                                         .equals(parseInt(userInfo.id))
-                                        .and(function(contact) {
+                                        .and(function (contact) {
                                             return contact.id == whereClause.id;
                                         });
                                 }
                                 else if (whereClause.hasOwnProperty('uniqueId')) {
                                     thenAble = db.contacts.where('owner')
                                         .equals(parseInt(userInfo.id))
-                                        .and(function(contact) {
+                                        .and(function (contact) {
                                             return contact.uniqueId == whereClause.uniqueId;
                                         });
                                 }
@@ -9151,7 +9179,7 @@
                                     if (whereClause.hasOwnProperty('firstName')) {
                                         thenAble = db.contacts.where('owner')
                                             .equals(parseInt(userInfo.id))
-                                            .filter(function(contact) {
+                                            .filter(function (contact) {
                                                 var reg = new RegExp(whereClause.firstName);
                                                 return reg.test(chatDecrypt(contact.firstName, cacheSecret, contact.salt));
                                             });
@@ -9160,7 +9188,7 @@
                                     if (whereClause.hasOwnProperty('lastName')) {
                                         thenAble = db.contacts.where('owner')
                                             .equals(parseInt(userInfo.id))
-                                            .filter(function(contact) {
+                                            .filter(function (contact) {
                                                 var reg = new RegExp(whereClause.lastName);
                                                 return reg.test(chatDecrypt(contact.lastName, cacheSecret, contact.salt));
                                             });
@@ -9169,7 +9197,7 @@
                                     if (whereClause.hasOwnProperty('email')) {
                                         thenAble = db.contacts.where('owner')
                                             .equals(parseInt(userInfo.id))
-                                            .filter(function(contact) {
+                                            .filter(function (contact) {
                                                 var reg = new RegExp(whereClause.email);
                                                 return reg.test(chatDecrypt(contact.email, cacheSecret, contact.salt));
                                             });
@@ -9178,7 +9206,7 @@
                                     if (whereClause.hasOwnProperty('q')) {
                                         thenAble = db.contacts.where('owner')
                                             .equals(parseInt(userInfo.id))
-                                            .filter(function(contact) {
+                                            .filter(function (contact) {
                                                 var reg = new RegExp(whereClause.q);
                                                 return reg.test(chatDecrypt(contact.firstName, cacheSecret, contact.salt) + ' ' +
                                                     chatDecrypt(contact.lastName, cacheSecret, contact.salt) + ' ' +
@@ -9191,11 +9219,11 @@
                             thenAble.offset(data.offset)
                                 .limit(data.size)
                                 .toArray()
-                                .then(function(contacts) {
+                                .then(function (contacts) {
                                     db.contacts.where('owner')
                                         .equals(parseInt(userInfo.id))
                                         .count()
-                                        .then(function(contactsCount) {
+                                        .then(function (contactsCount) {
                                             var cacheData = [];
 
                                             for (var i = 0; i < contacts.length; i++) {
@@ -9233,7 +9261,7 @@
                                                 returnCache = true;
                                             }
                                         })
-                                        .catch(function(error) {
+                                        .catch(function (error) {
                                             fireEvent('error', {
                                                 code: error.code,
                                                 message: error.message,
@@ -9241,7 +9269,7 @@
                                             });
                                         });
                                 })
-                                .catch(function(error) {
+                                .catch(function (error) {
                                     fireEvent('error', {
                                         code: error.code,
                                         message: error.message,
@@ -9249,7 +9277,7 @@
                                     });
                                 });
                         })
-                        .catch(function(error) {
+                        .catch(function (error) {
                             fireEvent('error', {
                                 code: error.code,
                                 message: error.message,
@@ -9269,7 +9297,7 @@
             /**
              * Get Search Contacts Result From Server
              */
-            httpRequest(requestParams, function(result) {
+            httpRequest(requestParams, function (result) {
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 
@@ -9334,7 +9362,7 @@
                                 }
 
                                 db.contacts.bulkPut(cacheData)
-                                    .catch(function(error) {
+                                    .catch(function (error) {
                                         fireEvent('error', {
                                             code: error.code,
                                             message: error.message,
@@ -9376,7 +9404,7 @@
             });
         };
 
-        this.mapReverse = function(params, callback) {
+        this.mapReverse = function (params, callback) {
             var data = {};
 
             if (params) {
@@ -9400,7 +9428,7 @@
                 }
             };
 
-            httpRequest(requestParams, function(result) {
+            httpRequest(requestParams, function (result) {
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 
@@ -9425,7 +9453,7 @@
             });
         };
 
-        this.mapSearch = function(params, callback) {
+        this.mapSearch = function (params, callback) {
             var data = {};
 
             if (params) {
@@ -9453,7 +9481,7 @@
                 }
             };
 
-            httpRequest(requestParams, function(result) {
+            httpRequest(requestParams, function (result) {
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 
@@ -9478,7 +9506,7 @@
             });
         };
 
-        this.mapRouting = function(params, callback) {
+        this.mapRouting = function (params, callback) {
             var data = {};
 
             if (params) {
@@ -9519,7 +9547,7 @@
                 }
             };
 
-            httpRequest(requestParams, function(result) {
+            httpRequest(requestParams, function (result) {
                 if (!result.hasError) {
                     var responseData = JSON.parse(result.result.responseText);
 
@@ -9544,7 +9572,7 @@
             });
         };
 
-        this.mapStaticImage = function(params, callback) {
+        this.mapStaticImage = function (params, callback) {
             var data = {},
                 url = SERVICE_ADDRESSES.MAP_ADDRESS + SERVICES_PATH.STATIC_IMAGE,
                 hasError = false;
@@ -9630,7 +9658,7 @@
             callback && callback(returnData);
         };
 
-        this.setAdmin = function(params, callback) {
+        this.setAdmin = function (params, callback) {
             var setAdminData = {
                 chatMessageVOType: chatMessageVOTypes.SET_ROLE_TO_USER,
                 typeCode: params.typeCode,
@@ -9645,7 +9673,7 @@
                     setAdminData.subjectId = params.threadId;
                 }
 
-                if(params.admins && Array.isArray(params.admins)) {
+                if (params.admins && Array.isArray(params.admins)) {
                     for (var i = 0; i < params.admins.length; i++) {
                         var temp = {};
                         if (parseInt(params.admins[i].userId) > 0) {
@@ -9673,7 +9701,7 @@
             }
 
             return sendMessage(setAdminData, {
-                onResult: function(result) {
+                onResult: function (result) {
                     callback && callback(result);
                 }
             });
@@ -9681,7 +9709,7 @@
 
         this.generateUUID = Utility.generateUUID;
 
-        this.logout = function() {
+        this.logout = function () {
             clearChatServerCaches();
             asyncClient.logout();
         };
@@ -9692,15 +9720,15 @@
 
         this.clearCacheDatabasesOfUser = clearCacheDatabasesOfUser;
 
-        this.getChatState = function() {
+        this.getChatState = function () {
             return chatFullStateObject;
         };
 
-        this.reconnect = function() {
+        this.reconnect = function () {
             asyncClient.reconnectSocket();
         };
 
-        this.setToken = function(newToken) {
+        this.setToken = function (newToken) {
             if (typeof newToken != 'undefined') {
                 token = newToken;
             }
