@@ -96233,9 +96233,10 @@ arguments[4][188][0].apply(exports,arguments)
                             getHistory({
                                 offset: 0,
                                 threadId: threadId,
-                                id: messageContent.messageId
+                                id: messageContent.messageId,
+                                cache: false
                             }, function(result) {
-                                if (!result.hasError && !result.cache) {
+                                if (!result.hasError) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_DELIVERY',
                                         result: {
@@ -96269,9 +96270,10 @@ arguments[4][188][0].apply(exports,arguments)
                             getHistory({
                                 offset: 0,
                                 threadId: threadId,
-                                id: messageContent.messageId
+                                id: messageContent.messageId,
+                                cache: false
                             }, function(result) {
-                                if (!result.hasError && !result.cache) {
+                                if (!result.hasError) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_SEEN',
                                         result: {
@@ -102591,6 +102593,13 @@ arguments[4][188][0].apply(exports,arguments)
             }, function() {
                 chatSendQueueHandler();
             });
+
+            return {
+                uniqueId: uniqueId,
+                threadId: params.threadId,
+                participant: userInfo,
+                content: params.content
+            };
         };
 
         this.replyFileMessage = function(params, callbacks) {

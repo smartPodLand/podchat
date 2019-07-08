@@ -1752,9 +1752,10 @@
                             getHistory({
                                 offset: 0,
                                 threadId: threadId,
-                                id: messageContent.messageId
+                                id: messageContent.messageId,
+                                cache: false
                             }, function(result) {
-                                if (!result.hasError && !result.cache) {
+                                if (!result.hasError) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_DELIVERY',
                                         result: {
@@ -1788,9 +1789,10 @@
                             getHistory({
                                 offset: 0,
                                 threadId: threadId,
-                                id: messageContent.messageId
+                                id: messageContent.messageId,
+                                cache: false
                             }, function(result) {
-                                if (!result.hasError && !result.cache) {
+                                if (!result.hasError) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_SEEN',
                                         result: {
@@ -8110,6 +8112,13 @@
             }, function() {
                 chatSendQueueHandler();
             });
+
+            return {
+                uniqueId: uniqueId,
+                threadId: params.threadId,
+                participant: userInfo,
+                content: params.content
+            };
         };
 
         this.replyFileMessage = function(params, callbacks) {

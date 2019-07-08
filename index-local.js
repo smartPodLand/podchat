@@ -32,7 +32,7 @@ var params = {
 
     grantDeviceIdFromSSO: false,
     enableCache: false, // Enable Client side caching
-    fullResponseObject: true,
+    fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "chattest",
     token: '7cba09ff83554fc98726430c30afcfc6', // {**REQUIRED**} SSO Token ZiZi
@@ -126,7 +126,7 @@ chatAgent.on('chatReady', function() {
      * CREATE THREAD (Creates P2P Chat with a specific user)
      * @param contactId
      */
-    // createThread({id: 2247, type: "TO_BE_USER_CONTACT_ID"});
+    // createThread({id: 578, type: "TO_BE_USER_CONTACT_ID"});
 
     /**
      * GET THREAD PARTICIPANTS
@@ -305,7 +305,7 @@ chatAgent.on('chatReady', function() {
      * @param metadata
      */
     // setInterval(() => {
-    // sendMessage(1431, 'Message at ' + new Date(), {
+    // sendMessage(10634, 'Message at ' + new Date(), {
     //     id: 672,
     //     type: 'message',
     //     name: 'Masoud',
@@ -319,7 +319,7 @@ chatAgent.on('chatReady', function() {
     //     },
     //     active: 0
     // });
-    // }, 1000);
+    // }, 5000);
 
     /**
      * SEND FILE MESSAGE IN THREAD
@@ -740,7 +740,7 @@ chatAgent.on('messageEvents', function(event) {
     var type = event.type,
         message = event.result.message;
 
-    console.log(event);
+    // console.log(event);
 
     switch (type) {
         case 'MESSAGE_NEW':
@@ -763,6 +763,7 @@ chatAgent.on('messageEvents', function(event) {
             break;
 
         case 'MESSAGE_SEEN':
+            console.log("Some message seen has been  dfgdgd", event);
             break;
 
         default:
