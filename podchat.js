@@ -98427,6 +98427,18 @@ arguments[4][188][0].apply(exports,arguments)
                                     var plainWorker = function () {
                                         self.importScripts('https://npmcdn.com/dexie@2.0.4/dist/dexie.min.js');
                                         db = new Dexie('podChat');
+
+                                        db.version(1)
+                                            .stores({
+                                                users: null,
+                                                contacts: null,
+                                                threads: null,
+                                                participants: null,
+                                                messages: null,
+                                                messageGaps: null,
+                                                contentCount: null
+                                            });
+
                                         db.version(2)
                                             .stores({
                                                 users: '&id, name, cellphoneNumber, keyId',
@@ -100804,6 +100816,17 @@ arguments[4][188][0].apply(exports,arguments)
                     if (enableCache) {
                         db = new Dexie('podChat');
 
+                        db.version(1)
+                            .stores({
+                                users: null,
+                                contacts: null,
+                                threads: null,
+                                participants: null,
+                                messages: null,
+                                messageGaps: null,
+                                contentCount: null
+                            });
+                        
                         db.version(2)
                             .stores({
                                 users: '&id, name, cellphoneNumber, keyId',

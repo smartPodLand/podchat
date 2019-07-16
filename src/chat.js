@@ -3946,6 +3946,18 @@
                                     var plainWorker = function () {
                                         self.importScripts('https://npmcdn.com/dexie@2.0.4/dist/dexie.min.js');
                                         db = new Dexie('podChat');
+
+                                        db.version(1)
+                                            .stores({
+                                                users: null,
+                                                contacts: null,
+                                                threads: null,
+                                                participants: null,
+                                                messages: null,
+                                                messageGaps: null,
+                                                contentCount: null
+                                            });
+
                                         db.version(2)
                                             .stores({
                                                 users: '&id, name, cellphoneNumber, keyId',
@@ -6323,6 +6335,17 @@
                     if (enableCache) {
                         db = new Dexie('podChat');
 
+                        db.version(1)
+                            .stores({
+                                users: null,
+                                contacts: null,
+                                threads: null,
+                                participants: null,
+                                messages: null,
+                                messageGaps: null,
+                                contentCount: null
+                            });
+                        
                         db.version(2)
                             .stores({
                                 users: '&id, name, cellphoneNumber, keyId',
