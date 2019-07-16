@@ -4,6 +4,16 @@ var params = {
     appId: new Date().getTime(),
 
     /**
+     * Main Server
+     */
+    socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
+    ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
+    platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
+    fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
+    serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+
+
+    /**
      * Hamed Mehrara
      */
     // socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
@@ -15,11 +25,11 @@ var params = {
     /**
      * Mehdi Sheikh Hosseini
      */
-    socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
-    ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
-    fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
-    serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+    // socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+    // platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
+    // fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
+    // serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
 
     /**
      * Sand Box
@@ -275,8 +285,8 @@ chatAgent.on('chatReady', function() {
 //     threadId: 10349,
 //     admins: [
 //         {
-//             userId: 123,
-//             roleOperation: 'add',
+//             userId: 122,
+//             roleOperation: 'remove',
 //             roles: [
 //                 'post_channel_message',
 //                 'edit_message_of_others',
@@ -386,7 +396,7 @@ chatAgent.on('chatReady', function() {
      * @param {int}      messageId
      * @param {boolean}  deleteForAll
      */
-    // deleteMessage(35116, true);
+    // deleteMessage(49957, true);
 
     // chatAgent.deleteMultipleMessages({
     //     threadId: 10424,

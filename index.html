@@ -28,13 +28,22 @@
             appId: new Date().getTime(),
 
             /**
+             * Main Server
+             */
+//            socketAddress: 'wss://msg.pod.land/ws',
+//            ssoHost: 'https://accounts.pod.land',
+//            platformHost: 'https://api.pod.land/srv/core',
+//            fileServer: 'https://core.pod.land',
+//            serverName: 'chat-server',
+
+            /**
              * Hamed Mehrara
              */
-            // socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
-            // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-            // platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
-            // fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
-            // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+//             socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
+//             ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+//             platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
+//             fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
+//             serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
             /**
              * Mehdi Sheikh Hosseini
@@ -59,7 +68,7 @@
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
 
-             token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+            token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
             // token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
             // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
@@ -1096,7 +1105,7 @@
         <a class="btn" href="#" onclick="getThreads({count:50, offset: 0})">Get Threads</a>
         <a class="btn" href="#" onclick="getHistory({
 //            fromTimeFull: 1557830885624256000,
-//            toTimeFull: 1557830885624256000,
+            toTimeFull: 1558247572310448000,
             count:document.getElementById('g-p2p-count').value,
             offset: document.getElementById('g-p2p-off').value,
             threadId: document.getElementById('g-p2p').value});">Get History</a>

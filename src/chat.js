@@ -4487,8 +4487,10 @@
                                                                 .equals(parseInt(params.threadId))
                                                                 .toArray()
                                                                 .then(function (res) {
+                                                                    var hasNext = true;
                                                                     if (res[0].threadId == parseInt(params.threadId)) {
                                                                         contentCount = res[0].contentCount;
+                                                                        hasNext = offset + count < res[0].contentCount && messages.length > 0
                                                                     } else {
                                                                         contentCount = collectionContentCount;
                                                                     }
@@ -4501,7 +4503,7 @@
                                                                         result: {
                                                                             history: cacheData,
                                                                             contentCount: contentCount,
-                                                                            hasNext: (offset + count < contentCount && messages.length > 0),
+                                                                            hasNext: hasNext,
                                                                             nextOffset: offset + messages.length
                                                                         }
                                                                     };
@@ -5162,19 +5164,25 @@
 
                                             /**
                                              * Update contentCount of this thread in cache
+                                             * contentCount of thread would be count of all
+                                             * thread messages if and only if there are no
+                                             * other conditions applied on getHistory that
+                                             * count and offset
                                              */
-                                            db.contentCount
-                                                .put({
-                                                    threadId: parseInt(params.threadId),
-                                                    contentCount: result.contentCount
-                                                })
-                                                .catch(function (error) {
-                                                    fireEvent('error', {
-                                                        code: error.code,
-                                                        message: error.message,
-                                                        error: error
+                                            if((Object.keys(whereClause).length === 0)) {
+                                                db.contentCount
+                                                    .put({
+                                                        threadId: parseInt(params.threadId),
+                                                        contentCount: result.contentCount
+                                                    })
+                                                    .catch(function(error) {
+                                                        fireEvent('error', {
+                                                            code: error.code,
+                                                            message: error.message,
+                                                            error: error
+                                                        });
                                                     });
-                                                });
+                                            }
                                         }
                                         else {
                                             fireEvent('error', {
