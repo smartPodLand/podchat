@@ -1754,7 +1754,7 @@
                                 threadId: threadId,
                                 id: messageContent.messageId,
                                 cache: false
-                            }, function(result) {
+                            }, function (result) {
                                 if (!result.hasError) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_DELIVERY',
@@ -1791,7 +1791,7 @@
                                 threadId: threadId,
                                 id: messageContent.messageId,
                                 cache: false
-                            }, function(result) {
+                            }, function (result) {
                                 if (!result.hasError) {
                                     fireEvent('messageEvents', {
                                         type: 'MESSAGE_SEEN',
@@ -4174,6 +4174,7 @@
                         cacheLastMessage,
                         messages,
                         returnCache,
+                        cacheReady = false,
                         dynamicHistoryCount = (params.dynamicHistoryCount && typeof params.dynamicHistoryCount === 'boolean')
                             ? params.dynamicHistoryCount
                             : false,
@@ -4518,6 +4519,8 @@
                                                                     if (failedQueue) {
                                                                         returnData.result.failed = failedQueueMessages;
                                                                     }
+
+                                                                    cacheReady = true;
 
                                                                     callback && callback(returnData);
                                                                     callback = undefined;
@@ -5170,13 +5173,13 @@
                                              * other conditions applied on getHistory that
                                              * count and offset
                                              */
-                                            if((Object.keys(whereClause).length === 0)) {
+                                            if ((Object.keys(whereClause).length === 0)) {
                                                 db.contentCount
                                                     .put({
                                                         threadId: parseInt(params.threadId),
                                                         contentCount: result.contentCount
                                                     })
-                                                    .catch(function(error) {
+                                                    .catch(function (error) {
                                                         fireEvent('error', {
                                                             code: error.code,
                                                             message: error.message,
@@ -5214,11 +5217,10 @@
                                         returnData.result.failed = failedQueueMessages;
                                     }
 
-
                                     /**
                                      * Check Differences between Cache and Server response
                                      */
-                                    if (returnCache) {
+                                    if (returnCache && cacheReady) {
                                         /**
                                          * If there are some messages in cache but they
                                          * are not in server's response, we can assume
