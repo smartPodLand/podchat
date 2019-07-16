@@ -3949,17 +3949,6 @@
 
                                         db.version(1)
                                             .stores({
-                                                users: null,
-                                                contacts: null,
-                                                threads: null,
-                                                participants: null,
-                                                messages: null,
-                                                messageGaps: null,
-                                                contentCount: null
-                                            });
-
-                                        db.version(2)
-                                            .stores({
                                                 users: '&id, name, cellphoneNumber, keyId',
                                                 contacts: '[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName, expireTime',
                                                 threads: '[owner+id] ,id, owner, title, time, [owner+time]',
@@ -6336,17 +6325,6 @@
                         db = new Dexie('podChat');
 
                         db.version(1)
-                            .stores({
-                                users: null,
-                                contacts: null,
-                                threads: null,
-                                participants: null,
-                                messages: null,
-                                messageGaps: null,
-                                contentCount: null
-                            });
-                        
-                        db.version(2)
                             .stores({
                                 users: '&id, name, cellphoneNumber, keyId',
                                 contacts: '[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName, expireTime',
