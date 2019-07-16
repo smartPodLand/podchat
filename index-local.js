@@ -6,11 +6,11 @@ var params = {
     /**
      * Main Server
      */
-    socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
-    ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
-    platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
-    fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
-    serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+    // socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
+    // ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
+    // platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
+    // fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
+    // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
 
     /**
@@ -25,11 +25,11 @@ var params = {
     /**
      * Mehdi Sheikh Hosseini
      */
-    // socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
-    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    // platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
-    // fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
-    // serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+    socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+    ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+    platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
+    fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
+    serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
 
     /**
      * Sand Box

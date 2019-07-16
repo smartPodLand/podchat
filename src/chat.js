@@ -3946,7 +3946,7 @@
                                     var plainWorker = function () {
                                         self.importScripts('https://npmcdn.com/dexie@2.0.4/dist/dexie.min.js');
                                         db = new Dexie('podChat');
-                                        db.version(1)
+                                        db.version(2)
                                             .stores({
                                                 users: '&id, name, cellphoneNumber, keyId',
                                                 contacts: '[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName, expireTime',
@@ -6323,7 +6323,7 @@
                     if (enableCache) {
                         db = new Dexie('podChat');
 
-                        db.version(1)
+                        db.version(2)
                             .stores({
                                 users: '&id, name, cellphoneNumber, keyId',
                                 contacts: '[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName, expireTime',
