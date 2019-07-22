@@ -41,8 +41,8 @@
             }
         }
         else {
-            Async = POD.Async,
-                ChatUtility = POD.ChatUtility,
+            Async = window.POD.Async,
+                ChatUtility = window.POD.ChatUtility,
                 FormData = window.FormData,
                 Dexie = window.Dexie;
         }
