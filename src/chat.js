@@ -1716,10 +1716,12 @@
                      */
                     case chatMessageVOTypes.CREATE_THREAD:
                         messageContent.uniqueId = uniqueId;
-                        createThread(messageContent, true);
 
                         if (messagesCallbacks[uniqueId]) {
+                            createThread(messageContent, true, true);
                             messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent, contentCount));
+                        } else {
+                            createThread(messageContent, true, false);
                         }
 
                         break;
@@ -3026,12 +3028,14 @@
              *
              * @return {object} Formatted Thread Object
              */
-            createThread = function (messageContent, addFromService) {
+            createThread = function (messageContent, addFromService, showThread) {
                 var threadData = formatDataToMakeConversation(messageContent);
+                var redirectToThread = (showThread === true) ? showThread : false;
 
                 if (addFromService) {
                     fireEvent('threadEvents', {
                         type: 'THREAD_NEW',
+                        redirectToThread: redirectToThread,
                         result: {
                             thread: threadData
                         }
@@ -6991,8 +6995,7 @@
                             resultData = {
                                 contacts: [],
                                 contentCount: result.contentCount,
-                                hasNext: (offset + count <
-                                    result.contentCount && messageLength > 0),
+                                hasNext: (offset + count < result.contentCount && messageLength > 0),
                                 nextOffset: offset + messageLength
                             },
                             contactData;

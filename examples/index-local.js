@@ -6,11 +6,11 @@ var params = {
     /**
      * Main Server
      */
-    // socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
-    // ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
-    // platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
-    // fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
-    // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+    socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
+    ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
+    platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
+    fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
+    serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
 
     /**
@@ -25,11 +25,11 @@ var params = {
     /**
      * Mehdi Sheikh Hosseini
      */
-    socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
-    ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
-    fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
-    serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+    // socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+    // platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
+    // fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
+    // serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
 
     /**
      * Sand Box
@@ -45,7 +45,8 @@ var params = {
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "chattest",
-    token: '7cba09ff83554fc98726430c30afcfc6', // {**REQUIRED**} SSO Token ZiZi
+    token: "0a816b9ea7054312a8c77cd10997e9c0",
+    // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
     // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
@@ -399,9 +400,9 @@ chatAgent.on('chatReady', function() {
     // deleteMessage(49957, true);
 
     // chatAgent.deleteMultipleMessages({
-    //     threadId: 10424,
-    //     messageIds: [49226, 49227, 49228],
-    //     deleteForAll: true
+    //     threadId: 15,
+    //     messageIds: [1978, 1977, 1976],
+    //     deleteForAll: false
     // }, function(result) {
     //     console.log("Delete Multiple Message Result", result);
     // });

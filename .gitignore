@@ -61,8 +61,7 @@ typings/
 .env
 
 # test index files
-index-local0.js
-index-local2.js
+examples/batchAdd.js
 
 # SQLite files
 *.sqlite
