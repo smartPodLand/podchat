@@ -3,7 +3,7 @@
 
 <head>
     <title>podChat</title>
-    <link href="http://fams.fanapsoft.com/TSK/favicon.ico" rel="icon" type="image/x-icon" />
+    <link href="http://fams.fanapsoft.com/TSK/favicon.ico" rel="icon" type="image/x-icon"/>
     <!-- Development Mode -->
     <script type="text/javascript" src="../src/utility/utility.js"></script>
     <script type="text/javascript" src="../node_modules/podasync/src/utility/utility.js"></script>
@@ -30,11 +30,11 @@
             /**
              * Main Server
              */
-           socketAddress: 'wss://msg.pod.land/ws',
-           ssoHost: 'https://accounts.pod.land',
-           platformHost: 'https://api.pod.land/srv/core',
-           fileServer: 'https://core.pod.land',
-           serverName: 'chat-server',
+            socketAddress: 'wss://msg.pod.land/ws',
+            ssoHost: 'https://accounts.pod.land',
+            platformHost: 'https://api.pod.land/srv/core',
+            fileServer: 'https://core.pod.land',
+            serverName: 'chat-server',
 
             /**
              * Hamed Mehrara
@@ -67,7 +67,7 @@
             enableCache: true, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-            token: "ba5de9b9836f4b46bffd7533c7603a35",
+            token: "60a964d76eb04079b4d37fb35b489469",
             // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
             // token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -90,7 +90,7 @@
             PID,
             P2P_THREAD_ID = 293;
 
-        chatAgent.on("chatReady", function() {
+        chatAgent.on("chatReady", function () {
 
             /*******************************************************
              *                       U S E R                       *
@@ -530,7 +530,7 @@
         /**
          * Listen to Error Messages
          */
-        chatAgent.on("error", function(error) {
+        chatAgent.on("error", function (error) {
             console.log("Error ", error);
             // console.log("Error ", error.error);
         });
@@ -538,25 +538,25 @@
         /**
          * Listen to Chat State Changes
          */
-        chatAgent.on("chatState", function(chatState) {
+        chatAgent.on("chatState", function (chatState) {
         });
 
         /**
          * Listen to File Upload Events
          */
-        chatAgent.on("fileUploadEvents", function(event) {
+        chatAgent.on("fileUploadEvents", function (event) {
             var type = event.type;
             console.log(event);
         });
 
-        chatAgent.on("contactEvents", function(event) {
+        chatAgent.on("contactEvents", function (event) {
             console.log(event);
         });
 
         /**
          * Listen to Thread Events
          */
-        chatAgent.on("threadEvents", function(event) {
+        chatAgent.on("threadEvents", function (event) {
             var type = event.type;
             console.log(event);
 
@@ -603,7 +603,7 @@
         /**
          * Listen to Message Events
          */
-        chatAgent.on("messageEvents", function(event) {
+        chatAgent.on("messageEvents", function (event) {
             var type = event.type,
                 message = event.result.message;
 
@@ -614,7 +614,7 @@
                     /**
                      * Sending Message Seen to Sender after 5 secs
                      */
-                    setTimeout(function() {
+                    setTimeout(function () {
                         chatAgent.seen({
                             messageId: message.id,
                             ownerId: message.ownerId
@@ -640,7 +640,7 @@
         /**
          * Listen to System Events
          */
-        chatAgent.on("systemEvents", function(event) {
+        chatAgent.on("systemEvents", function (event) {
             var type = event.type;
             console.log(event);
 
@@ -659,13 +659,13 @@
          */
 
         function getUserInfo() {
-            chatAgent.getUserInfo(function(userInfo) {
+            chatAgent.getUserInfo(function (userInfo) {
                 console.log(userInfo);
             });
         }
 
         function getThreads(params) {
-            var instantResult = chatAgent.getThreads(params, function(threadsResult) {
+            var instantResult = chatAgent.getThreads(params, function (threadsResult) {
                 if (!threadsResult.hasError) {
                     var threadsCount = threadsResult.result.contentCount;
                     var threads = threadsResult.result.threads;
@@ -679,10 +679,11 @@
             var getParticipantsParams = {
                 count: 50,
                 offset: 0,
-                threadId: threadId
+                threadId: threadId,
+                // name: "مهیار"
             };
 
-            chatAgent.getThreadParticipants(getParticipantsParams, function(participantsResult) {
+            chatAgent.getThreadParticipants(getParticipantsParams, function (participantsResult) {
                 if (!participantsResult.hasError) {
                     console.log(participantsResult);
                 }
@@ -693,7 +694,7 @@
             chatAgent.addParticipants({
                 threadId: threadId,
                 contacts: contacts
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
             });
 
@@ -703,7 +704,7 @@
             chatAgent.removeParticipants({
                 threadId: threadId,
                 participants: participants
-            }, function(result) {
+            }, function (result) {
                 // console.log(result);
             });
 
@@ -712,14 +713,14 @@
         function leaveThread(threadId) {
             chatAgent.leaveThread({
                 threadId: threadId
-            }, function(result) {
+            }, function (result) {
                 // console.log(result);
             });
         }
 
         function getContacts(params) {
             var getContactsParams = {
-                count: 50,
+                count: 5,
                 offset: 0
             };
 
@@ -728,7 +729,7 @@
                     getContactsParams.name = params.name;
                 }
             }
-            chatAgent.getContacts(getContactsParams, function(contactsResult) {
+            chatAgent.getContacts(params, function (contactsResult) {
                 if (!contactsResult.hasError) {
                     console.log(contactsResult);
                 }
@@ -740,7 +741,7 @@
                 offset: 0,
                 threadId: threadId,
                 id: messageId
-            }, function(historyResult) {
+            }, function (historyResult) {
                 if (!historyResult.hasError) {
                     console.log(historyResult.result.history);
                 }
@@ -748,7 +749,7 @@
         }
 
         function getHistory(params) {
-            var test = chatAgent.getHistory(params, function(historyResult) {
+            var test = chatAgent.getHistory(params, function (historyResult) {
                 if (!historyResult.hasError) {
                     console.log(historyResult);
 
@@ -768,13 +769,13 @@
             };
 
             var sentMesageUniqueId = chatAgent.sendTextMessage(sendChatParams, {
-                onSent: function(result) {
+                onSent: function (result) {
                     console.log(result.uniqueId + " \t has been Sent!");
                 },
-                onDeliver: function(result) {
+                onDeliver: function (result) {
                     console.log(result.uniqueId + " \t has been Delivered!");
                 },
-                onSeen: function(result) {
+                onSeen: function (result) {
                     console.log(result.uniqueId + " \t has been Seen!");
                 }
             });
@@ -789,13 +790,13 @@
                 content: caption,
                 systemMetadata: metadata
             }, {
-                onSent: function(result) {
+                onSent: function (result) {
                     console.log(result.uniqueId + " \t has been Sent!");
                 },
-                onDeliver: function(result) {
+                onDeliver: function (result) {
                     console.log(result.uniqueId + " \t has been Delivered!");
                 },
-                onSeen: function(result) {
+                onSeen: function (result) {
                     console.log(result.uniqueId + " \t has been Seen!");
                 }
             });
@@ -813,10 +814,10 @@
             };
 
             var mim = chatAgent.sendBotMessage(sendChatParams, {
-                onSent: function(result) {
+                onSent: function (result) {
                     console.log(result.uniqueId + " \t has been Sent!");
                 },
-                onDeliver: function(result) {
+                onDeliver: function (result) {
                     console.log(result.uniqueId + " \t has been Delivered!");
                 }
             });
@@ -830,7 +831,7 @@
                 content: newMessage
             };
 
-            chatAgent.editMessage(editChatParams, function(result) {
+            chatAgent.editMessage(editChatParams, function (result) {
                 console.log(result);
             });
         }
@@ -843,7 +844,7 @@
             chatAgent.deleteMessage({
                 messageId: messageId,
                 deleteForAll: deleteForAll
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
             });
         }
@@ -856,13 +857,13 @@
             };
 
             chatAgent.replyMessage(replyChatParams, {
-                onSent: function(result) {
+                onSent: function (result) {
                     console.log(result.uniqueId + " \t has been Sent! (Reply)");
                 },
-                onDeliver: function(result) {
+                onDeliver: function (result) {
                     console.log(result.uniqueId + " \t has been Delivered! (Reply)");
                 },
-                onSeen: function(result) {
+                onSeen: function (result) {
                     console.log(result.uniqueId + " \t has been Seen! (Reply)");
                 }
             });
@@ -873,13 +874,13 @@
                 subjectId: destination,
                 content: JSON.stringify(messageIds)
             }, {
-                onSent: function(result) {
+                onSent: function (result) {
                     console.log(result.uniqueId + " \t has been Sent! (FORWARD)");
                 },
-                onDeliver: function(result) {
+                onDeliver: function (result) {
                     console.log(result.uniqueId + " \t has been Delivered! (FORWARD)");
                 },
-                onSeen: function(result) {
+                onSeen: function (result) {
                     console.log(result.uniqueId + " \t has been Seen! (FORWARD)");
                 }
             });
@@ -920,7 +921,7 @@
                 }
             }
 
-            chatAgent.createThread(createThreadParams, function(createThreadResult) {
+            chatAgent.createThread(createThreadParams, function (createThreadResult) {
                 console.log(createThreadResult);
             });
         }
@@ -931,7 +932,7 @@
                 threadId: threadId
             };
 
-            chatAgent.renameThread(renameThreadParams, function(renameThreadResult) {
+            chatAgent.renameThread(renameThreadParams, function (renameThreadResult) {
                 console.log(renameThreadResult);
             });
         }
@@ -940,7 +941,7 @@
             var data = {
                 subjectId: threadId
             }
-            chatAgent.muteThread(data, function(result) {
+            chatAgent.muteThread(data, function (result) {
                 if (!result.hasError) {
                     console.log("Threaded has been successfully muted!");
                 }
@@ -952,7 +953,7 @@
             var data = {
                 contactId: contactId
             }
-            chatAgent.block(data, function(result) {
+            chatAgent.block(data, function (result) {
                 if (!result.hasError) {
                     console.log("Contact has been successfully Blocked!");
                 }
@@ -964,7 +965,7 @@
             var data = {
                 blockId: blockId
             }
-            chatAgent.unblock(data, function(result) {
+            chatAgent.unblock(data, function (result) {
                 if (!result.hasError) {
                     console.log("Contact has been successfully unBlocked!");
                 }
@@ -977,7 +978,7 @@
                 count: 50,
                 offset: 0
             }
-            chatAgent.getBlocked(data, function(result) {
+            chatAgent.getBlocked(data, function (result) {
                 if (!result.hasError) {
                     console.log(result);
                 }
@@ -988,7 +989,7 @@
             var data = {
                 subjectId: threadId
             }
-            chatAgent.unMuteThread(data, function(result) {
+            chatAgent.unMuteThread(data, function (result) {
                 if (!result.hasError)
                     console.log("Threaded has been successfully unMuted!");
                 console.log(result);
@@ -1011,7 +1012,7 @@
                 yC: yC,
                 hC: hC,
                 wC: wC
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
                 if (!result.hasError) {
                     var image = result.result;
@@ -1024,7 +1025,7 @@
             chatAgent.getImage({
                 imageId: imageId,
                 hashCode: hashCode
-            }, function(result) {
+            }, function (result) {
                 if (!result.hasError) {
                     console.log("Image has been successfully received => \n", result.result);
                 }
@@ -1034,7 +1035,7 @@
         function uploadFile(file) {
             chatAgent.uploadFile({
                 file: file
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
                 if (!result.hasError) {
                     var file = result.result;
@@ -1048,7 +1049,7 @@
                 fileId: fileId,
                 hashCode: hashCode,
                 downloadable: downloadable
-            }, function(result) {
+            }, function (result) {
                 if (!result.hasError) {
                     console.log("File has been successfully received => \n", result.result);
                 }
@@ -1058,7 +1059,7 @@
         function removeContacts(id) {
             chatAgent.removeContacts({
                 id: id
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
             });
         }
@@ -1101,7 +1102,10 @@
         <label for="g-p2p-count">Count: </label>
         <input type="text" name="p2pcount" id="g-p2p-count" value="10" size="2">
         <br>
-        <a class="btn" href="#" onclick="getContacts()">Get Contacts</a>
+        <a class="btn" href="#" onclick="getContacts({
+            count:document.getElementById('g-p2p-count').value,
+            offset: document.getElementById('g-p2p-off').value
+        })">Get Contacts</a>
         <a class="btn" href="#" onclick="getThreads({count:50, offset: 0})">Get Threads</a>
         <a class="btn" href="#" onclick="getHistory({
 //            fromTimeFull: 1557830885624256000,
@@ -1109,8 +1113,7 @@
             count:document.getElementById('g-p2p-count').value,
             offset: document.getElementById('g-p2p-off').value,
             threadId: document.getElementById('g-p2p').value});">Get History</a>
-        <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread
-            Participants</a>
+        <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread Participants</a>
         <a class="btn" href="#" onclick="chatAgent.getThreadAdmins({threadId:document.getElementById('g-p2p').value}, function(res){
             console.log(res);
         })">Get Thread Admins</a>
@@ -1337,6 +1340,8 @@
 <hr>
 <br>
 
+<form method="post" action="poll.pollcode.com/33712898"><div style="padding:2px;width:325px;font-size:small;color:#000000;"><div style="padding:2px 0px 4px 2px;"><strong>کدام ویژگی را بیشتر نیاز دارید؟</strong></div><hr/><input type="radio" name="answer" value="1" id="answer337128981" style="float:left;" /><label for="answer337128981" style="float:left;width:300px;">صفحه بندی مخاطب ها</label><div style="clear:both;height:2px;"></div><input type="radio" name="answer" value="2" id="answer337128982" style="float:left;" /><label for="answer337128982" style="float:left;width:300px;">امکان حذف گفتگو</label><div style="clear:both;height:2px;"></div><input type="radio" name="answer" value="3" id="answer337128983" style="float:left;" /><label for="answer337128983" style="float:left;width:300px;">امکان منشن اعضا</label><div style="clear:both;height:2px;"></div><input type="radio" name="answer" value="4" id="answer337128984" style="float:left;" /><label for="answer337128984" style="float:left;width:300px;">امکان جستجو در لیست اعضا</label><div style="clear:both;height:2px;"></div><br/><div align="center" style="padding:3px;"><input type="submit" value=" Vote ">&nbsp;<input type="submit" name="view" value=" View "></div></div></form>
+
 <form method="POST" action="http://172.16.110.131:8080/nzh/updateContacts">
     <fieldset>
         <legend>Update Contact</legend>
@@ -1390,17 +1395,17 @@
 
 <script>
     document.getElementById("reconnect")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             chatAgent.reconnect();
         });
 
     document.getElementById("clearCache")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             chatAgent.clearCacheDatabasesOfUser();
         });
 
     document.getElementById("deleteCache")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             chatAgent.deleteCacheDatabases({storage: true, queues: true});
         });
 
@@ -1408,7 +1413,7 @@
      * CREATE THREAD
      */
     document.getElementById("createThreadButton")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var invitees = JSON.parse(document.getElementById("createThreadInvitees").value);
 
             createThreadParams = {
@@ -1441,7 +1446,7 @@
                 }
             }
 
-            chatAgent.createThread(createThreadParams, function(createThreadResult) {
+            chatAgent.createThread(createThreadParams, function (createThreadResult) {
                 console.log(createThreadResult);
             });
         });
@@ -1450,7 +1455,7 @@
      * SEND FILE
      */
     document.getElementById("sendTextButton")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var message = document.getElementById("sendTextMessage").value,
                 thread = document.getElementById("sendTextThread").value;
 
@@ -1458,13 +1463,13 @@
                 threadId: thread,
                 content: message
             }, {
-                onSent: function(result) {
+                onSent: function (result) {
                     console.log(result.uniqueId + " \t has been Sent!");
                 },
-                onDeliver: function(result) {
+                onDeliver: function (result) {
                     console.log(result.uniqueId + " \t has been Delivered!");
                 },
-                onSeen: function(result) {
+                onSeen: function (result) {
                     console.log(result.uniqueId + " \t has been Seen!");
                 }
             });
@@ -1474,7 +1479,7 @@
      * ADD PARTICIPANTS
      */
     document.getElementById("apButton")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var participants = document.getElementById("apList")
                     .value
                     .split(","),
@@ -1483,7 +1488,7 @@
             chatAgent.addParticipants({
                 threadId: thread,
                 contacts: participants
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
             });
         });
@@ -1492,7 +1497,7 @@
      * Resend Message
      */
     document.getElementById("resendButton")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var uniqueId = document.getElementById("resendUid").value;
 
             chatAgent.resendMessage(uniqueId);
@@ -1502,10 +1507,10 @@
      * Cancel Message
      */
     document.getElementById("cancelButton")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var uniqueId = document.getElementById("resendUid").value;
 
-            chatAgent.cancelMessage(uniqueId, function() {
+            chatAgent.cancelMessage(uniqueId, function () {
                 console.log("Message has been canceled");
             });
         });
@@ -1514,7 +1519,7 @@
      * SEND FILE
      */
     document.getElementById("sendFileMessage")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var fileInput = document.getElementById("sendFileInput"),
                 image = fileInput.files[0],
                 content = document.getElementById("sendFileDescription").value,
@@ -1528,13 +1533,13 @@
                     custom_name: "John Doe"
                 }
             }, {
-                onSent: function(result) {
+                onSent: function (result) {
                     console.log(result.uniqueId + " \t has been Sent!");
                 },
-                onDeliver: function(result) {
+                onDeliver: function (result) {
                     console.log(result.uniqueId + " \t has been Delivered!");
                 },
-                onSeen: function(result) {
+                onSeen: function (result) {
                     console.log(result.uniqueId + " \t has been Seen!");
                 }
             });
@@ -1555,7 +1560,7 @@
      * UPLOAD IMAGE
      */
     document.getElementById("uploadImage")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var imageInput = document.getElementById("imageInput"),
                 image = imageInput.files[0];
 
@@ -1566,7 +1571,7 @@
                 yC: 100,
                 hC: 800,
                 wC: 800
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
                 if (!result.hasError) {
                     var image = result.result;
@@ -1574,7 +1579,7 @@
                     chatAgent.getImage({
                         imageId: image.id,
                         hashCode: image.hashCode
-                    }, function(result) {
+                    }, function (result) {
                         if (!result.hasError) {
                             document.getElementById("uploadedImage").src = result.result;
                             document.getElementById("uploadedImageData").innerHTML = "<pre><br>Uploaded Image Id: " +
@@ -1593,14 +1598,14 @@
      * UPLOAD FILE
      */
     document.getElementById("uploadFile")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var fileInput = document.getElementById("fileInput"),
                 file = fileInput.files[0];
 
             var uploadResult = chatAgent.uploadFile({
                 file: file,
                 // fileName: "Test Name"
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
                 if (!result.hasError) {
                     var file = result.result;
@@ -1617,14 +1622,14 @@
      * GET IMAGE
      */
     document.getElementById("getImage")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var imageId = document.getElementById("imageId").value,
                 hashCode = document.getElementById("hashCode").value;
 
             chatAgent.getImage({
                 imageId: imageId,
                 hashCode: hashCode
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
                 if (!result.hasError) {
                     document.getElementById("getImageResult").src = result.result;
@@ -1636,7 +1641,7 @@
      * GET FILE
      */
     document.getElementById("getFile")
-        .addEventListener("click", function() {
+        .addEventListener("click", function () {
             var fileId = document.getElementById("fileId").value,
                 hashCode = document.getElementById("fileHashCode").value;
 
@@ -1644,7 +1649,7 @@
                 fileId: fileId,
                 hashCode: hashCode,
                 downloadable: true
-            }, function(result) {
+            }, function (result) {
                 console.log(result);
                 if (!result.hasError) {
                     document.getElementById("getFileResult").innerHTML = "<a href=\"" + result.result + "\">" +
