@@ -4514,7 +4514,7 @@
                                                                 .toArray()
                                                                 .then(function (res) {
                                                                     var hasNext = true;
-                                                                    if (res[0].threadId == parseInt(params.threadId)) {
+                                                                    if (res.length > 0 && res[0].threadId == parseInt(params.threadId)) {
                                                                         contentCount = res[0].contentCount;
                                                                         hasNext = offset + count < res[0].contentCount && messages.length > 0
                                                                     } else {
