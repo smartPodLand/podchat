@@ -4,6 +4,33 @@ var params = {
     appId: new Date().getTime(),
 
     /**
+     * ActiveMQ Config
+     */
+    // protocol: "queue",
+    // // queueHost: "172.16.0.248",
+    // queueHost: "172.16.110.235",//"172.16.0.248",
+    // queuePort: "61613",
+    // queueUsername: "root",
+    // queuePassword: "zalzalak",
+    // // queueReceive: "queue-in-amjadi-stomp",
+    // // queueSend: "queue-out-amjadi-stomp",
+    // queueReceive: "chat_input_queue",
+    // queueSend: "chat_output_queue",
+    // queueConnectionTimeout: 20000,
+
+    /**
+     * ActiveMQ Config - Sheikh
+     */
+    // protocol: "queue",
+    // queueHost: "192.168.112.23",
+    // queuePort: "61613",
+    // queueUsername: "root",
+    // queuePassword: "j]Bm0RU8gLhbPUG",
+    // queueReceive: "queue-in-local_chat",
+    // queueSend: "queue-out-local_chat",
+    // queueConnectionTimeout: 20000,
+
+    /**
      * Main Server
      */
     socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
@@ -45,8 +72,8 @@ var params = {
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "chattest",
-    token: "66d391ffaea34821926555d32edd6590",
-    // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
+    token: "4a69821e785141b8b32146f87c00dbfc",
+    // token: "ca4632c241e1476085195dbc3e3804c9", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
     // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
@@ -56,6 +83,8 @@ var params = {
     connectionCheckTimeout: 10000, // Socket connection live time on server
     messageTtl: 24 * 60 * 60, // Message time to live (1 day in seonds)
     reconnectOnClose: true, // auto connect to socket after socket close
+    httpRequestTimeout: 30000,
+    httpUploadRequestTimeout: 0, // 0 means No timeout
     asyncLogging: {
         onFunction: true, // log main actions on console
         onMessageReceive: true, // log received messages on console
@@ -107,8 +136,8 @@ chatAgent.on('chatReady', function () {
      * @param name
      */
     // getThreads({
-    //   // count: 5,
-    //   // offset: 0,
+    //   count: 5,
+    //   offset: 0,
     //   //   partnerCoreContactId: 63533و
     //   // threadIds: [1576],
     //   // name: "thread"
@@ -138,7 +167,7 @@ chatAgent.on('chatReady', function () {
      * CREATE THREAD (Creates P2P Chat with a specific user)
      * @param contactId
      */
-    // createThread({id: 578, type: "TO_BE_USER_CONTACT_ID"});
+    // createThread({id: 18514, type: "TO_BE_USER_CONTACT_ID"});
 
     /**
      * GET THREAD PARTICIPANTS
@@ -175,7 +204,7 @@ chatAgent.on('chatReady', function () {
      * @param threadId
      */
     // chatAgent.clearHistory({
-    //     threadId: 1431
+    //     threadId: 15
     // }, function(result) {
     //     console.log("Clear history result", result);
     // });
@@ -193,7 +222,7 @@ chatAgent.on('chatReady', function () {
     // getHistory({
     //     count: 10,
     //     offset: 0,
-    //     threadId: 1431
+    //     threadId: 15
     // });
 
     // getHistory({
@@ -272,7 +301,7 @@ chatAgent.on('chatReady', function () {
      * @param threadId
      */
     // chatAgent.spamPvThread({
-    //   threadId: 1020
+    //   threadId: 4441
     // }, function(result) {
     //   console.log(result);
     // });
@@ -317,7 +346,7 @@ chatAgent.on('chatReady', function () {
      * @param metadata
      */
     // setInterval(() => {
-    // sendMessage(15, '<iframe src="/contacts" style="height:400px;width:100%;" frameBorder="0"></iframe>', {
+    // sendMessage(6061, 'Message From PodDraw at ' + new Date(), {
     //     id: 672,
     //     type: 'message',
     //     name: 'Masoud',
@@ -340,8 +369,8 @@ chatAgent.on('chatReady', function () {
      * @param caption
      * @param metadata
      */
-    // sendFileMessage(293, __dirname + '/test/test.jpg', 'Sample file description', {
-    //     custom_name: 'John Doe',
+    // sendFileMessage(15, __dirname + "/image.jpg", "Sample file description", {
+    //     custom_name: "John Doe"
     // });
 
     /**
@@ -459,7 +488,7 @@ chatAgent.on('chatReady', function () {
      * GET CONTACTS
      */
     // getContacts({
-    //     count: 50,
+    //     count: 5,
     //     offset: 0,
     //     // query: "masodi"
     // });
@@ -508,10 +537,10 @@ chatAgent.on('chatReady', function () {
      * @param email
      */
     // var addContactInstantResult = chatAgent.addContacts({
-    //   firstName: "Nigga",
-    //   lastName: "Nigggga",
-    //   cellphoneNumber: "09148401824",
-    //   email: "nigga666@gmail.com"
+    //   firstName: "Fateme",
+    //   lastName: "Khojaste",
+    //   cellphoneNumber: "09151242904",
+    //   email: "fateme.khojaste@gmail.com"
     // }, function(result) {
     //   console.log(result);
     // });

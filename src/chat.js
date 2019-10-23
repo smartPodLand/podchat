@@ -275,7 +275,8 @@
             httpRequestObject = {},
             connectionCheckTimeout = params.connectionCheckTimeout,
             connectionCheckTimeoutThreshold = params.connectionCheckTimeoutThreshold,
-            httpRequestTimeout = params.httpRequestTimeout || 20000,
+            httpRequestTimeout = (params.httpRequestTimeout >= 0) ? params.httpRequestTimeout : 30000,
+            httpUploadRequestTimeout = (params.httpUploadRequestTimeout >= 0) ? params.httpUploadRequestTimeout : 0,
             actualTimingLog = (params.asyncLogging.actualTiming && typeof params.asyncLogging.actualTiming === 'boolean')
                 ? params.asyncLogging.actualTiming
                 : false,
@@ -1017,9 +1018,15 @@
                     httpRequestObject[eval('fileUploadUniqueId')] = new XMLHttpRequest(),
                         settings = params.settings;
 
-                    httpRequestObject[eval('fileUploadUniqueId')].timeout = (settings && typeof parseInt(settings.timeout) > 0 && settings.timeout > 0)
-                        ? settings.timeout
-                        : httpRequestTimeout;
+                    if(data && typeof data === 'object' && (data.hasOwnProperty('image') || data.hasOwnProperty('file'))) {
+                        httpRequestObject[eval('fileUploadUniqueId')].timeout = (settings && typeof parseInt(settings.timeout) > 0 && settings.timeout > 0)
+                            ? settings.timeout
+                            : httpUploadRequestTimeout;
+                    } else {
+                        httpRequestObject[eval('fileUploadUniqueId')].timeout = (settings && typeof parseInt(settings.uploadTimeout) > 0 && settings.uploadTimeout > 0)
+                            ? settings.uploadTimeout
+                            : httpRequestTimeout;
+                    }
 
                     httpRequestObject[eval('fileUploadUniqueId')]
                         .addEventListener('error', function (event) {

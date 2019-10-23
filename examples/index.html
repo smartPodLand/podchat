@@ -67,7 +67,7 @@
             enableCache: true, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-            token: "60a964d76eb04079b4d37fb35b489469",
+            token: "d71f2ff849414548af2bc0c24493d2be",
             // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
             // token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -78,6 +78,8 @@
             connectionCheckTimeout: 10000, // Socket connection live time on server
             messageTtl: 24 * 60 * 60, // Message time to live (1 day in seonds)
             reconnectOnClose: true, // auto connect to socket after socket close
+            httpRequestTimeout: 30000,
+            httpUploadRequestTimeout: 0, // 0 means No timeout
             asyncLogging: {
                 onFunction: true, // log main actions on console
                 // onMessageReceive: true, // log received messages on console
@@ -351,7 +353,7 @@
              * @param caption
              * @param metadata
              */
-            // sendFileMessage(293, __dirname + "/test/test.jpeg", "Sample file description", {
+            // sendFileMessage(15, __dirname + "/test/image.jpg", "Sample file description", {
             //   custom_name: "John Doe"
             // });
 
