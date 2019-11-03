@@ -7,16 +7,14 @@ var params = {
      * ActiveMQ Config
      */
     // protocol: "queue",
-    // // queueHost: "172.16.0.248",
-    // queueHost: "172.16.110.235",//"172.16.0.248",
+    // queueHost: "172.16.0.248",
     // queuePort: "61613",
     // queueUsername: "root",
     // queuePassword: "zalzalak",
-    // // queueReceive: "queue-in-amjadi-stomp",
-    // // queueSend: "queue-out-amjadi-stomp",
-    // queueReceive: "chat_input_queue",
-    // queueSend: "chat_output_queue",
+    // queueReceive: "queue-in-amjadi-stomp",
+    // queueSend: "queue-out-amjadi-stomp",
     // queueConnectionTimeout: 20000,
+    // serverName: "chat-server",
 
     /**
      * ActiveMQ Config - Sheikh
@@ -29,6 +27,16 @@ var params = {
     // queueReceive: "queue-in-local_chat",
     // queueSend: "queue-out-local_chat",
     // queueConnectionTimeout: 20000,
+
+    // protocol: "queue",
+    // queueHost: "172.16.0.248",
+    // queuePort: "61613",
+    // queueUsername: "root",
+    // queuePassword: "zalzalak",
+    // queueReceive: "queue-in-wepod",
+    // queueSend: "queue-out-wepod",
+    // queueConnectionTimeout: 20000,
+    // serverName: "chat-server",
 
     /**
      * Main Server
@@ -71,9 +79,9 @@ var params = {
     enableCache: false, // Enable Client side caching
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
-    // typeCode: "chattest",
-    token: "4a69821e785141b8b32146f87c00dbfc",
-    // token: "ca4632c241e1476085195dbc3e3804c9", // {**REQUIRED**} SSO Token ZiZi
+    // typeCode: "talk",
+    // token: "af26560334c842c2a1c04098848a5ab0",
+    // token: "9627481d72854295a024ee183234548d", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
     // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
@@ -537,12 +545,14 @@ chatAgent.on('chatReady', function () {
      * @param email
      */
     // var addContactInstantResult = chatAgent.addContacts({
-    //   firstName: "Fateme",
-    //   lastName: "Khojaste",
-    //   cellphoneNumber: "09151242904",
-    //   email: "fateme.khojaste@gmail.com"
-    // }, function(result) {
-    //   console.log(result);
+    //     firstName: "علیرضا",
+    //     lastName: "غفاری",
+    //     cellphoneNumber: "",
+    //     email: "a.ghafari@gmail.com",
+    //     typeCode: 'poddraw'
+    // }, function (result) {
+    //     console.log(result);
+    //     console.log(result.contacts);
     // });
     /**
      * UPDATE CONTACTS

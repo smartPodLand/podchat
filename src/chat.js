@@ -8746,6 +8746,13 @@
                     data.firstName = '';
                 }
 
+                if (typeof params.typeCode === 'string') {
+                    data.typeCode = params.typeCode;
+                }
+                else if (generalTypeCode) {
+                    data.typeCode = generalTypeCode;
+                }
+
                 if (typeof params.lastName === 'string') {
                     data.lastName = params.lastName;
                 }
