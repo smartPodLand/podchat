@@ -5832,11 +5832,11 @@
                         uploadFileData.file = params.file;
                     }
 
-                    if (typeof params.fileName == 'string') {
-                        uploadFileData.fileName = params.fileName;
+                    if (params.randomFileName) {
+                        uploadFileData.fileName = Utility.generateUUID() + '.' + fileExtension;
                     }
                     else {
-                        uploadFileData.fileName = Utility.generateUUID() + '.' + fileExtension;
+                        uploadFileData.fileName = fileName;
                     }
 
                     uploadFileData.fileSize = fileSize;
@@ -6081,11 +6081,11 @@
                             uploadImageData.file = params.image;
                         }
 
-                        if (typeof params.fileName == 'string') {
-                            uploadImageData.fileName = params.fileName;
+                        if (params.randomFileName) {
+                            uploadImageData.fileName = Utility.generateUUID() + '.' + fileExtension;
                         }
                         else {
-                            uploadImageData.fileName = Utility.generateUUID() + '.' + fileExtension;
+                            uploadImageData.fileName = fileName;
                         }
 
                         uploadImageData.fileSize = fileSize;
@@ -7531,13 +7531,6 @@
                     metadata['file']['originalName'] = fileName;
                     metadata['file']['mimeType'] = fileType;
                     metadata['file']['size'] = fileSize;
-
-                    if (typeof params.fileName == 'string') {
-                        fileUploadParams.fileName = params.fileName.split('.')[0] + '.' + fileExtension;
-                    }
-                    else {
-                        fileUploadParams.fileName = fileUniqueId + '.' + fileExtension;
-                    }
 
                     fileUploadParams.threadId = params.threadId;
                     fileUploadParams.uniqueId = fileUniqueId;

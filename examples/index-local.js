@@ -41,11 +41,11 @@ var params = {
     /**
      * Main Server
      */
-    socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
-    ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
-    platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
-    fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
-    serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+    // socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
+    // ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
+    // platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
+    // fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
+    // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
 
     /**
@@ -60,27 +60,27 @@ var params = {
     /**
      * Mehdi Sheikh Hosseini
      */
-    // socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+    // socketAddress: 'ws://172.16.110.235:8003/ws', // {**REQUIRED**} Socket Address
     // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    // platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
-    // fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
-    // serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+    // platformHost: 'http://172.16.110.76:8080', // {**REQUIRED**} Platform Core Address
+    // fileServer: 'http://172.16.110.76:8080', // {**REQUIRED**} File Server Address
+    // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
     /**
      * Sand Box
      */
-    // socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
-    // ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
-    // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-    // fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
-    // serverName: "chat-server", // {**REQUIRED**} Server to to register on
+    socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+    ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+    platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+    fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+    serverName: "chat-server", // {**REQUIRED**} Server to to register on
 
     grantDeviceIdFromSSO: false,
     enableCache: false, // Enable Client side caching
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "talk",
-    // token: "af26560334c842c2a1c04098848a5ab0",
+    token: "7b5c1995e3ff4ed0b75ccde5fa34a1b6",
     // token: "9627481d72854295a024ee183234548d", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -144,11 +144,11 @@ chatAgent.on('chatReady', function () {
      * @param name
      */
     // getThreads({
-    //   count: 5,
+    //   count: 50,
     //   offset: 0,
     //   //   partnerCoreContactId: 63533و
     //   // threadIds: [1576],
-    //   // name: "thread"
+    //   name: "تست"
     // });
 
     // chatAgent.getAllThreadList({
@@ -495,11 +495,11 @@ chatAgent.on('chatReady', function () {
     /**
      * GET CONTACTS
      */
-    // getContacts({
-    //     count: 5,
-    //     offset: 0,
-    //     // query: "masodi"
-    // });
+    getContacts({
+        count: 50,
+        offset: 0,
+        // query: "masodi"
+    });
 
     /**
      * BLOCK CONTACT

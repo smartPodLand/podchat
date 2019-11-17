@@ -64,10 +64,10 @@
             // serverName: "chat-server", // {**REQUIRED**} Server to to register on
 
             grantDeviceIdFromSSO: false,
-            enableCache: true, // Enable Client side caching
+            enableCache: false, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-            token: "d71f2ff849414548af2bc0c24493d2be",
+            token: "bdbc8fcb6e5547abb191686a3d53ea1d",
             // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
             // token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -1202,7 +1202,7 @@
         <input type="text" name="sendTextThread" id="sendTextThread">
         <br>
         <label for="sendTextMessage">Message :</label>
-        <input type="text" name="sendTextMessage" id="sendTextMessage" value="Helllo AH :|">
+        <textarea type="text" name="sendTextMessage" id="sendTextMessage"></textarea>
         <button type="button" name="button" id="sendTextButton">Send Text Message</button>
     </fieldset>
 </form>
@@ -1235,7 +1235,7 @@
         <input type="file" name="sendFileInput" id="sendFileInput">
         <br>
         <label for="sendFileDescription">Description: </label>
-        <input type="text" name="sendFileDescription" id="sendFileDescription">
+        <textarea type="text" name="sendFileDescription" id="sendFileDescription"></textarea>
         <button type="button" name="button" id="sendFileMessage">Send File Message</button>
     </fieldset>
 </form>
