@@ -80,7 +80,7 @@ var params = {
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "talk",
-    token: "7b5c1995e3ff4ed0b75ccde5fa34a1b6",
+    token: "6b7a3b0781144bc9afe573e4de9c7533",
     // token: "9627481d72854295a024ee183234548d", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -228,7 +228,7 @@ chatAgent.on('chatReady', function () {
      * @param query
      */
     // getHistory({
-    //     count: 10,
+    //     count: 20,
     //     offset: 0,
     //     threadId: 15
     // });
@@ -354,21 +354,21 @@ chatAgent.on('chatReady', function () {
      * @param metadata
      */
     // setInterval(() => {
-    // sendMessage(6061, 'Message From PodDraw at ' + new Date(), {
-    //     id: 672,
-    //     type: 'message',
-    //     name: 'Masoud',
-    //     address: {
-    //         street: 'shariati',
-    //         plaque: 13,
-    //         building: {
-    //             color: 'black',
-    //             age: 11
-    //         }
-    //     },
-    //     active: 0
-    // });
-    // }, 5000);
+    //     sendMessage(15, 'Message From PodDraw at ' + new Date(), {
+    //         id: 672,
+    //         type: 'message',
+    //         name: 'Masoud',
+    //         address: {
+    //             street: 'shariati',
+    //             plaque: 13,
+    //             building: {
+    //                 color: 'black',
+    //                 age: 11
+    //             }
+    //         },
+    //         active: 0
+    //     });
+    // }, 1000);
 
     /**
      * SEND FILE MESSAGE IN THREAD
@@ -435,12 +435,12 @@ chatAgent.on('chatReady', function () {
      * @param {int}      messageId
      * @param {boolean}  deleteForAll
      */
-    // deleteMessage(49957, true);
+    // deleteMessage(55221, false);
 
     // chatAgent.deleteMultipleMessages({
-    //     threadId: 15,
-    //     messageIds: [1978, 1977, 1976],
-    //     deleteForAll: false
+    //     // threadId: 15,
+    //     messageIds: [55404, 55403, 55402],
+    //     deleteForAll: true
     // }, function(result) {
     //     console.log("Delete Multiple Message Result", result);
     // });
@@ -466,7 +466,7 @@ chatAgent.on('chatReady', function () {
      * @param destination
      * @param messageIds
      */
-    // forwardMessage(1431, [17259, 17258]);
+    // forwardMessage(1, [55902, 55901]);
 
     /**
      * GET MESSAGE SEEN LIST
@@ -495,11 +495,11 @@ chatAgent.on('chatReady', function () {
     /**
      * GET CONTACTS
      */
-    getContacts({
-        count: 50,
-        offset: 0,
-        // query: "masodi"
-    });
+    // getContacts({
+    //     count: 50,
+    //     offset: 0,
+    //     // query: "masodi"
+    // });
 
     /**
      * BLOCK CONTACT

@@ -8137,7 +8137,7 @@
             return sendMessage({
                 chatMessageVOType: chatMessageVOTypes.DELETE_MESSAGE,
                 typeCode: params.typeCode,
-                subjectId: threadId,
+                // subjectId: threadId,
                 content: {
                     uniqueIds: uniqueIdsList,
                     ids: messageIdsList,

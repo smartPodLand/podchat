@@ -30,11 +30,11 @@
             /**
              * Main Server
              */
-            socketAddress: 'wss://msg.pod.land/ws',
-            ssoHost: 'https://accounts.pod.land',
-            platformHost: 'https://api.pod.land/srv/core',
-            fileServer: 'https://core.pod.land',
-            serverName: 'chat-server',
+            // socketAddress: 'wss://msg.pod.land/ws',
+            // ssoHost: 'https://accounts.pod.land',
+            // platformHost: 'https://api.pod.land/srv/core',
+            // fileServer: 'https://core.pod.land',
+            // serverName: 'chat-server',
 
             /**
              * Hamed Mehrara
@@ -57,17 +57,17 @@
             /**
              * Sand Box
              */
-            // socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
-            // ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
-            // platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-            // fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
-            // serverName: "chat-server", // {**REQUIRED**} Server to to register on
+            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
+            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
+            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+            serverName: "chat-server", // {**REQUIRED**} Server to to register on
 
             grantDeviceIdFromSSO: false,
             enableCache: false, // Enable Client side caching
             fullResponseObject: true,
             mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-            token: "bdbc8fcb6e5547abb191686a3d53ea1d",
+            token: "529f281a0ebd481dacdad6199519b05c",
             // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
             // token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -340,11 +340,11 @@
              * @param newMessage
              * @param metadata
              */
-            // sendMessage(293, "PooPoo This is a Sample Message at " + new Date(), {
-            //   id: new Date().getTime(),
-            //   type: "BOT_MESSAGE",
-            //   owner: "Masoud"
-            // });
+            sendMessage(15, "PooPoo This is a Sample Message at " + new Date(), {
+              id: new Date().getTime(),
+              type: "BOT_MESSAGE",
+              owner: "Masoud"
+            });
 
             /**
              * SEND FILE MESSAGE IN THREAD
