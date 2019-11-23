@@ -80,7 +80,7 @@ var params = {
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "talk",
-    token: "6b7a3b0781144bc9afe573e4de9c7533",
+    token: "2dcc961a0ed84efcba17f6ccdfcd8687",
     // token: "9627481d72854295a024ee183234548d", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -439,7 +439,7 @@ chatAgent.on('chatReady', function () {
 
     // chatAgent.deleteMultipleMessages({
     //     // threadId: 15,
-    //     messageIds: [55404, 55403, 55402],
+    //     messageIds: [56165, 56166, 56167],
     //     deleteForAll: true
     // }, function(result) {
     //     console.log("Delete Multiple Message Result", result);

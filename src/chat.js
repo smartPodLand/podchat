@@ -1409,6 +1409,7 @@
                  *    - systemMedadata  {string}
                  *    - repliedTo       {long}
                  */
+                var threadId = null;
 
                 var asyncPriority = (params.asyncPriority > 0)
                     ? params.asyncPriority
@@ -1419,8 +1420,6 @@
                     token: token,
                     tokenIssuer: 1
                 };
-
-                var threadId = params.subjectId;
 
                 if (params.typeCode) {
                     messageVO.typeCode = params.typeCode;
@@ -1434,6 +1433,7 @@
                 }
 
                 if (params.subjectId) {
+                    threadId = params.subjectId;
                     messageVO.subjectId = params.subjectId;
                 }
 
@@ -8072,15 +8072,10 @@
 
         this.deleteMultipleMessages = function (params, callback) {
             var messageIdsList = params.messageIds,
-                uniqueIdsList = [],
-                threadId = params.threadId;
+                uniqueIdsList = [];
 
             for (i in messageIdsList) {
                 var messageId = messageIdsList[i];
-
-                if (!threadCallbacks[threadId]) {
-                    threadCallbacks[threadId] = {};
-                }
 
                 var uniqueId = Utility.generateUUID();
                 uniqueIdsList.push(uniqueId);
@@ -8137,7 +8132,6 @@
             return sendMessage({
                 chatMessageVOType: chatMessageVOTypes.DELETE_MESSAGE,
                 typeCode: params.typeCode,
-                // subjectId: threadId,
                 content: {
                     uniqueIds: uniqueIdsList,
                     ids: messageIdsList,
