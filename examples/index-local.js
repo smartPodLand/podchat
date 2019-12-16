@@ -7,7 +7,7 @@ var params = {
      * ActiveMQ Config
      */
     // protocol: "queue",
-    // queueHost: "172.16.0.248",
+    // queueHost: "10.56.16.25",
     // queuePort: "61613",
     // queueUsername: "root",
     // queuePassword: "zalzalak",
@@ -41,12 +41,11 @@ var params = {
     /**
      * Main Server
      */
-    // socketAddress: 'wss://msg.pod.land/ws', // {**REQUIRED**} Socket Address
-    // ssoHost: 'https://accounts.pod.land', // {**REQUIRED**} Socket Address
-    // platformHost: 'https://api.pod.land/srv/core', // {**REQUIRED**} Platform Core Address
-    // fileServer: 'https://core.pod.land', // {**REQUIRED**} File Server Address
+    // socketAddress: 'wss://msg.pod.ir/ws', // {**REQUIRED**} Socket Address
+    // ssoHost: 'https://accounts.pod.ir', // {**REQUIRED**} Socket Address
+    // platformHost: 'https://api.pod.ir/srv/core', // {**REQUIRED**} Platform Core Address
+    // fileServer: 'https://core.pod.ir', // {**REQUIRED**} File Server Address
     // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
-
 
     /**
      * Hamed Mehrara
@@ -66,13 +65,23 @@ var params = {
     // fileServer: 'http://172.16.110.76:8080', // {**REQUIRED**} File Server Address
     // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
+
+    /**
+     * Leila Nemati
+     */
+    // socketAddress: 'ws://172.16.110.235:8003/ws', // {**REQUIRED**} Socket Address
+    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+    // platformHost: 'http:///172.16.110.76:8080', // {**REQUIRED**} Platform Core Address
+    // fileServer: 'http:///172.16.110.76:8080', // {**REQUIRED**} File Server Address
+    // serverName: 'sheikh_chat', // {**REQUIRED**} Server to to
+
     /**
      * Sand Box
      */
-    socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
-    ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
-    platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-    fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+    socketAddress: "wss://chat-sandbox.pod.ir/ws", // {**REQUIRED**} Socket Address
+    ssoHost: "https://accounts.pod.ir", // {**REQUIRED**} Socket Address
+    platformHost: "https://sandbox.pod.ir:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+    fileServer: "https://sandbox.pod.ir:8443", // {**REQUIRED**} File Server Address
     serverName: "chat-server", // {**REQUIRED**} Server to to register on
 
     grantDeviceIdFromSSO: false,
@@ -80,8 +89,8 @@ var params = {
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "talk",
-    token: "2dcc961a0ed84efcba17f6ccdfcd8687",
-    // token: "9627481d72854295a024ee183234548d", // {**REQUIRED**} SSO Token ZiZi
+    token: "8e92a14539894d4da9692eda42274fe3",
+    // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
     // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
@@ -144,11 +153,11 @@ chatAgent.on('chatReady', function () {
      * @param name
      */
     // getThreads({
-    //   count: 50,
+    //   count: 10,
     //   offset: 0,
     //   //   partnerCoreContactId: 63533و
     //   // threadIds: [1576],
-    //   name: "تست"
+    //   // name: "تست"
     // });
 
     // chatAgent.getAllThreadList({
@@ -164,12 +173,12 @@ chatAgent.on('chatReady', function () {
      * @param threadType
      */
     // createThread([{
-    //   id: 563,
+    //   id: 902,
     //   type: "TO_BE_USER_CONTACT_ID"
     // }, {
-    //   id: 578,
+    //   id: 7741,
     //   type: "TO_BE_USER_CONTACT_ID"
-    // }], "NORMAL");
+    // }], "PUBLIC_GROUP");
 
     /**
      * CREATE THREAD (Creates P2P Chat with a specific user)
@@ -181,9 +190,9 @@ chatAgent.on('chatReady', function () {
      * GET THREAD PARTICIPANTS
      * @param threadId
      */
-    // getThreadParticipants(1576);
+    // getThreadParticipants(6609);
 
-    // chatAgent.getThreadAdmins({threadId: 10585}, function(result){
+    // chatAgent.getThreadAdmins({threadId: 6292}, function(result){
     //     console.log("Get Thread Admins result", result.result.participants);
     // });
 
@@ -192,7 +201,7 @@ chatAgent.on('chatReady', function () {
      * @param threadId
      * @param contacts {Array}  CONTACT ID
      */
-    // addParticipants(10349, [578]);
+    // addParticipants(6609, [4702]);
 
     /**
      * REMOVE PARTICIPANTS
@@ -287,6 +296,18 @@ chatAgent.on('chatReady', function () {
     // unMuteThread(1431);
 
     /**
+     * PIN THREAD
+     * @param threadId
+     */
+    // pinThread(6292);
+
+    /**
+     * UNPIN THREAD
+     * @param threadId
+     */
+    // unPinThread(6292);
+
+    /**
      * UPDATE THREAD INFO
      * @param threadId
      */
@@ -320,28 +341,50 @@ chatAgent.on('chatReady', function () {
      * @param userId
      * @param roles
      */
-// chatAgent.setAdmin({
-//     threadId: 10349,
-//     admins: [
-//         {
-//             userId: 122,
-//             roleOperation: 'remove',
-//             roles: [
-//                 'post_channel_message',
-//                 'edit_message_of_others',
-//                 'delete_message_of_others',
-//                 'add_new_user',
-//                 'remove_user',
-//                 'thread_admin',
-//                 'add_rule_to_user',
-//                 'remove_role_from_user',
-//                 'read_thread',
-//                 'edit_thread'
-//             ]
-//         }]
-// }, function(result) {
-//     console.log(result);
-// });
+    // chatAgent.setAdmin({
+    //     threadId: 6292,
+    //     admins: [
+    //         {
+    //             userId: 6862,
+    //             roles: [
+    //                 'post_channel_message',
+    //                 'edit_message_of_others',
+    //                 'delete_message_of_others',
+    //                 'add_new_user',
+    //                 'remove_user',
+    //                 'thread_admin',
+    //                 'add_rule_to_user',
+    //                 'remove_role_from_user',
+    //                 'read_thread',
+    //                 'edit_thread'
+    //             ]
+    //         }]
+    // }, function(result) {
+    //     console.log(result);
+    // });
+
+    // chatAgent.removeAdmin({
+    //     threadId: 6292,
+    //     admins: [
+    //         {
+    //             userId: 6862,
+    //             roles: [
+    //                 'post_channel_message',
+    //                 'edit_message_of_others',
+    //                 'delete_message_of_others',
+    //                 'add_new_user',
+    //                 'remove_user',
+    //                 'thread_admin',
+    //                 'add_rule_to_user',
+    //                 'remove_role_from_user',
+    //                 // 'read_thread',
+    //                 'edit_thread'
+    //             ]
+    //         }]
+    // }, function(result) {
+    //     console.log(result);
+    //     console.log(result.result[0]);
+    // });
 
     /*******************************************************
      *                   M E S S A G E S                   *
@@ -354,7 +397,7 @@ chatAgent.on('chatReady', function () {
      * @param metadata
      */
     // setInterval(() => {
-    //     sendMessage(15, 'Message From PodDraw at ' + new Date(), {
+    //     sendMessage(6609, '@h.amouzegar @ma.amjadi Message From PodDraw at ' + new Date(), {
     //         id: 672,
     //         type: 'message',
     //         name: 'Masoud',
@@ -428,7 +471,7 @@ chatAgent.on('chatReady', function () {
      * @param messageId  325 editable: false
      * @param newMessage
      */
-    // editMessage(31650, "*****************************************" + new Date());
+    // editMessage(66439, "*****************************************" + new Date());
 
     /**
      * DELETE MESSAGE IN THREAD
@@ -584,7 +627,7 @@ chatAgent.on('chatReady', function () {
 
     /**
      * SEARCH CONTACTS
-     * @link http://sandbox.pod.land:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts
+     * @link http://sandbox.pod.ir:8080/apidocs/swagger-ui.html?srv=/nzh/listContacts
      */
     // chatAgent.searchContacts({
     //   // cellphoneNumber: "0912", // LIKE
@@ -771,6 +814,12 @@ chatAgent.on('threadEvents', function (event) {
             break;
 
         case 'THREAD_UNMUTE':
+            break;
+
+        case 'THREAD_PIN':
+            break;
+
+        case 'THREAD_UNPIN':
             break;
 
         case 'THREAD_INFO_UPDATED':
@@ -1276,5 +1325,29 @@ function getFile(fileId, hashCode, downloadable) {
         if (!result.hasError) {
             console.log('File has been successfully received => \n', result.result);
         }
+    });
+}
+
+function pinThread(threadId) {
+    var data = {
+        subjectId: threadId
+    };
+    chatAgent.pinThread(data, function (result) {
+        if (!result.hasError) {
+            console.log('Thread has been successfully pinned to top!');
+        }
+        console.log(result);
+    });
+}
+
+function unPinThread(threadId) {
+    var data = {
+        subjectId: threadId
+    };
+    chatAgent.unPinThread(data, function (result) {
+        if (!result.hasError) {
+            console.log('Thread has been successfully unpinned from top!');
+        }
+        console.log(result);
     });
 }

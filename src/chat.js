@@ -129,9 +129,12 @@
                 BOT_MESSAGE: 40,
                 SPAM_PV_THREAD: 41,
                 SET_ROLE_TO_USER: 42,
+                REMOVE_ROLE_FROM_USER: 43,
                 CLEAR_HISTORY: 44,
                 SYSTEM_MESSAGE: 46,
                 GET_NOT_SEEN_DURATION: 47,
+                PIN_THREAD: 48,
+                UNPIN_THREAD: 49,
                 LOGOUT: 100,
                 ERROR: 999
             },
@@ -1715,7 +1718,8 @@
                         ? JSON.parse(chatMessage.content)
                         : {},
                     contentCount = chatMessage.contentCount,
-                    uniqueId = chatMessage.uniqueId;
+                    uniqueId = chatMessage.uniqueId,
+                    time = chatMessage.time;
 
                 switch (type) {
                     /**
@@ -2009,6 +2013,7 @@
                                         tempData.threadId = messageContent.id;
                                         tempData.notSeenDuration = messageContent.participants[i].notSeenDuration;
                                         tempData.admin = messageContent.participants[i].admin;
+                                        tempData.auditor = messageContent.participants[i].auditor;
                                         tempData.name = Utility.crypt(messageContent.participants[i].name, cacheSecret, salt);
                                         tempData.contactName = Utility.crypt(messageContent.participants[i].contactName, cacheSecret, salt);
                                         tempData.email = Utility.crypt(messageContent.participants[i].email, cacheSecret, salt);
@@ -2428,6 +2433,13 @@
                         if (messagesCallbacks[uniqueId]) {
                             messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent));
                         }
+
+                        fireEvent('systemEvents', {
+                            type: 'SERVER_TIME',
+                            result: {
+                                time: time
+                            }
+                        });
                         break;
 
                     /**
@@ -2650,12 +2662,109 @@
                         break;
 
                     /**
-                     * Type 42    Set Admin
+                     * Type 42    Set Role To User
                      */
                     case chatMessageVOTypes.SET_ROLE_TO_USER:
                         if (messagesCallbacks[uniqueId]) {
                             messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent));
                         }
+
+                        if (fullResponseObject) {
+                            getThreads({
+                                threadIds: [messageContent.id]
+                            }, function (threadsResult) {
+                                var threads = threadsResult.result.threads;
+
+                                if (!threadsResult.cache) {
+                                    fireEvent('threadEvents', {
+                                        type: 'THREAD_ADD_ADMIN',
+                                        result: {
+                                            thread: threads[0],
+                                            admin: messageContent
+                                        }
+                                    });
+
+                                    fireEvent('threadEvents', {
+                                        type: 'THREAD_LAST_ACTIVITY_TIME',
+                                        result: {
+                                            thread: threads[0],
+                                            admin: messageContent
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            fireEvent('threadEvents', {
+                                type: 'THREAD_ADD_ADMIN',
+                                result: {
+                                    thread: threadId,
+                                    admin: messageContent
+                                }
+                            });
+
+                            fireEvent('threadEvents', {
+                                type: 'THREAD_LAST_ACTIVITY_TIME',
+                                result: {
+                                    thread: threadId,
+                                    admin: messageContent
+                                }
+                            });
+                        }
+
+                        break;
+
+                    /**
+                     * Type 43    Remove Role From User
+                     */
+                    case chatMessageVOTypes.REMOVE_ROLE_FROM_USER:
+                        if (messagesCallbacks[uniqueId]) {
+                            messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent));
+                        }
+
+                        if (fullResponseObject) {
+                            getThreads({
+                                threadIds: [messageContent.id]
+                            }, function (threadsResult) {
+                                var threads = threadsResult.result.threads;
+
+                                if (!threadsResult.cache) {
+                                    fireEvent('threadEvents', {
+                                        type: 'THREAD_REMOVE_ADMIN',
+                                        result: {
+                                            thread: threads[0],
+                                            admin: messageContent
+                                        }
+                                    });
+
+                                    fireEvent('threadEvents', {
+                                        type: 'THREAD_LAST_ACTIVITY_TIME',
+                                        result: {
+                                            thread: threads[0],
+                                            admin: messageContent
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            fireEvent('threadEvents', {
+                                type: 'THREAD_REMOVE_ADMIN',
+                                result: {
+                                    thread: threadId,
+                                    admin: messageContent
+                                }
+                            });
+
+                            fireEvent('threadEvents', {
+                                type: 'THREAD_LAST_ACTIVITY_TIME',
+                                result: {
+                                    thread: threadId,
+                                    admin: messageContent
+                                }
+                            });
+                        }
+
                         break;
 
                     /**
@@ -2687,6 +2796,72 @@
                         if (messagesCallbacks[uniqueId]) {
                             messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent));
                         }
+                        break;
+
+                    /**
+                     * Type 48    Pin Thread
+                     */
+                    case chatMessageVOTypes.PIN_THREAD:
+                        if (messagesCallbacks[uniqueId]) {
+                            messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent));
+                        }
+
+                        if (fullResponseObject) {
+                            getThreads({
+                                threadIds: [threadId]
+                            }, function (threadsResult) {
+                                var thread = threadsResult.result.threads[0];
+
+                                fireEvent('threadEvents', {
+                                    type: 'THREAD_PIN',
+                                    result: {
+                                        thread: thread
+                                    }
+                                });
+                            });
+                        }
+                        else {
+                            fireEvent('threadEvents', {
+                                type: 'THREAD_PIN',
+                                result: {
+                                    thread: threadId
+                                }
+                            });
+                        }
+
+                        break;
+
+                    /**
+                     * Type 49    UnPin Thread
+                     */
+                    case chatMessageVOTypes.UNPIN_THREAD:
+                        if (messagesCallbacks[uniqueId]) {
+                            messagesCallbacks[uniqueId](Utility.createReturnData(false, '', 0, messageContent));
+                        }
+
+                        if (fullResponseObject) {
+                            getThreads({
+                                threadIds: [threadId]
+                            }, function (threadsResult) {
+                                var thread = threadsResult.result.threads[0];
+
+                                fireEvent('threadEvents', {
+                                    type: 'THREAD_UNPIN',
+                                    result: {
+                                        thread: thread
+                                    }
+                                });
+                            });
+                        }
+                        else {
+                            fireEvent('threadEvents', {
+                                type: 'THREAD_UNPIN',
+                                result: {
+                                    thread: threadId
+                                }
+                            });
+                        }
+
                         break;
 
                     /**
@@ -3330,8 +3505,10 @@
                  *    - contactLastName              {string}
                  *    - blocked                      {boolean}
                  *    - admin                        {boolean}
+                 *    - auditor                      {boolean}
                  *    - keyId                        {string}
-                 *    - roles                        {string}
+                 *    - roles                        {list:string}
+                 *    - username                     {string}
                  */
 
                 var participant = {
@@ -3355,8 +3532,10 @@
                     contactLastName: messageContent.contactLastName,
                     blocked: messageContent.blocked,
                     admin: messageContent.admin,
+                    auditor: messageContent.auditor,
                     keyId: messageContent.keyId,
-                    roles: messageContent.roles
+                    roles: messageContent.roles,
+                    username: messageContent.username
                 };
 
                 return participant;
@@ -3408,6 +3587,8 @@
                  *    - canEditInfo                         {boolean}
                  *    - canSpam                             {boolean}
                  *    - admin                               {boolean}
+                 *    - mentioned                           {boolean}
+                 *    - pin                                 {boolean}
                  */
 
                 var conversation = {
@@ -3446,7 +3627,9 @@
                     participantCount: messageContent.participantCount,
                     canEditInfo: messageContent.canEditInfo,
                     canSpam: messageContent.canSpam,
-                    admin: messageContent.admin
+                    admin: messageContent.admin,
+                    mentioned: messageContent.mentioned,
+                    pin: messageContent.pin
                 };
 
                 // Add inviter if exist
@@ -3582,6 +3765,7 @@
                  *    - deletable                    {boolean}
                  *    - delivered                    {boolean}
                  *    - seen                         {boolean}
+                 *    - mentioned                    {boolean}
                  *    - participant                  {object : ParticipantVO}
                  *    - conversation                 {object : ConversationVO}
                  *    - replyInfo                    {object : replyInfoVO}
@@ -3618,6 +3802,7 @@
                     deletable: pushMessageVO.deletable,
                     delivered: pushMessageVO.delivered,
                     seen: pushMessageVO.seen,
+                    mentioned: pushMessageVO.mentioned,
                     participant: undefined,
                     conversation: undefined,
                     replyInfo: undefined,
@@ -3864,7 +4049,8 @@
                                 thenAble = db.threads.where('owner')
                                     .equals(parseInt(userInfo.id))
                                     .filter(function (thread) {
-                                        return parseInt(thread.inviter.id) == parseInt(whereClause.creatorCoreUserId);
+                                        var threadObject = JSON.parse(chatDecrypt(thread.data, cacheSecret, thread.salt), false);
+                                        return parseInt(threadObject.inviter.coreUserId) == parseInt(whereClause.creatorCoreUserId);
                                     });
                             }
                         }
@@ -4187,8 +4373,6 @@
              * @return {object} Instant result of sendMessage
              */
             getHistory = function (params, callback) {
-                var startTime = Date.now();
-
                 if (parseInt(params.threadId) > 0) {
                     var sendMessageParams = {
                             chatMessageVOType: chatMessageVOTypes.GET_HISTORY,
@@ -4283,7 +4467,6 @@
                         else {
                             failedQueueMessages = [];
                         }
-
 
                         if (dynamicHistoryCount) {
                             var tempCount = count - (sendingQueueMessages.length + failedQueueMessages.length + uploadingQueueMessages.length);
@@ -4412,6 +4595,7 @@
                                          * GAP on cache or not? if yes, we should not return
                                          * any value from cache, because there is a gap between
                                          */
+
                                         if (offset > 0) {
                                             if (typeof messages[offset - 1] == 'object' && messages[offset - 1].hasGap) {
                                                 returnCache = false;
@@ -4442,8 +4626,9 @@
                                              */
                                             if (cacheFirstMessage && cacheFirstMessage.time > 0) {
                                                 db.messageGaps
-                                                    .where('time')
-                                                    .above(cacheFirstMessage.time)
+                                                    .where('[threadId+owner+time]')
+                                                    .between([parseInt(params.threadId), parseInt(userInfo.id), cacheFirstMessage.time],
+                                                             [parseInt(params.threadId), parseInt(userInfo.id), maxIntegerValue * 1000], true, true)
                                                     .toArray()
                                                     .then(function (gaps) {
                                                         // TODO fill these gaps in a worker
@@ -4472,6 +4657,7 @@
                                                              * has a GAP before them, we shouldn't return cache's result and
                                                              * wait for server's response to hit in
                                                              */
+
                                                             if (i != 0 && i != messages.length - 1 && messages[i].hasGap) {
                                                                 returnCache = false;
                                                                 break;
@@ -5582,6 +5768,7 @@
                                             tempData.threadId = parseInt(resultData.participants[i].threadId);
                                             tempData.notSeenDuration = resultData.participants[i].notSeenDuration;
                                             tempData.admin = resultData.participants[i].admin;
+                                            tempData.auditor = resultData.participants[i].auditor;
                                             tempData.name = Utility.crypt(resultData.participants[i].name, cacheSecret, salt);
                                             tempData.contactName = Utility.crypt(resultData.participants[i].contactName, cacheSecret, salt);
                                             tempData.email = Utility.crypt(resultData.participants[i].email, cacheSecret, salt);
@@ -6363,7 +6550,7 @@
                                 users: '&id, name, cellphoneNumber, keyId',
                                 contacts: '[owner+id], id, owner, uniqueId, userId, cellphoneNumber, email, firstName, lastName, expireTime',
                                 threads: '[owner+id] ,id, owner, title, time, [owner+time]',
-                                participants: '[owner+id], id, owner, threadId, notSeenDuration, admin, name, contactName, email, expireTime',
+                                participants: '[owner+id], id, owner, threadId, notSeenDuration, admin, auditor, name, contactName, email, expireTime',
                                 messages: '[owner+id], id, owner, threadId, time, [threadId+id], [threadId+owner+time]',
                                 messageGaps: '[owner+id], [owner+waitsFor], id, waitsFor, owner, threadId, time, [threadId+owner+time]',
                                 contentCount: 'threadId, contentCount'
@@ -6818,6 +7005,84 @@
 
                     return '{}';
                 }
+            },
+
+            setRoleToUser = function (params, callback) {
+                var setRoleData = {
+                    chatMessageVOType: chatMessageVOTypes.SET_ROLE_TO_USER,
+                    typeCode: params.typeCode,
+                    content: [],
+                    pushMsgType: 4,
+                    token: token
+                };
+
+                if (params) {
+                    if (parseInt(params.threadId) > 0) {
+                        setRoleData.subjectId = params.threadId;
+                    }
+
+                    if (params.admins && Array.isArray(params.admins)) {
+                        for (var i = 0; i < params.admins.length; i++) {
+                            var temp = {};
+                            if (parseInt(params.admins[i].userId) > 0) {
+                                temp.userId = params.admins[i].userId;
+                            }
+
+                            if (Array.isArray(params.admins[i].roles)) {
+                                temp.roles = params.admins[i].roles;
+                            }
+
+                            setRoleData.content.push(temp);
+                        }
+
+                        setRoleData.content = JSON.stringify(setRoleData.content);
+                    }
+                }
+
+                return sendMessage(setRoleData, {
+                    onResult: function (result) {
+                        callback && callback(result);
+                    }
+                });
+            },
+
+            removeRoleFromUser = function (params, callback) {
+                var setAdminData = {
+                    chatMessageVOType: chatMessageVOTypes.REMOVE_ROLE_FROM_USER,
+                    typeCode: params.typeCode,
+                    content: [],
+                    pushMsgType: 4,
+                    token: token
+                };
+
+                if (params) {
+                    if (parseInt(params.threadId) > 0) {
+                        setAdminData.subjectId = params.threadId;
+                    }
+
+                    if (params.admins && Array.isArray(params.admins)) {
+                        for (var i = 0; i < params.admins.length; i++) {
+                            var temp = {};
+                            if (parseInt(params.admins[i].userId) > 0) {
+                                temp.userId = params.admins[i].userId;
+                            }
+
+                            if (Array.isArray(params.admins[i].roles)) {
+                                temp.roles = params.admins[i].roles;
+                            }
+
+                            setAdminData.content.push(temp);
+                        }
+
+                        setAdminData.content = JSON.stringify(setAdminData.content);
+                    }
+                }
+
+                return sendMessage(setAdminData, {
+                    onResult: function (result) {
+                        callback && callback(result);
+                    }
+                });
             };
 
         /******************************************************
@@ -7450,12 +7715,8 @@
                 chatMessageVOType: chatMessageVOTypes.BOT_MESSAGE,
                 typeCode: params.typeCode,
                 subjectId: params.messageId,
-                repliedTo: params.repliedTo,
                 content: params.content,
                 uniqueId: params.uniqueId,
-                receiver: params.receiver,
-                systemMetadata: JSON.stringify(params.systemMetadata),
-                metadata: JSON.stringify(metadata),
                 pushMsgType: 4
             }, callbacks);
         };
@@ -8505,8 +8766,7 @@
                 subjectId: params.subjectId,
                 content: {},
                 pushMsgType: 4,
-                token: token,
-                timeout: params.timeout
+                token: token
             }, {
                 onResult: function (result) {
                     callback && callback(result);
@@ -8521,8 +8781,37 @@
                 subjectId: params.subjectId,
                 content: {},
                 pushMsgType: 4,
-                token: token,
-                timeout: params.timeout
+                token: token
+            }, {
+                onResult: function (result) {
+                    callback && callback(result);
+                }
+            });
+        };
+
+        this.pinThread = function (params, callback) {
+            return sendMessage({
+                chatMessageVOType: chatMessageVOTypes.PIN_THREAD,
+                typeCode: params.typeCode,
+                subjectId: params.subjectId,
+                content: {},
+                pushMsgType: 4,
+                token: token
+            }, {
+                onResult: function (result) {
+                    callback && callback(result);
+                }
+            });
+        };
+
+        this.unPinThread = function (params, callback) {
+            return sendMessage({
+                chatMessageVOType: chatMessageVOTypes.UNPIN_THREAD,
+                typeCode: params.typeCode,
+                subjectId: params.subjectId,
+                content: {},
+                pushMsgType: 4,
+                token: token
             }, {
                 onResult: function (result) {
                     callback && callback(result);
@@ -9704,52 +9993,19 @@
         };
 
         this.setAdmin = function (params, callback) {
-            var setAdminData = {
-                chatMessageVOType: chatMessageVOTypes.SET_ROLE_TO_USER,
-                typeCode: params.typeCode,
-                content: [],
-                pushMsgType: 4,
-                token: token,
-                timeout: params.timeout
-            };
+            setRoleToUser(params, callback);
+        };
 
-            if (params) {
-                if (parseInt(params.threadId) > 0) {
-                    setAdminData.subjectId = params.threadId;
-                }
+        this.removeAdmin = function (params, callback) {
+            removeRoleFromUser(params, callback);
+        };
 
-                if (params.admins && Array.isArray(params.admins)) {
-                    for (var i = 0; i < params.admins.length; i++) {
-                        var temp = {};
-                        if (parseInt(params.admins[i].userId) > 0) {
-                            temp.userId = params.admins[i].userId;
-                        }
+        this.setAuditor = function (params, callback) {
+            setRoleToUser(params, callback);
+        };
 
-                        if (params.admins[i].roleOperation == 'add' || params.admins[i].roleOperation == 'remove') {
-                            temp.roleOperation = params.admins[i].roleOperation;
-                        }
-                        else {
-                            temp.roleOperation = 'add';
-                        }
-
-                        temp.checkThreadMembership = true;
-
-                        if (Array.isArray(params.admins[i].roles)) {
-                            temp.roles = params.admins[i].roles;
-                        }
-
-                        setAdminData.content.push(temp);
-                    }
-
-                    setAdminData.content = JSON.stringify(setAdminData.content);
-                }
-            }
-
-            return sendMessage(setAdminData, {
-                onResult: function (result) {
-                    callback && callback(result);
-                }
-            });
+        this.removeAuditor = function (params, callback) {
+            removeRoleFromUser(params, callback);
         };
 
         this.generateUUID = Utility.generateUUID;
