@@ -24,17 +24,53 @@
         // Production
         //        var PodChat = window.PodChat;
 
+
         var params = {
             appId: new Date().getTime(),
 
             /**
+             * ActiveMQ Config
+             */
+            // protocol: "queue",
+            // queueHost: "10.56.16.25",
+            // queuePort: "61613",
+            // queueUsername: "root",
+            // queuePassword: "zalzalak",
+            // queueReceive: "queue-in-amjadi-stomp",
+            // queueSend: "queue-out-amjadi-stomp",
+            // queueConnectionTimeout: 20000,
+            // serverName: "chat-server",
+
+            /**
+             * ActiveMQ Config - Sheikh
+             */
+            // protocol: "queue",
+            // queueHost: "192.168.112.23",
+            // queuePort: "61613",
+            // queueUsername: "root",
+            // queuePassword: "j]Bm0RU8gLhbPUG",
+            // queueReceive: "queue-in-local_chat",
+            // queueSend: "queue-out-local_chat",
+            // queueConnectionTimeout: 20000,
+
+            // protocol: "queue",
+            // queueHost: "172.16.0.248",
+            // queuePort: "61613",
+            // queueUsername: "root",
+            // queuePassword: "zalzalak",
+            // queueReceive: "queue-in-wepod",
+            // queueSend: "queue-out-wepod",
+            // queueConnectionTimeout: 20000,
+            // serverName: "chat-server",
+
+            /**
              * Main Server
              */
-            // socketAddress: 'wss://msg.pod.land/ws',
-            // ssoHost: 'https://accounts.pod.land',
-            // platformHost: 'https://api.pod.land/srv/core',
-            // fileServer: 'https://core.pod.land',
-            // serverName: 'chat-server',
+            // socketAddress: 'wss://msg.pod.ir/ws', // {**REQUIRED**} Socket Address
+            // ssoHost: 'https://accounts.pod.ir', // {**REQUIRED**} Socket Address
+            // platformHost: 'https://api.pod.ir/srv/core', // {**REQUIRED**} Platform Core Address
+            // fileServer: 'https://core.pod.ir', // {**REQUIRED**} File Server Address
+            // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
 
             /**
              * Hamed Mehrara
@@ -48,28 +84,39 @@
             /**
              * Mehdi Sheikh Hosseini
              */
-            // socketAddress: 'ws://172.16.110.131:8003/ws', // {**REQUIRED**} Socket Address
+            // socketAddress: 'ws://172.16.110.235:8003/ws', // {**REQUIRED**} Socket Address
             // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-            // platformHost: 'http://172.16.110.131:8080', // {**REQUIRED**} Platform Core Address
-            // fileServer: 'http://172.16.110.131:8080', // {**REQUIRED**} File Server Address
-            // serverName: 'chat-server2', // {**REQUIRED**} Server to to register on
+            // platformHost: 'http://172.16.110.76:8080', // {**REQUIRED**} Platform Core Address
+            // fileServer: 'http://172.16.110.76:8080', // {**REQUIRED**} File Server Address
+            // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
+
+
+            /**
+             * Leila Nemati
+             */
+            // socketAddress: 'ws://172.16.110.235:8003/ws', // {**REQUIRED**} Socket Address
+            // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
+            // platformHost: 'http:///172.16.110.76:8080', // {**REQUIRED**} Platform Core Address
+            // fileServer: 'http:///172.16.110.76:8080', // {**REQUIRED**} File Server Address
+            // serverName: 'sheikh_chat', // {**REQUIRED**} Server to to
 
             /**
              * Sand Box
              */
-            socketAddress: "wss://chat-sandbox.pod.land/ws", // {**REQUIRED**} Socket Address
-            ssoHost: "https://accounts.pod.land", // {**REQUIRED**} Socket Address
-            platformHost: "https://sandbox.pod.land:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
-            fileServer: "https://sandbox.pod.land:8443", // {**REQUIRED**} File Server Address
+            socketAddress: "wss://chat-sandbox.pod.ir/ws", // {**REQUIRED**} Socket Address
+            ssoHost: "https://accounts.pod.ir", // {**REQUIRED**} Socket Address
+            platformHost: "https://sandbox.pod.ir:8043/srv/basic-platform", // {**REQUIRED**} Platform Core Address
+            fileServer: "https://sandbox.pod.ir:8443", // {**REQUIRED**} File Server Address
             serverName: "chat-server", // {**REQUIRED**} Server to to register on
 
             grantDeviceIdFromSSO: false,
             enableCache: false, // Enable Client side caching
-            fullResponseObject: true,
-            mapApiKey: "8b77db18704aa646ee5aaea13e7370f4f88b9e8c",
-            token: "529f281a0ebd481dacdad6199519b05c",
+            fullResponseObject: false,
+            mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
+            // typeCode: "talk",
+            token: "7c9ea3fdfab94ffa9ebb3d7e0b6656b7",
             // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-            // token: "fbd4ecedb898426394646e65c6b1d5d1", // {**REQUIRED**} SSO Token JiJi
+            // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
             // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
             // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
             // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
@@ -1115,7 +1162,8 @@
             count:document.getElementById('g-p2p-count').value,
             offset: document.getElementById('g-p2p-off').value,
             threadId: document.getElementById('g-p2p').value});">Get History</a>
-        <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread Participants</a>
+        <a class="btn" href="#" onclick="getThreadParticipants(document.getElementById('g-p2p').value)">Get Thread
+            Participants</a>
         <a class="btn" href="#" onclick="chatAgent.getThreadAdmins({threadId:document.getElementById('g-p2p').value}, function(res){
             console.log(res);
         })">Get Thread Admins</a>
@@ -1342,7 +1390,28 @@
 <hr>
 <br>
 
-<form method="post" action="poll.pollcode.com/33712898"><div style="padding:2px;width:325px;font-size:small;color:#000000;"><div style="padding:2px 0px 4px 2px;"><strong>کدام ویژگی را بیشتر نیاز دارید؟</strong></div><hr/><input type="radio" name="answer" value="1" id="answer337128981" style="float:left;" /><label for="answer337128981" style="float:left;width:300px;">صفحه بندی مخاطب ها</label><div style="clear:both;height:2px;"></div><input type="radio" name="answer" value="2" id="answer337128982" style="float:left;" /><label for="answer337128982" style="float:left;width:300px;">امکان حذف گفتگو</label><div style="clear:both;height:2px;"></div><input type="radio" name="answer" value="3" id="answer337128983" style="float:left;" /><label for="answer337128983" style="float:left;width:300px;">امکان منشن اعضا</label><div style="clear:both;height:2px;"></div><input type="radio" name="answer" value="4" id="answer337128984" style="float:left;" /><label for="answer337128984" style="float:left;width:300px;">امکان جستجو در لیست اعضا</label><div style="clear:both;height:2px;"></div><br/><div align="center" style="padding:3px;"><input type="submit" value=" Vote ">&nbsp;<input type="submit" name="view" value=" View "></div></div></form>
+<form method="post" action="poll.pollcode.com/33712898">
+    <div style="padding:2px;width:325px;font-size:small;color:#000000;">
+        <div style="padding:2px 0px 4px 2px;"><strong>کدام ویژگی را بیشتر نیاز دارید؟</strong></div>
+        <hr/>
+        <input type="radio" name="answer" value="1" id="answer337128981" style="float:left;"/><label
+            for="answer337128981" style="float:left;width:300px;">صفحه بندی مخاطب ها</label>
+        <div style="clear:both;height:2px;"></div>
+        <input type="radio" name="answer" value="2" id="answer337128982" style="float:left;"/><label
+            for="answer337128982" style="float:left;width:300px;">امکان حذف گفتگو</label>
+        <div style="clear:both;height:2px;"></div>
+        <input type="radio" name="answer" value="3" id="answer337128983" style="float:left;"/><label
+            for="answer337128983" style="float:left;width:300px;">امکان منشن اعضا</label>
+        <div style="clear:both;height:2px;"></div>
+        <input type="radio" name="answer" value="4" id="answer337128984" style="float:left;"/><label
+            for="answer337128984" style="float:left;width:300px;">امکان جستجو در لیست اعضا</label>
+        <div style="clear:both;height:2px;"></div>
+        <br/>
+        <div align="center" style="padding:3px;"><input type="submit" value=" Vote ">&nbsp;<input type="submit"
+                                                                                                  name="view"
+                                                                                                  value=" View "></div>
+    </div>
+</form>
 
 <form method="POST" action="http://172.16.110.131:8080/nzh/updateContacts">
     <fieldset>

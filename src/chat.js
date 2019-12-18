@@ -7897,7 +7897,7 @@
             };
         };
 
-        this.crateThreadWithFile = function (params, callbacks) {
+        this.createThreadWithFile = function (params, callbacks) {
             var metadata = {},
                 fileUploadParams = {},
                 fileUniqueId = Utility.generateUUID(),

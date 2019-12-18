@@ -89,7 +89,7 @@ var params = {
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "talk",
-    token: "824b3d3ca8404da794cfd10632fa48de",
+    token: "a7ae8bfd668d4446be324154618082f1",
     // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -1249,20 +1249,6 @@ function createThreadWithFile(file, invitees, threadType) {
         caption: 'Create thread with file message',
         image: 'https://core.pod.ir/nzh/image?imageId=333415&hashCode=16e37b412fe-0.9111035145050199',
         description: 'This is some Description.'
-        // metadata: {
-        //   time: new Date()
-        // },
-        // message: {
-        //   uniqueId: "9766b140-24a9-49fb-a02e-6aff708645a6",
-        //   text: "This is a new Mesage",
-        //   metadata: {
-        //     messageTime: new Date()
-        //   },
-        //   systemMetadata: {
-        //     id: new Date().getTime()
-        //   },
-        //   // forwardedMessageIds: [19633, 19632, 19631]
-        // }
     };
 
     if (Array.isArray(invitees)) {
@@ -1286,7 +1272,7 @@ function createThreadWithFile(file, invitees, threadType) {
         }
     }
 
-    chatAgent.crateThreadWithFile(createThreadParams, function (createThreadResult) {
+    chatAgent.createThreadWithFile(createThreadParams, function (createThreadResult) {
         console.log(createThreadResult);
     });
 }
@@ -1399,25 +1385,23 @@ function getFile(fileId, hashCode, downloadable) {
 }
 
 function pinThread(threadId) {
-    var data = {
-        subjectId: threadId
-    };
-    chatAgent.pinThread(data, function (result) {
-        if (!result.hasError) {
-            console.log('Thread has been successfully pinned to top!');
-        }
-        console.log(result);
-    });
+chatAgent.pinThread({
+    subjectId: threadId
+}, function (result) {
+    if (!result.hasError) {
+        console.log('Thread has been successfully pinned to top!');
+    }
+    console.log(result);
+});
 }
 
 function unPinThread(threadId) {
-    var data = {
-        subjectId: threadId
-    };
-    chatAgent.unPinThread(data, function (result) {
-        if (!result.hasError) {
-            console.log('Thread has been successfully unpinned from top!');
-        }
-        console.log(result);
-    });
+chatAgent.unPinThread({
+    subjectId: threadId
+}, function (result) {
+    if (!result.hasError) {
+        console.log('Thread has been successfully unpinned from top!');
+    }
+    console.log(result);
+});
 }
