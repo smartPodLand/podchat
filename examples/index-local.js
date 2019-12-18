@@ -89,7 +89,7 @@ var params = {
     fullResponseObject: false,
     mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
     // typeCode: "talk",
-    token: "8e92a14539894d4da9692eda42274fe3",
+    token: "824b3d3ca8404da794cfd10632fa48de",
     // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
     // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
     // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
@@ -178,7 +178,7 @@ chatAgent.on('chatReady', function () {
     // }, {
     //   id: 7741,
     //   type: "TO_BE_USER_CONTACT_ID"
-    // }], "PUBLIC_GROUP");
+    // }], "NORMAL");
 
     /**
      * CREATE THREAD (Creates P2P Chat with a specific user)
@@ -239,7 +239,7 @@ chatAgent.on('chatReady', function () {
     // getHistory({
     //     count: 20,
     //     offset: 0,
-    //     threadId: 15
+    //     threadId: 6653
     // });
 
     // getHistory({
@@ -420,9 +420,20 @@ chatAgent.on('chatReady', function () {
      * @param caption
      * @param metadata
      */
-    // sendFileMessage(15, __dirname + "/image.jpg", "Sample file description", {
+    // sendFileMessage(6653, __dirname + "/../test/test.txt", "Sample file description", {
     //     custom_name: "John Doe"
     // });
+
+    createThreadWithFile(
+        __dirname + "/../test/test.jpg",
+        [{
+            id: 902,
+            type: "TO_BE_USER_CONTACT_ID"
+        }, {
+            id: 7741,
+            type: "TO_BE_USER_CONTACT_ID"
+        }],
+        "NORMAL");
 
     /**
      * Send Location Message
@@ -656,14 +667,14 @@ chatAgent.on('chatReady', function () {
      * @param  {int}     hC        Crop height
      * @param  {int}     wC        Crop width
      */
-    // uploadImage(__dirname + "/test/test.jpg", 0, 0, 400, 400);
+    // uploadImage(__dirname + "/../test/test.jpg", 0, 0, 400, 400);
 
     /**
      * GET IMAGE
      * @param  {int}     imageId     Image ID
      * @param  {string}  hashCode    Hash Code
      */
-    // getImage(2531, '1649d4e932a-0.8852815409984853');
+    // getImage(67545, '16f0df1947c-0.1837058008746586');
 
     /**
      * UPLOAD FILE
@@ -1177,7 +1188,66 @@ function createThread(invitees, threadType) {
         title: 'Thread Title Sample',
         type: threadTypeText,
         invitees: [],
-        image: 'http://aiesec.at/wp-content/uploads/2016/07/16-personalities-test.png',
+        image: 'https://core.pod.ir/nzh/image?imageId=333415&hashCode=16e37b412fe-0.9111035145050199',
+        description: 'This is some Description.',
+        metadata: {
+          time: new Date()
+        },
+        message: {
+          uniqueId: "9766b140-24a9-49fb-a02e-6aff708645a6",
+          text: "This is a new Mesage",
+          metadata: {
+            messageTime: new Date()
+          },
+          systemMetadata: {
+            id: new Date().getTime()
+          },
+          // forwardedMessageIds: [19633, 19632, 19631]
+        }
+    };
+
+    if (Array.isArray(invitees)) {
+        for (var i = 0; i < invitees.length; i++) {
+            invitee = formatDataToMakeInvitee({
+                id: invitees[i].id,
+                type: invitees[i].type
+            });
+            if (invitee) {
+                createThreadParams.invitees.push(invitee);
+            }
+        }
+    }
+    else {
+        invitee = formatDataToMakeInvitee({
+            id: invitees.id,
+            type: invitees.type
+        });
+        if (invitee) {
+            createThreadParams.invitees.push(invitee);
+        }
+    }
+
+    chatAgent.createThread(createThreadParams, function (createThreadResult) {
+        console.log(createThreadResult);
+    });
+}
+
+function createThreadWithFile(file, invitees, threadType) {
+    if (typeof threadType == 'string') {
+        threadTypeText = threadType;
+    }
+    else {
+        threadTypeText = 'NORMAL';
+    }
+
+    createThreadParams = {
+        threadId: 0,
+        title: 'Thread Title Sample',
+        type: threadTypeText,
+        invitees: [],
+        file: file,
+        caption: 'Create thread with file message',
+        image: 'https://core.pod.ir/nzh/image?imageId=333415&hashCode=16e37b412fe-0.9111035145050199',
         description: 'This is some Description.'
         // metadata: {
         //   time: new Date()
@@ -1216,7 +1286,7 @@ function createThread(invitees, threadType) {
         }
     }
 
-    chatAgent.createThread(createThreadParams, function (createThreadResult) {
+    chatAgent.crateThreadWithFile(createThreadParams, function (createThreadResult) {
         console.log(createThreadResult);
     });
 }
