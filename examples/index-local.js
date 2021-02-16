@@ -544,10 +544,10 @@ chatAgent.on('chatReady', function () {
      * @param email
      */
     // var addContactInstantResult = chatAgent.addContacts({
-    //     firstName: "علیرضا",
-    //     lastName: "غفاری",
+    //     firstName: "***",
+    //     lastName: "***",
     //     cellphoneNumber: "",
-    //     email: "a.ghafari@gmail.com",
+    //     email: "******",
     //     typeCode: 'poddraw'
     // }, function (result) {
     //     console.log(result);
@@ -563,10 +563,10 @@ chatAgent.on('chatReady', function () {
      */
     // chatAgent.updateContacts({
     //   id: "2313",
-    //     firstName: "Nigul",
-    //     lastName: "Niguli",
-    //     cellphoneNumber: "09044661263",
-    //     email: "niguli@fanap.ir"
+    //     firstName: "****",
+    //     lastName: "****",
+    //     cellphoneNumber: "****",
+    //     email: "******"
     // }, function(result) {
     //   console.log(result.result);
     // });
