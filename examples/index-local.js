@@ -7,34 +7,12 @@ var params = {
      * ActiveMQ Config
      */
     // protocol: "queue",
-    // queueHost: "10.56.16.25",
+    // queueHost: "****",
     // queuePort: "61613",
-    // queueUsername: "root",
-    // queuePassword: "zalzalak",
-    // queueReceive: "queue-in-amjadi-stomp",
-    // queueSend: "queue-out-amjadi-stomp",
-    // queueConnectionTimeout: 20000,
-    // serverName: "chat-server",
-
-    /**
-     * ActiveMQ Config - Sheikh
-     */
-    // protocol: "queue",
-    // queueHost: "192.168.112.23",
-    // queuePort: "61613",
-    // queueUsername: "root",
-    // queuePassword: "j]Bm0RU8gLhbPUG",
-    // queueReceive: "queue-in-local_chat",
-    // queueSend: "queue-out-local_chat",
-    // queueConnectionTimeout: 20000,
-
-    // protocol: "queue",
-    // queueHost: "172.16.0.248",
-    // queuePort: "61613",
-    // queueUsername: "root",
-    // queuePassword: "zalzalak",
-    // queueReceive: "queue-in-wepod",
-    // queueSend: "queue-out-wepod",
+    // queueUsername: "****",
+    // queuePassword: "****",
+    // queueReceive: "****",
+    // queueSend: "****",
     // queueConnectionTimeout: 20000,
     // serverName: "chat-server",
 
@@ -46,35 +24,7 @@ var params = {
     // platformHost: 'https://api.pod.ir/srv/core', // {**REQUIRED**} Platform Core Address
     // fileServer: 'https://core.pod.ir', // {**REQUIRED**} File Server Address
     // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
-
-    /**
-     * Hamed Mehrara
-     */
-    // socketAddress: 'ws://172.16.106.26:8003/ws', // {**REQUIRED**} Socket Address
-    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    // platformHost: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} Platform Core Address
-    // fileServer: 'http://172.16.106.26:8080/hamsam', // {**REQUIRED**} File Server Address
-    // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
-
-    /**
-     * Mehdi Sheikh Hosseini
-     */
-    // socketAddress: 'ws://172.16.110.235:8003/ws', // {**REQUIRED**} Socket Address
-    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    // platformHost: 'http://172.16.110.76:8080', // {**REQUIRED**} Platform Core Address
-    // fileServer: 'http://172.16.110.76:8080', // {**REQUIRED**} File Server Address
-    // serverName: 'chat-server', // {**REQUIRED**} Server to to register on
-
-
-    /**
-     * Leila Nemati
-     */
-    // socketAddress: 'ws://172.16.110.235:8003/ws', // {**REQUIRED**} Socket Address
-    // ssoHost: 'http://172.16.110.76', // {**REQUIRED**} Socket Address
-    // platformHost: 'http:///172.16.110.76:8080', // {**REQUIRED**} Platform Core Address
-    // fileServer: 'http:///172.16.110.76:8080', // {**REQUIRED**} File Server Address
-    // serverName: 'sheikh_chat', // {**REQUIRED**} Server to to
-
+    
     /**
      * Sand Box
      */
@@ -87,14 +37,9 @@ var params = {
     grantDeviceIdFromSSO: false,
     enableCache: false, // Enable Client side caching
     fullResponseObject: false,
-    mapApiKey: '8b77db18704aa646ee5aaea13e7370f4f88b9e8c',
-    // typeCode: "talk",
-    token: "a7ae8bfd668d4446be324154618082f1",
-    // token: "7cba09ff83554fc98726430c30afcfc6", // {**REQUIRED**} SSO Token ZiZi
-    // token: "fbd4ecedb898426394646e65c6b1d5d1", //  {**REQUIRED**} SSO Token JiJi
-    // token: "5fb88da4c6914d07a501a76d68a62363", // {**REQUIRED**} SSO Token FiFi
-    // token: "bebc31c4ead6458c90b607496dae25c6", // {**REQUIRED**} SSO Token Alexi
-    // token: "e4f1d5da7b254d9381d0487387eabb0a", // {**REQUIRED**} SSO Token Felfeli
+    mapApiKey: '*****************',
+    typeCode: "default",
+    token: "************",
     wsConnectionWaitTime: 500, // Time out to wait for socket to get ready after open
     connectionRetryInterval: 5000, // Time interval to retry registering device or registering server
     connectionCheckTimeout: 10000, // Socket connection live time on server
@@ -424,16 +369,16 @@ chatAgent.on('chatReady', function () {
     //     custom_name: "John Doe"
     // });
 
-    createThreadWithFile(
-        __dirname + "/../test/test.jpg",
-        [{
-            id: 902,
-            type: "TO_BE_USER_CONTACT_ID"
-        }, {
-            id: 7741,
-            type: "TO_BE_USER_CONTACT_ID"
-        }],
-        "NORMAL");
+//     createThreadWithFile(
+//         __dirname + "/../test/test.jpg",
+//         [{
+//             id: 902,
+//             type: "TO_BE_USER_CONTACT_ID"
+//         }, {
+//             id: 7741,
+//             type: "TO_BE_USER_CONTACT_ID"
+//         }],
+//         "NORMAL");
 
     /**
      * Send Location Message
