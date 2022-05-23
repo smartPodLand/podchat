@@ -27,7 +27,7 @@
   "homepage": "https://github.com/masoudmanson/pod-chat#readme",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
-    "dexie": "^2.0.4",
+    "dexie": "^3.2.2",
     "faker": "^4.1.0",
     "form-data": "^2.5.0",
     "indexeddbshim": "^3.10.0",
